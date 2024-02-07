@@ -34,8 +34,8 @@ function gotoMerchant(e){
 <main>
     <Header />
     <div class="container payment-container d-flex justify-content-center align-items-center">
-        <h4 class="fs-4 p-2">In other to use the features of this website you are required to make a one time subscription fee of 500 Naira </h4>
-        <h4 class="fs-4 p-2">Via bank transfer to the account number on the merchant site or using your debit card.</h4>
+        <h4 class="fs-4 p-2">In other to use Channels  you are required to make a one time subscription fee of 500 Naira </h4>
+        <h4 class="fs-4 p-2">Via bank transfer to the account number on the merchant site or using your Debit ATM card.</h4>
         <p>Our payment is secured by Paystack and for transparency we do not store your bank details, however if you would like to contact our support channel for clear explanations you can reach out via: <span @click="toSupport" class="pointer text-success">support</span></p>
         <form @submit="gotoMerchant">
         <input type="hidden" name="email"  :value="user_mail">

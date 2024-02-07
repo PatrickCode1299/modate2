@@ -90,7 +90,29 @@ function updateProfile(e){
     </div>
 </template>
 <style scoped>
-.edit-container{
+@media screen and (min-width:320px) {
+    .edit-container{
+    width: 100%;
+    margin:0px auto;
+    background-color: rgb(253, 253, 253);
+    height: auto;
+    border-radius: 10px;
+}
+.green-text-bold{
+    color: green;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.submit{
+    justify-content: flex-end;
+}
+.submit-btn{
+    margin-left: auto;
+    font-weight: bold;
+}
+}
+@media screen and (min-width:620px) {
+    .edit-container{
     width: 50%;
     margin:0px auto;
     background-color: rgb(253, 253, 253);
@@ -109,4 +131,27 @@ function updateProfile(e){
     margin-left: auto;
     font-weight: bold;
 }
+}
+@media screen and (min-width:1224px) {
+    .edit-container{
+    width: 50%;
+    margin:0px auto;
+    background-color: rgb(253, 253, 253);
+    height: auto;
+    border-radius: 10px;
+}
+.green-text-bold{
+    color: green;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.submit{
+    justify-content: flex-end;
+}
+.submit-btn{
+    margin-left: auto;
+    font-weight: bold;
+}
+}
+
 </style>

@@ -19,7 +19,7 @@ var server_response=reactive({
     server_info:""
 });
 axiosClient.post('/find', {data:user_email}).then(response =>{
-if(response.data.reply ===null){
+if(response.data.reply ===null || response.data.reply==='User match not found'){
     server_response.server_info="true";
 }else{
     server_response.server_info="false";

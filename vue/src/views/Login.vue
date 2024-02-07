@@ -37,7 +37,7 @@ function hiderr(){
 
 <main>
 <div class="container signup-holder">
-<h2 class="fs-2 font-weight-bold m-2">Fill your details to Login</h2>
+<h2 class="fs-2 sign-up-header font-weight-bold m-2">Fill your details to Login</h2>
 <div v-if="err != null" class="d-flex justify-content-center align-items-center text-danger border-radius-5 text-bold bg-danger text-white p-2">
 {{ err }}
 <span @click="hiderr" class="fs-2 cancel">&times;</span>
@@ -275,6 +275,21 @@ bottom: 0px;
     font-weight: bold;
 }
 .signup-info-tag{
+    color: white;
+}
+.signup-holder{
+    width:50%;
+    margin:0px auto;
+    margin-top:10vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    border-radius: 20px;
+    
+}
+.sign-up-header{
     color: white;
 }
 main{

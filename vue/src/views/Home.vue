@@ -11,23 +11,7 @@ import { reactive } from "vue";
 let user_mail;
 const router=useRouter();
 
-function checkIfUserHasPaid(user_mail){
-    user_mail=store.state.user.data;
-   axiosClient.post('/checkIfUserHasPaid', {data:user_mail})
-        .then(response => {
-         const payment_status=response.data.user_status;
-         if(payment_status=='true'){
-            
-         }else{
-        /*
-           router.push({
-            name:'Payment'
-           })  **/
-         }
-        }).catch(error => {
-            console.error('Error',error);
-        });
-}
+
 function deleteOldStories(){
     axiosClient.post("/deleteOldStory",{data:""}).then(response=>{
 
@@ -54,7 +38,6 @@ function checkIfUserHasCompleteProfile(){
 deleteOldStories();
 </script>
 <template>
-    {{ checkIfUserHasPaid() }}
     {{ checkIfUserHasCompleteProfile() }}
     <Header />
     <SideNav />
@@ -69,9 +52,10 @@ deleteOldStories();
 @media screen and (min-width:320px) {
     .story-and-post{
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    width:97%;
     cursor: pointer;
+   
 }
 .fetch-user-post-container{
     display:flex; 
@@ -88,6 +72,7 @@ deleteOldStories();
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    width: 100%;
 }
 .fetch-user-post-container{
     display:flex; 
@@ -104,6 +89,7 @@ deleteOldStories();
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    width: 100%;
 }
 .fetch-user-post-container{
     display:flex; 

@@ -40,7 +40,7 @@ watch(email, () => {
 
 <main>
 <div class="container signup-holder">
-<h2 class="fs-2 font-weight-bold m-2">Signup Today We are Waiting for you.</h2>
+<h2 class="fs-2 sign-up-header font-weight-bold m-2">Signup Today We are Waiting for you.</h2>
 <form class="" method="POST" @submit="registerUser">
 <div v-if="err != null" class="d-flex justify-content-center align-items-center text-danger border-radius-5 text-bold bg-danger text-white p-2">
 {{ err }}
@@ -194,7 +194,16 @@ input{
     width:50%;
     margin:0px auto;
     margin-top:10vh;
-    background-color: none;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    border-radius: 20px;
+    
+}
+.sign-up-header{
+    color: white;
 }
 main{
         background-image:url("./pictures/hand 1.jpg");

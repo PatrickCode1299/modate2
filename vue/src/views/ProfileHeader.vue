@@ -9,7 +9,7 @@ const  image=ref('');
 const cover_photo=ref('');
 let cover_text=ref('');
 let img_model=ref({
-        image_uri:null,
+        image_uri:"",
         cover_uri:null
     
 });
@@ -91,7 +91,8 @@ cover_text_btn.removeAttribute("disabled");
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Edit Profile Picture</label>
                 <h2 class="text-danger fs-6 m-2">We recommend a very clear headshot that is visible...</h2>
-                <img :src=img_model.image_uri  class="img-responsive preview-img" alt="preview img">
+                <img v-if="img_model.image_uri == ''" src="../pictures/profile.png"  class="img-responsive preview-img" alt="preview img">
+                <img v-else :src=img_model.image_uri  class="img-responsive preview-img" alt="preview img">
                 <input ref="file" v-on:change="user_profile_img" class="m-2 form-control md" type="file" name="file" />
             </div>
             <button class="btn m-2 edit-profile-btn btn-block btn-md btn-success">Edit</button>
@@ -100,7 +101,8 @@ cover_text_btn.removeAttribute("disabled");
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Add Cover Photo</label>
                 <h2 class="text-danger fs-6 m-2">Ensure your cover photo is set to a Landscape size with an height of 150px</h2>
-                <img :src=img_model.cover_uri  class="img-responsive  cover-img" alt="preview img">
+                <img v-if="img_model.cover_uri== ''" src="../pictures/cover_photo.jpg"  class="img-responsive  cover-img" alt="preview img">
+                <img v-else :src=img_model.cover_uri  class="img-responsive  cover-img" alt="preview img">
                 <input v-on:change="user_cover_photo" class="m-2 form-control md" type="file" name="coverPhoto" />
             </div>
             <button class="btn m-2 edit-profile-btn btn-block btn-md btn-success">Add</button>
