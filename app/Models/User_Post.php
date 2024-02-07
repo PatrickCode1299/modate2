@@ -5,17 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Notifications extends Model
+class User_Post extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'owner',
-        'from',
-        'info',
-        'date_posted',
-        'owner_has_read'
+        'name',
+        'avatar',
+        'caption',
+        'email'
+        
        
     ];
 }
-
-

@@ -24,6 +24,9 @@ class User extends Authenticatable
         'location',
         'phone_number',
         'profile_picture',
+        'coverText',
+        'coverPhoto',
+        'isPaid'
     ];
 
     /**
