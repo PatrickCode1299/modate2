@@ -10,7 +10,10 @@ import Payment from "../views/Payment.vue";
 import Match from "../views/Match.vue"
 import Edit from "../views/Edit.vue";
 import ProfileHeader from "../views/ProfileHeader.vue";
-import CreateStories from "../views/CreateStories.vue"
+import CreateStories from "../views/CreateStories.vue";
+import User from "../views/User.vue";
+import Channel from "../views/Channels.vue";
+import LaunchChannel from "../views/LaunchChannel.vue";
 import store from '../store/index.js';
 
 const routes=[
@@ -84,6 +87,26 @@ const routes=[
         name:"create_story",
         meta:{requiresAuth:true},
         component:CreateStories
+    },
+    {
+        path:"/user/:info",
+        name:"User",
+        component:User
+    },
+    {
+        path:"/channel",
+        name:"Channel",
+        component:Channel,
+        children:{
+            path:"/channel/:uid",
+            name:"Channel",
+        }
+    },
+    {
+        path:"/create_channel",
+        name:"channel_create",
+        component:LaunchChannel,
+        
     },
 ]
 const router=createRouter({
