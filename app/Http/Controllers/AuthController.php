@@ -1,17 +1,19 @@
 <?php
-
 namespace App\Http\Controllers;
-
+date_default_timezone_set('Africa/Lagos');
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\user_match_choice;
 use App\Models\Notifications;
+use App\Models\Channel;
+use App\Models\ChannelPost;
 use App\Models\User_Post;
 use App\Models\Story;
 use Illuminate\Support\Facades\File; 
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Psy\Readline\Userland;
 
 header('Access-Control-Allow-Origin','*');
@@ -381,8 +383,10 @@ class AuthController extends Controller
       foreach($reply as $story_post){
         array_push($hold_all_replies,$story_post->user_image);
       }
+      
       return response([
-        "reply"=>$hold_all_replies
+        "reply"=>$hold_all_replies,
+        
       ]);
     }
     public function Delete_All_Old_User_Stories(){
@@ -411,7 +415,7 @@ class AuthController extends Controller
        array_push($hold_user_mutual_friends,$owner_friend);
       }
       
-     $reply= Story::whereIn('user_email',$hold_user_mutual_friends)->get();
+     $reply= Story::whereIn('user_email',$hold_user_mutual_friends)->latest()->get();
      $hold_all_friends_who_posted=array();
      foreach($reply as $user_friends){
       array_push($hold_all_friends_who_posted,$user_friends->user_email);
@@ -424,11 +428,18 @@ class AuthController extends Controller
      $find_user_friends_picture=User::whereIn('email',$clean_sorted_friends_list)->get();
      $user_friends_details_collection=array();
      foreach($find_user_friends_picture as $get_info){
-     array_push($user_friends_details_collection,["email"=>$get_info->email,"picture"=>$get_info->profile_picture]);
+     array_push($user_friends_details_collection,["email"=>$get_info->email,"picture"=>$get_info->profile_picture,"first_name"=>$get_info->first_name,"last_name"=>$get_info->last_name]);
      }
-     $new_collection=array();
+     $number_of_friends_story=count($user_friends_details_collection);
+     if($number_of_friends_story > 3){
+        $paginate="true";
+        
+     }else{
+        $paginate="false";
+     }
      return response([
       "reply"=>$user_friends_details_collection,
+      "pagination"=>$paginate
      ]);
     }
     public function fetchAllPost(Request $request){
@@ -438,11 +449,116 @@ class AuthController extends Controller
       foreach($fetch_user_friends as $get_friend){
         array_push($hold_all_user_friends,$get_friend->choice);
       }
-      $find_all_user_friend_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption','user__posts.created_at','users.profile_picture')->orderBy('user__posts.id','DESC')->take(5)->get();
+      $find_all_user_friend_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption','user__posts.created_at','users.profile_picture','users.email')->orderBy('user__posts.created_at','DESC')->inRandomOrder()->take(5)->get();
       $store_all_post=array();
       foreach($find_all_user_friend_post as $post){
         array_push($store_all_post, $post);
       }
+      return response([
+        "reply" => $store_all_post
+      ]);
+    }
+    public function fetchRandomPost(Request $request){
+      $user=$request->input('email');
+      $fetch_user_friends=user_match_choice::where('user',$user)->get();
+      $hold_all_user_friends=array();
+      foreach($fetch_user_friends as $get_friend){
+        array_push($hold_all_user_friends,$get_friend->choice);
+      }
+      $get_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption','user__posts.created_at','users.profile_picture','user__posts.email')->inRandomOrder()->orderBy('user__posts.created_at','ASC','DESC')->first();
+      $store_all_post=array(["name"=>$get_post->name, "caption"=>$get_post->caption,"date"=>$get_post->created_at,"avatar"=>$get_post->profile_picture, 
+        "email"=>$get_post->email
+        ]);
+   
+      return response([
+        "reply" => $store_all_post
+      ]);
+    }
+    public function createChannel(Request $request){
+      
+      if(is_numeric($request->input('channel_name')) || is_numeric($request->input('channel_bio'))){
+        
+        $numeric_error="Please input a name within A-Z";
+        return response([
+          "number_error" => $numeric_error
+        ]);
+      }else{
+        $email=$request->input('channel_owner');
+        $channel_name=$request->validate([
+          'channel_owner' => 'unique:channels',
+          'channel_name' => 'unique:channels'
+        ]);
+        $channel_bio=$request->input('channel_bio');
+        $channel_category=$request->input('channel_category');
+        Channel::create([
+          'channel_name'      =>$channel_name['channel_name'],
+          'channel_owner'     =>$email,
+          'channel_bio'       =>$channel_bio,
+          'channel_category'  =>$channel_category
+        ]);
+        return response([
+          "reply" => "Successfull",
+        ]);
+      }
+      
+    }
+    public function checkIfUserHasChannel(Request $request){
+      $email=$request->input('email');
+      $check_if_user_has_channel=Channel::where('channel_owner',$email)->first();
+      if($check_if_user_has_channel){
+        return response([
+          'reply'=> "true",
+          'channel_data' =>$check_if_user_has_channel
+        ]);
+      }else{
+        return response([
+          'reply'=> "false"
+        ]);
+      }
+      
+    }
+    public function createUserChannelPost(Request $request){
+      $email=$request->input('email');
+      $name=$request->input('name');
+      $avatar=$request->input('avatar');
+      $caption=$request->input('caption');
+      $create_post=ChannelPost::create([
+        "email" => $email,
+        "name"  => $name,
+        "avatar" => $avatar,
+        "caption" => $caption,
+
+      ]);
+      return response([
+        "reply"=>$create_post
+      ]);
+    }
+    public function findChannelPost(Request $request){
+      $email=$request->input('email');
+      $name=$request->input('name');
+      $avatar=$request->input('avatar');
+      $caption=$request->input('caption');
+      $channel_post=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->where('channel_posts.email',$email)->select('channel_posts.name','channel_posts.caption','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.created_at','users.profile_picture','channel_posts.email','channel_posts.id')->latest('channel_posts.id')->take(10)->get();
+      return response([
+        "reply"=>$channel_post
+      ]);
+    }
+    public function deleteChannelPost(Request $request){
+      $email=$request->input('email');
+      $post_id=$request->input('post_id');
+      $caption=$request->input('caption');
+     $channel_post= DB::table('channel_posts')->where("id",$post_id)->delete();
+      return response([
+       "reply"=>$channel_post
+      ]);
+    }
+    public function fetchRandomChannelPost(Request $request){
+      $user=$request->input('email');
+      $get_post=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->where('channel_posts.email',$user)->select('channel_posts.name','channel_posts.caption','channel_posts.created_at','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','users.profile_picture','channel_posts.email','channel_posts.id')->inRandomOrder()->orderBy('channel_posts.id','ASC')->first();
+      $store_all_post=array(["name"=>$get_post->name, "caption"=>$get_post->caption,"date"=>$get_post->created_at,"avatar"=>$get_post->profile_picture, 
+        "email"=>$get_post->email,"id"=>$get_post->id
+        ]);
+   
       return response([
         "reply" => $store_all_post
       ]);
