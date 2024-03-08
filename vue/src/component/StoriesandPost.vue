@@ -1,7 +1,7 @@
 <script setup>
 import store from '../store';
 import axiosClient from '../axios';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUpdated, reactive, ref, watch } from 'vue';
 import FetchUserPost from './FetchUserPost.vue';
 import { useRouter } from 'vue-router';
 const router=useRouter();
@@ -40,7 +40,9 @@ let from_user_sent=reactive({
     date:"",
     name:"",
     avatar:"",
-    caption:""
+    caption:"",
+    email:"",
+    postid:""
 });
 
 function findNewestPost(){
@@ -49,6 +51,8 @@ function findNewestPost(){
     from_user_sent.name=response.data.reply.name;
     from_user_sent.avatar=response.data.reply.avatar;
     from_user_sent.caption=response.data.reply.caption;
+    from_user_sent.email=response.data.reply.email;
+    from_user_sent.postid=response.data.reply.postid;
 
 
     }).catch(err=>{
@@ -75,13 +79,17 @@ watch(from_user_sent, ()=>{
     sessionStorage.setItem('NEW_POSTER_NAME',from_user_sent.name);
     sessionStorage.setItem('NEW_POST_AVATAR',from_user_sent.avatar);
     sessionStorage.setItem('NEW_POST_CAPTION',from_user_sent.caption);
+    sessionStorage.setItem('NEW_POST_POSTID',from_user_sent.postid);
+    sessionStorage.setItem('NEW_POST_EMAIL',from_user_sent.email);
     location.reload();
 });
 const latest_post_data=reactive({
     date:sessionStorage.getItem('NEW_POST_DATE'),
     name:sessionStorage.getItem('NEW_POSTER_NAME'),
     avatar:sessionStorage.getItem('NEW_POST_AVATAR'),
-    caption:sessionStorage.getItem('NEW_POST_CAPTION')
+    caption:sessionStorage.getItem('NEW_POST_CAPTION'),
+    postid:sessionStorage.getItem('NEW_POST_POSTID'),
+    email:sessionStorage.getItem('NEW_POST_EMAIL'),
 });
 function createStories(){
     router.push({
@@ -94,6 +102,7 @@ let user_story=reactive({
     friend_post:"",
     active:"m-2 story-preview-img",
     story_src:"",
+    pagination:"",
     friend_src:"",
     number_of_story:"",
     user_friends:"",
@@ -102,7 +111,7 @@ let user_story=reactive({
 function findmyStory(){
     axiosClient.post("/findUserStory",{email:user_mail}).then(response=>{
         if(response.data.reply==''){
-            alert("It happens you haven't posted a story..")
+            alert("It seems you haven't posted a story..")
         }else{
             user_story.post=response.data.reply;
             setStoryContainer();
@@ -114,26 +123,33 @@ function findmyStory(){
     });
 
 }
-let display_user_story;
+var display_user_story;
 function setStoryContainer(){
      user_story.active="m-2 story-preview-img magenta";
      let set_story_container=document.getElementById("set-story");
      set_story_container.style.display="block";
       display_user_story=setInterval(showUserStory,7000);
+      
 }
 var count=0;
 var loadingISDone=ref('false');
 function showUserStory(){
-        console.log("Yes");
+        console.log("Yes running");
         loadingISDone.value="true";
         user_story.number_of_story=user_story.post.length;
         user_story.story_src=user_story.post[count++];
-        if(count==user_story.post.length) count=0;
+        if(count==user_story.post.length){
+            count=0; 
+        } 
         
         
    
 }
+
 function hideStory(){
+            display_user_story=setInterval(showUserStory,7000);
+            clearInterval(display_user_story);
+            console.log("cleared");
     let set_story_container=document.getElementById("set-story");
      set_story_container.style.display="none";
      loadingISDone.value="false";
@@ -144,7 +160,8 @@ function get_All_User_Friend(){
       let friends_who_posted_story_count=response.data.reply;
       user_friends_story_length.value=friends_who_posted_story_count.length;
       user_story.user_friends=response.data.reply;
-   
+        user_story.pagination=response.data.pagination;
+        
 
     }).catch(err=>{
         alert("Some errors occured");            
@@ -181,19 +198,49 @@ function hideFriendStory(){
      clearInterval(friends_story);
      loadingISDone.value="false";
 }
+function left(){
+var scrollImage=document.getElementById("scroll-images");
+scrollImage.scrollBy({
+left: -200,
+behavior:"smooth"
+});
+}
+function right(){
+var scrollImage=document.getElementById("scroll-images");
+scrollImage.scrollBy({
+left: 200,
+behavior:"smooth"
+});
+}
 get_All_User_Friend();
+
+
+
+
 
 
 </script>
 <template>
 <div class="stories-and-div-container">
-    <h2 class="fs-2 bold-text">Stories</h2>
 <div class="user-story">
-<span v-if="hold_picture.isLoadingStoryPic==='true'" class="text-bold cursor-pointer fs-4">Loading......</span>
+<span v-if="hold_picture.isLoadingStoryPic==='true'" class="text-bold cursor-pointer fs-4"><img width="100px" height="100px" src="../landing/loading-loader.gif"></span>
 <div v-else  class="stories-preview">
-    <div style=" height: 200px;" class="d-flex ">
-    <img @click="findmyStory" :class="user_story.active" :src="`http://localhost:8000/storage/${hold_picture.picture}`"   width="20%" height="100%">
-    <img v-for="i in user_story.user_friends" @click="findmyfriendStory(i.email)" :src="`http://localhost:8000/storage/${i.picture}`"  class="m-2 story-preview-img" width="20%" height="100%">
+    <div id="scroll-images" v-if="user_story.pagination==='true'" style=" height: 200px; scroll-behavior: smooth; overflow-x: hidden; -webkit-overflow-scrolling:touch; overflow-y: hidden;" class=" d-flex ">
+    <button id="left" @click="left" style="position: absolute; top: 40%;  z-index: 1; color:white; font-weight:bold; font-size:35px; left: 0px;" class="btn btn-md btn-default"><i class="text-white fs-1 fas fa-angle-double-left"></i></button>
+    <button id="right" @click="right" style="position: absolute; top: 40%; z-index: 1; color:white; font-weight:bold; font-size:35px; right: 0px;" class="btn btn-md btn-default"><i class="text-white fs-1 fas fa-angle-double-right"></i></button>
+    <label class="text-white font-bold fs-6" style="position: absolute; left:5%; top: 80%; bottom: 0px;">Your Story</label>
+    <img @click="findmyStory" :class="user_story.active" :src="`http://localhost:8000/storage/${hold_picture.picture}`"   width="100px" height="190px">
+    
+    <li class="list-unstyled inline" style="width:100px; height:190px; position: relative; margin-left:5px;" v-for="i in user_story.user_friends"><img  style="width: 100%; object-fit: cover; height:185px;"  @click="findmyfriendStory(i.email)" :src="`http://localhost:8000/storage/${i.picture}`"  class="m-2 story-preview-img" width="20%" height="100%">
+        <span class="text-white" style="font-weight: bold; font-size: 12px; text-shadow: 2px 2px 2px black; position: absolute; bottom:0px; left:40%;">{{i.first_name }}</span>
+    </li>
+    </div>
+    <div v-else style=" height: 200px;" class="d-flex ">
+    <label class="text-white font-bold fs-6" style="position: absolute; left:5%; top: 80%; bottom: 0px;">Your Story</label>
+    <img @click="findmyStory" :class="user_story.active" :src="`http://localhost:8000/storage/${hold_picture.picture}`"   width="100px" height="190px">
+    <li class="list-unstyled inline" style="width:100px; height:190px; position: relative; margin-left:5px;" v-for="i in user_story.user_friends"><img  style="width:100%; object-fit: cover; height:185px;"  @click="findmyfriendStory(i.email)" :src="`http://localhost:8000/storage/${i.picture}`"  class="m-2 story-preview-img" >
+        <span class="text-white" style="font-weight: bold; font-size: 12px; text-shadow: 2px 2px 2px black; position: absolute; bottom:0px; left:40%;">{{i.first_name }}</span>
+    </li>
     </div>  
     <span @click="createStories" class="m-2 border-50px text-success fs-2">&plus;</span>
 </div>
@@ -203,18 +250,16 @@ get_All_User_Friend();
         <textarea style="outline: none; outline: 0; outline-style: none;" v-model="caption" class="post-text" placeholder="Feeling good write something.."></textarea>
         <span class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-md btn-success">Post</button></span>
     </form>
+    <FetchUserPost style="width: 100%;" :latest="latest_post_data" />
 </div>
-
-    <FetchUserPost :latest="latest_post_data" />
-
 </div>
 <div id="set-story" class="story-posts-container">
     <span @click="hideStory" class="m-2" style="text-align:center; font-size:45px; color: white; font-weight: bold;">&times;</span>
 <div class="story-keeper" style="color: white;">
-<ul style="position: absolute;  top: 0px;" class="d-flex justify-content-flex-start">
-    <li v-for="m in user_story.number_of_story" class="fs-3" style="font-weight: bold;">&minus;</li>
+<ul style="  top: 0px;" class="story-count-indicator d-flex justify-content-flex-start">
+    <li v-for="m in user_story.number_of_story" class="fs-2" style="font-weight: bold;">&minus;</li>
 </ul>
-<span v-if="loadingISDone==='false'" class="loading">Loading.....</span>
+<span v-if="loadingISDone==='false'" class="loading"><img width="100px" height="100px" src="../landing/loading-loader.gif"></span>
 <img v-if="loadingISDone==='true'" class="img-responsive story-img" :src="`http://localhost:8000/storage/${user_story.story_src}`" />
 <span id="title" style="color: white;"></span>
 </div>
@@ -222,10 +267,10 @@ get_All_User_Friend();
 <div id="friend-story" class="story-posts-container">
     <span @click="hideFriendStory" class="m-2" style="text-align:center; font-size:45px; color: white; font-weight: bold;">&times;</span>
 <div class="story-keeper" style="color: white;">
-<ul style="position: absolute;  top: 0px;" class="d-flex justify-content-flex-start">
+<ul style="  top: 0px;" class="story-count-indicator d-flex justify-content-flex-start">
     <li v-for="x in user_story.number_of_story" class="fs-3" style="font-weight: bold;">&minus;</li>
 </ul>
-<span v-if="loadingISDone==='false'" class="loading">Loading.....</span>
+<span v-if="loadingISDone==='false'" class="loading"><img width="100px" height="100px" src="../landing/loading-loader.gif"></span>
 <img v-if="loadingISDone==='true'" class="img-responsive story-img" :src="`http://localhost:8000/storage/${user_story.friend_src}`" />
 <span id="title" style="color: white;"></span>
 </div>
@@ -247,11 +292,8 @@ get_All_User_Friend();
     border:2px solid rgb(255, 110, 255);
 }
 .story-keeper{
-    display: flex;
-    flex-direction:column;
-    justify-content: center;
-    align-items: center;
-    width:400px;
+    display:block;
+    width: 100%;
     position: relative;
     height: 80%;
     background-color:rgba(0, 0, 0, 0.144);
@@ -259,10 +301,11 @@ get_All_User_Friend();
     margin: 0 auto;
 }
 .story-img{
-    width: 70%;
+    width: 100%;
     height: auto;
     border-radius: 5px;
-    margin-left: 5px;
+    object-fit: contain;
+    
 }
 .border-50px{
     border-radius: 50%;
@@ -314,7 +357,7 @@ border-radius: 10px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 0px;
+    margin-top: 100px;
     width: 100%;
 
 }
@@ -353,6 +396,12 @@ textarea:focus{
     border-radius: 20px;
     font-weight: bold;
     width: 100px;
+}
+.btn-default{
+background-color:rgba(0,0,0,0.8);
+}
+.story-count-indicator{
+    position: none;
 }
 }
 @media screen and (min-width:620px) {
@@ -437,7 +486,7 @@ border-radius: 10px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 0px;
+    margin-top: 50px;
     width: 50%;
 
 }
@@ -476,6 +525,13 @@ textarea:focus{
     border-radius: 20px;
     font-weight: bold;
     width: 100px;
+}
+.btn-default{
+background-color:rgba(0,0,0,0.8);
+}
+.story-count-indicator{
+    position: absolute;
+    
 }
 }
 @media screen and (min-width:1224px) {
@@ -544,7 +600,10 @@ textarea:focus{
 .story-preview-img{
 object-fit: cover;
 object-position: center center;
-border-radius: 10px;
+border-top-left-radius: 10px;
+border-top-right-radius:10px;
+border-bottom-left-radius: 5px;
+border-bottom-right-radius: 5px;
 }
 .stories-preview{
     flex: 1;
@@ -560,7 +619,7 @@ border-radius: 10px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 0px;
+    margin-top: 50px;
     width: 50%;
 
 }
@@ -599,6 +658,12 @@ textarea:focus{
     border-radius: 20px;
     font-weight: bold;
     width: 100px;
+}
+.btn-default{
+background-color:rgba(0,0,0,0.8);
+}
+.story-count-indicator{
+    position: absolute;
 }
 }
 </style>

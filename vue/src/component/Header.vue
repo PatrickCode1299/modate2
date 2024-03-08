@@ -1,13 +1,22 @@
 <script setup>
 import { RouterLink } from 'vue-router';
+import axiosClient from "../axios.js";
 import { useStore } from 'vuex';
+import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
 import {ref} from "vue";
 import { watch } from 'vue';
 import { reactive } from 'vue';
 let links;
 const router=useRouter();
+const route=useRoute();
 const store=useStore();
+let user_mail;
+let current_route;
+onMounted(()=>{
+    current_route=route;
+});
 if(store.state.user.token != null){
     links=[
     {
@@ -18,11 +27,19 @@ if(store.state.user.token != null){
      linkname:"Home",
      location:"home",
      property:"link",
+
      function:function gotoHome(){
-        router.push({
+        if(current_route.path === "/home"){
+            location.reload();
+        }else{
+            router.push({
             name:'Home'
         })
-     }
+        }
+       
+     },
+     itemicon:"fa-solid fa-house"
+
     },
     {
      linkname:"Match",
@@ -32,17 +49,19 @@ if(store.state.user.token != null){
         router.push({
             name:'Match'
         })
-     }
+     },
+     itemicon:"fa-solid fa-user-group"
     },
     {
      linkname:"Profile",
      location:"profile",
      property:"link",
-     function:function gotoHome(){
+     function:function gotoProfile(){
         router.push({
             name:'Profile'
         })
-     }
+     },
+     itemicon:"fa-solid fa-user"
     },
     {
      linkname:"Messages",
@@ -50,24 +69,47 @@ if(store.state.user.token != null){
      property:"link",
      function:function gotoMessages(){
         alert('Not created yet');
-     }
+     },
+     itemicon:"fa-solid fa-envelope"
+    },
+    {
+     linkname:"Channels",
+     location:"channel",
+     property:"link",
+     itemicon:"fa-solid fa-tv"
+    },
+    {
+     linkname:"Notifications",
+     location:"notify",
+     property:"link",
+     itemicon:"fa-solid fa-bell",
+     badge:6
     },
     {
         linkname:"Sign Out",
         location:"#",
         property:"link",
+        itemicon:"fa-solid fa-right-from-bracket",
         function:function logout(){
-                store.commit('logout');
-                router.push({
+                var ask_if_user_wants_to_logout=confirm("Do you want to logout");
+                if(ask_if_user_wants_to_logout){
+                    store.commit('logout');
+                    router.push({
                     name:'welcome'
-                })
+                    });
+                }else{
+                    var get_current_route=route.params.name;
+                    router.push({
+                    name:get_current_route
+                    });
+                }
+                
     }
 
     },
     
    
 ]
-   
 }else{
     links=[
     {
@@ -94,6 +136,7 @@ if(store.state.user.token != null){
     linkname:"Signup Now",
     location:"signup",
     property:"link magenta-rounded-bold"
+    
     }
 ]
 }
@@ -123,16 +166,29 @@ if(checklink.count == 0){
 
 
 });
-
+let notify_count=reactive({
+    count:""
+});
+onMounted(()=>{
+    user_mail=sessionStorage.getItem('USER_MAIL');
+let formData=new FormData();
+formData.append("owner",user_mail);
+axiosClient.post("/findNotifyCount",formData).then(response=>{
+notify_count.count=response.data.reply;
+}).catch(e=>{
+    console.log('error');
+});
+});
 </script>
 <template>
 <nav class="nav navbar navbar-fixed-top">
     <div class="container-fluid p-2">
-    <RouterLink class="navbar-brand p-2 fs-2" to="/">Modate2</RouterLink>
-    <ul class="d-none-mobile justify-content-space-around list-unstyled p-2 fs-5">
-        <RouterLink  :to="link.location" @click="link.function"   :class="link.property" v-for="link in links">{{ link.linkname }}
+    <RouterLink v-if="store.state.user.token==null" class="navbar-brand p-2 fs-2" to="/">NearbyNess</RouterLink>
+    <ul class="d-none-mobile justify-content-flex-end list-unstyled p-2 fs-5">
+        <RouterLink   :to="link.location" @click="link.function"   :class="link.property" v-for="link in links"><small v-if="link.linkname==='Notifications'"  class='fs-6'  style='color:red; border-radius: 5px; background-color: whitesmoke; font-weight:bold;   '>{{notify_count.count }}</small><i :class="link.itemicon"></i>{{ link.linkname }}
          
         </RouterLink>
+      
         
       
     </ul>
@@ -144,6 +200,7 @@ if(checklink.count == 0){
         </RouterLink>
     </div>
 </nav>
+
 </template>
 <style scoped>
 @media screen and (min-width:320px) {
@@ -174,7 +231,7 @@ if(checklink.count == 0){
     bottom: 0px;
     background-color:rgb(210, 35, 210);
     color:black;
-    width:20px;
+    width:200px;
     transition: width 5s;
     z-index: 1;
     flex-direction: column;
@@ -187,6 +244,7 @@ if(checklink.count == 0){
     cursor: pointer;
     color:rgb(249, 255, 83);
 }
+
 .side-link{
     font-weight: bold;
 }
@@ -196,10 +254,11 @@ if(checklink.count == 0){
 }
 @media screen and (min-width:620px) {
 .link{
-    color:magenta;
+    color:rgb(0, 0, 0);
     display: block;
     margin-right:20px;
-}
+    font-weight: bold;
+}   
 .navbar-brand{
     color:rgb(0,0,0);
     font-family: tahoma;
@@ -214,11 +273,13 @@ if(checklink.count == 0){
 }
 .d-none-mobile{
     display: flex;
+    justify-content: flex-end;
+    margin-left: auto;
 }
 }
 @media screen and (min-width:1224px) {
 .link{
-    color:rgb(255, 0, 255);
+    color:rgb(0, 0, 0);
     display: block;
     margin-right:20px;
     font-weight: bold;
@@ -248,6 +309,8 @@ if(checklink.count == 0){
 }
 .d-none-mobile{
     display: flex;
+    justify-content: flex-end;
+    margin-left: auto;
 }
 }
 </style>

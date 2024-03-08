@@ -2,10 +2,13 @@
 import store from '../store';
 import axiosClient from '../axios';
 import { ref } from 'vue';
-import { reactive } from 'vue';
+import { reactive,onMounted,computed } from 'vue';
 import { defineProps } from 'vue';
+import moment from 'moment'
+import { RouterLink } from 'vue-router';
+import LikeShareComment from "./LikeShareComment.vue";
 const latest_post=defineProps(['latest']);
-const x=1;
+
 const user_mail=sessionStorage.getItem('USER_MAIL');
 var post_date;
 var poster_name;
@@ -18,12 +21,18 @@ let store_all_post=reactive({
     post_caption:"",
     isLoading:"true",
 
+
 });
 let newest_post=reactive({
     date:"",
     name:"",
     avatar:"",
     caption:"",
+    postid:"",
+    isLong:"",
+    isLongBtn:"",
+    textShortener:"",
+    expandLongPost:""
 
 });
 function showlatest(){
@@ -31,80 +40,276 @@ function showlatest(){
     newest_post.name=latest_post.latest.name;
     newest_post.avatar=latest_post.latest.avatar;
     newest_post.caption=latest_post.latest.caption;
-}
-function fetchUserPost(e){
-    axiosClient.post("/fetchUserPost",{email:user_mail}).then(response=>{
-    post_date=response.data.reply.created_at;
-    poster_name=response.data.reply.name;
-    post_avatar=response.data.reply.avatar;
-    post_caption=response.data.reply.caption;
-    sessionStorage.setItem('POST_DATE',post_date);
-    sessionStorage.setItem('POSTER_NAME',poster_name);
-    sessionStorage.setItem('POST_AVATAR',post_avatar);
-    sessionStorage.setItem('POST_CAPTION',post_caption);
-    }).catch(err=>{
-        console.log(err);
-    });
-   
-}
-let all_post=reactive({
-    first_five_post:"",
-    first_post_name:"",
-
-    every_one_post:""
-})
-function fetchAllPost(){
-    axiosClient.post('/fetchAllPost',{email:user_mail}).then(response=>{
-        store_all_post.isLoading="false";
-        all_post.first_five_post=response.data.reply;
-    }).catch(e=>{
-        console.log(e);
-    });
-    window.onscroll=function (){
-        //alert('User tried to scroll...');
-    }
+    newest_post.postid=latest_post.latest.postid;
+    newest_post.post_owner=latest_post.latest.email;
+    
     
 }
+function checkIfUserPostIsLong(text){
+    if(text==null){
+        return;
+    }else if(text.length < 128){
+        return newest_post.caption;
+    }
+    else if(text.length > 128){
+        newest_post.isLong="true";
+        newest_post.isLongBtn="true";
+        newest_post.textShortener=newest_post.caption.slice(0,128) + "............";
+        return newest_post.textShortener;
+    }
+}
+let friend_post=reactive({
+    post_key:[],
+    short_post:[],
+    caption:'',
+    isLong:'',
+    isLongBtn:'',
+    isShortBtn:'',
+    expandText:'',
+    show_current_key:'',
+    current_key_is_enabled:''
+});
+let     isLoading=ref("true");
+let     Loader=ref("true");
+let new_friend_post=reactive({
+    post_date:"",
+    poster_name:"",
+    post_avatar:"",
+    post_caption:"",
+    fresh_new_post:[],
+    post_key:[],
+    short_post:[],
+    caption:'',
+    isLong:'',
+    isLongBtn:'',
+    isShortBtn:'',
+    expandText:'',
+    show_current_key:'',
+    current_key_is_enabled:''
+});
+function checkIfFriendPostIsLong(text, key){
+     if(text==null){
+        return;
+    }else if(text.length < 128){
+        friend_post.short_post.push(key);
+        return text;
+    }
+    else if(text.length > 128){
+        let caption_new=text.slice(0,128) + "...........................................";
+        friend_post.post_key.push(key);
+        
+        return caption_new;
+    }
+}
+
+function expandFriendText(key, text){
+    friend_post.post_key.filter((x)=>{
+        if(x==key){
+            friend_post.show_current_key=key;
+            friend_post.expandText=text;
+            friend_post.isShortBtn=key;
+            friend_post.current_key_is_enabled=key;
+            let get_current_long_post_btn=document.getElementById(key);
+            get_current_long_post_btn.style.display="none";
+        }
+    })
+
+}
+function reduceFriendText(key, text){
+    friend_post.post_key.filter((x)=>{
+        if(x==key){
+            friend_post.show_current_key=key;
+            friend_post.expandText=friend_post.expandText.slice(0,128) + "............";
+            friend_post.isShortBtn='';
+            let get_current_long_post_btn=document.getElementById(key);
+            get_current_long_post_btn.style.display="block";
+        }
+    })
+
+}
+function expandText(){
+   newest_post.expandLongPost=newest_post.caption.slice(0);
+   newest_post.isLong='false';
+   newest_post.isLongBtn='false';
+
+   //return newest_post.textShortener;
+}
+function reduceText(){
+        newest_post.expandLongPost=newest_post.caption.slice(0,128)+ "...............";
+        newest_post.isLong='true';
+        newest_post.isLongBtn='true';
+}
+
+let all_post=reactive({
+    first_five_post:"",
+    new_five_post:"",
+    first_post_name:"",
+    one_channel_post:"",
+    every_one_post:"",
+    post_id:["patrick"]
+})
+
 
 store_all_post.post_date=sessionStorage.getItem('POST_DATE');
 store_all_post.poster_name=sessionStorage.getItem('POSTER_NAME');
 store_all_post.post_avatar=sessionStorage.getItem('POST_AVATAR');
 store_all_post.post_caption=sessionStorage.getItem('POST_CAPTION');
-fetchAllPost();
+onMounted(()=>{
+    
+    axiosClient.post('/fetchAllPost',{email:user_mail}).then(response=>{
+        
+        all_post.first_five_post=response.data.reply;
+    }).catch(e=>{
+        console.log(e);
+    });
+    axiosClient.post('/fetchAllChannelsPost',{email:user_mail}).then(response=>{
+        all_post.one_channel_post=response.data.reply;
+        
+    }).catch(e=>{
+        console.log(e);
+    });
+
+    window.onscroll=function(){
+       if(window.scrollY + window.innerHeight >= document.body.scrollHeight){
+        axiosClient.post('/fetchRandomPost',{email:user_mail}).then(response=>{
+        all_post.new_five_post=response.data.reply;
+        isLoading.value="false";
+        let raw_data=response.data.reply;
+        raw_data.forEach(x => {
+            new_friend_post.fresh_new_post.push(x);
+           
+        });
+       // console.log(raw_data);
+      //  new_friend_post.fresh_new_post.push(response.data.reply);
+        
+        
+        }).catch(e=>{
+        console.log(e);
+        });
+       }
+    }
+
+Loader.value="false";
+});
+function showChanneInfo(containerID){
+    let channel_info_holder=containerID;
+    document.getElementById(channel_info_holder).style.visibility="visible";
+}
+function hideChannelInfo(containerID){
+    let channel_info_holder=containerID;
+    document.getElementById(channel_info_holder).style.visibility="hidden";
+}
+
 </script>
 <template>
-{{ fetchUserPost() }}
-<div class="stories-and-div-container m-2 ">
+<div class="stories-and-div-container">
 <div class="user-post-holder">
     {{showlatest()}}
-<div class='m-2' style="width: 100%;" v-for="i in x">
-    <div style='border: none; border-radius: 0px;' class='card p-4 post-container card-default'>
-    <div class='card-header inline-flex p-2 panel-header'>
-        <span style="margin-right: auto;"><img :src='`http://localhost:8000/storage/${newest_post.avatar}`' class='img-circle small-thumbnail'></span><span class='m-2'>{{store_all_post.poster_name}}</span>
+
+    <div id="user-post" style='border: none; border-radius: 0px;' class='card m-2 p-2 post-container card-default'>
+    <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
+        <span style="margin-right: auto;"><img :src='`http://localhost:8000/storage/${newest_post.avatar}`' class='img-circle small-thumbnail'></span><span class='m-2'>{{newest_post.name}}</span>
     </div>
-    <p class='p-4 fs-6'>{{ newest_post.caption }}</p>
+    <p v-if="newest_post.isLong=='true'"   class='p-4 fs-6'>{{ checkIfUserPostIsLong(newest_post.caption) }}</p>
+    <p v-if="newest_post.isLong==''"  class='p-4 fs-6'>{{ checkIfUserPostIsLong(newest_post.caption) }}</p>
+    <button @click="expandText" v-if="newest_post.isLongBtn == 'true'">Show More</button>
+    <p v-if="newest_post.isLong=='false'">{{newest_post.caption}}</p>
+    <button @click="reduceText" v-if="newest_post.isLongBtn == 'false'">Show Less</button>
+    <LikeShareComment  :post_owner="newest_post.post_owner"  :post_id="newest_post.postid" />
     <ul class='inline-flex'>
-        <li class='list-unstyled'>{{newest_post.date}}</li>
+        <li class='list-unstyled'>{{moment(newest_post.date).fromNow()}}</li>
     </ul>
    </div>
-   <span v-if="store_all_post.isLoading==='true'" class="text-bold cursor-pointer fs-4">Loading......</span>
-   <div v-else class='m-2' style="width: 100%;" v-for="x in all_post.first_five_post">
-    <div style='border: none; border-radius: 0px;' class='card p-4 post-container card-default'>
-    <div class='card-header inline-flex p-2 panel-header'>
-        <span style="margin-right: auto;"><img :src='`http://localhost:8000/storage/${x.profile_picture}`' class='img-circle small-thumbnail'></span><span class='m-2'>{{x.name}}</span>
+   <span v-if="Loader==='true'" class="text-bold cursor-pointer fs-4"><img style="margin:0px auto;" width="100px" height="100px" src="../landing/loading-loader.gif"></span>
+    <div v-else   v-for="x in all_post.first_five_post" style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default'>
+    <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex p-2 panel-header'>
+        <span style="margin-right: auto;"><RouterLink :to='`/user/${x.email}`'><img :src='`http://localhost:8000/storage/${x.profile_picture}`' class='img-circle small-thumbnail'></RouterLink></span><span class='m-2'>{{x.name}}</span>
     </div>
-    <p class='p-4 fs-6'>{{ x.caption }}</p>
+    <p v-if="friend_post.current_key_is_enabled != x.created_at"  class='p-4 fs-6'>{{checkIfFriendPostIsLong(x.caption, x.created_at)}}</p>
+   
+    <p v-if="friend_post.show_current_key === x.created_at">{{friend_post.expandText }}</p>
+    
+   
+    <button :id="x.created_at" v-if="!friend_post.short_post.includes(x.created_at) " @click="expandFriendText(x.created_at, x.caption)">Show More</button>
+    <button  v-if="friend_post.isShortBtn === x.created_at " @click="reduceFriendText(x.created_at, x.caption)">Show Less</button>
+    <LikeShareComment :post_content="{
+                    post_caption:x.caption,
+                    post_owner_name:x.name,
+                    post_owner_avatar:x.avatar,
+                    post_image_one:x.post_img1,
+                    post_image_two:x.post_img2,
+                    post_image_three:x.post_img3,
+                    post_image_four:x.post_image_four
+                  }" :post_owner="x.email"    :post_id="x.postid" />
     <ul class='inline-flex'>
-        <li class='list-unstyled'>{{x.created_at}}</li>
+        <li style="font-size: 12px;" class='list-unstyled'>{{moment(x.created_at).fromNow()}}</li>
     </ul>
    </div>
+   <div v-for="i in all_post.one_channel_post"  style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default'>
+      <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
+                    <span style="margin-right: auto;"><RouterLink :to='`/channel/${i.email}`'><img :src='`http://localhost:8000/storage/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink></span><span @mouseenter="showChanneInfo(i.id)"  @mouseleave="hideChannelInfo(i.id)" class="fs-6 m-2">From Channel</span><span class='m-2'><i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="fa-solid fa-check"></i>{{i.name}}</span>
+                    <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
+                   </div>
+                    <p style="word-wrap: break-word;" v-if="friend_post.current_key_is_enabled != i.created_at"  class='p-4 fs-6'>{{checkIfFriendPostIsLong(i.caption, i.created_at)}}</p>
+   
+                    <p style="word-wrap: break-word;" v-if="friend_post.show_current_key === i.created_at">{{friend_post.expandText }}</p>
+                    <div class="flex-img">
+                        <img v-if="i.post_img1 != null" loading="lazy" :src='`http://localhost:8000/storage/${i.post_img1}`' />
+                        <img v-if="i.post_img2 != null" loading="lazy" :src='`http://localhost:8000/storage/${i.post_img2}`' />
+                        <img v-if="i.post_img3 != null" loading="lazy" :src='`http://localhost:8000/storage/${i.post_img3}`' />
+                        <img v-if="i.post_img4 != null" loading="lazy" :src='`http://localhost:8000/storage/${i.post_img4}`' />
+                    </div>
+
+
+                   <button :id="i.created_at" v-if="!friend_post.short_post.includes(i.created_at) " @click="expandFriendText(i.created_at, i.caption)">Show More</button>
+                    <button  v-if="friend_post.isShortBtn === i.created_at " @click="reduceFriendText(i.created_at, i.caption)">Show Less</button>
+                  <LikeShareComment :post_content="{
+                    post_caption:i.caption,
+                    post_owner_name:i.name,
+                    post_owner_avatar:i.profile_picture,
+                    post_image_one:i.post_img1,
+                    post_image_two:i.post_img2,
+                    post_image_three:i.post_img3,
+                    post_image_four:i.post_image_four
+                  }" :post_owner="i.email" :post_id="i.postid" />
+                    <ul class='inline-flex'>
+                    <li style="font-size: 12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
+                    </ul>
+         
+    </div>
+   <span v-if="isLoading==='true'" class="text-bold cursor-pointer fs-4"><img style="margin:0px auto;" width="100px" height="100px" src="../landing/loading-loader.gif"></span>
+  
+    <div v-else  v-for="j in new_friend_post.fresh_new_post" style='border: none; border-radius: 5px;' class='card p-2 post-container card-default'>
+    <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex p-2 panel-header'>
+        <span style="margin-right: auto;"><RouterLink :to='`/user/${j.email}`'><img :src='`http://localhost:8000/storage/${j.avatar}`' class='img-circle small-thumbnail'></RouterLink></span><span class='m-2'>{{j.name}}</span>
+    </div>
+    <p v-if="friend_post.current_key_is_enabled != j.date"  class='p-4 fs-6'>{{checkIfFriendPostIsLong(j.caption, j.date)}}</p>
+   
+    <p v-if="friend_post.show_current_key === j.date">{{friend_post.expandText }}</p>
+    
+   
+    <button :id="j.date" v-if="!friend_post.short_post.includes(j.date) " @click="expandFriendText(j.date, j.caption)">Show More</button>
+    <button  v-if="friend_post.isShortBtn === j.date " @click="reduceFriendText(j.date, j.caption)">Show Less</button>
+    <LikeShareComment :post_content="{
+                    post_caption:j.caption,
+                    post_owner_name:j.name,
+                    post_owner_avatar:j.avatar,
+                    post_image_one:j.post_img1,
+                    post_image_two:j.post_img2,
+                    post_image_three:j.post_img3,
+                    post_image_four:j.post_image_four
+                  }" :post_owner="j.email"  :post_id="j.postid" />
+    <ul class='inline-flex'>
+        <li style="font-size: 12px;" class='list-unstyled'>{{moment(j.date).fromNow()}}</li>
+    </ul>
    </div>
-</div>
 </div>
 </div>
 </template>
 <style scoped>
-.user-post-holder{
+
+@media screen and (min-width:320px) {
+    .user-post-holder{
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -126,9 +331,10 @@ fetchAllPost();
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    object-fit: cover;
 }
 .user-post{
-    width: 80%;
+    width: 100%;
    
 }
 .story-preview-img{
@@ -175,6 +381,281 @@ border-radius: 5px;
 .post-container{
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    flex: 1;
+ 
+    
+}
+.card{
+    width: 100%;
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    object-fit: cover;
+    width: 100px;
+    height: 100px;
+    
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    margin-top: 2px;
+    object-fit: cover;
+    flex: 1;
+    flex-basis: 40%;
+    height: 400px;
+   
+    
+}
+
+}
+@media screen and (min-width:620px) {
+    .user-post-holder{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+.user-story{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+.inline-flex{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+.small-thumbnail{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.user-post{
+    width: 100%;
+   
+}
+.story-preview-img{
+object-fit: cover;
+object-position: center center;
+border-radius: 5px;
+}
+.stories-preview{
+    flex: 1;
+    margin-left: 5px;
+    border-radius:10px;
+    border:2px solid magenta;
+    opacity: 0.8;
+    padding: 0px;
+    
+}
+.stories-and-div-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0px;
+    width: 100%;
+
+}
+.stories-and-div-container > div{
+    margin-top: 10px;
+}
+.post-text{
+    border-radius: 5px;
+    resize: none;
+    padding: 10px 10px;
+    color: rgb(17, 17, 17);
+    font-weight: 400;
+    width:100%;
+    height:auto;
+    border: none;
+    outline: none;
+}
+.post-text:hover{
+    outline: none;
+  
+}
+.post-container{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+ 
+    
+}
+.card{
+    width: 600px;
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    object-fit: cover;
+    width: 100px;
+    height: 100px;
+    
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    margin-top: 2px;
+    object-fit: cover;
+    flex: 1;
+    flex-basis: 40%;
+    height: 400px;
+   
+    
+}
+
+}
+@media screen and (min-width:1224px) {
+    .user-post-holder{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+   
+}
+.user-story{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+.inline-flex{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+.small-thumbnail{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.user-post{
+    width: 100%;
+   
+}
+.story-preview-img{
+object-fit: cover;
+object-position: center center;
+border-radius: 5px;
+}
+.stories-preview{
+    flex: 1;
+    margin-left: 5px;
+    border-radius:10px;
+    border:2px solid magenta;
+    opacity: 0.8;
+    padding: 0px;
+    
+}
+.stories-and-div-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0px;
+    width: 100%;
+
+}
+.stories-and-div-container > div{
+    margin-top: 10px;
+}
+.post-text{
+    border-radius: 5px;
+    resize: none;
+    padding: 10px 10px;
+    color: rgb(17, 17, 17);
+    font-weight: 400;
+    width:100%;
+    height:auto;
+    border: none;
+    outline: none;
+}
+.post-text:hover{
+    outline: none;
+  
+}
+.post-container{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    border:1px solid rgba(233, 233, 233, 0.442);
+ 
+    
+}
+.card{
+    width: 600px;
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    object-fit: cover;
+    width: 100px;
+    height: 100px;
+    
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    margin-top: 2px;
+    object-fit: cover;
+    flex: 1;
+    flex-basis: 40%;
+    height: 400px;
+   
+    
+}
+
 }
 </style>

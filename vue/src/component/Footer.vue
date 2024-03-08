@@ -1,7 +1,7 @@
 <script setup>
 const footeritems=[
     {
-        header:"Join Modate2",
+        header:"Join NearbyNess",
         firstinfo:new Date().toLocaleString()
     },
     {
