@@ -8,7 +8,10 @@ use App\Models\Notifications;
 use App\Models\Channel;
 use App\Models\ChannelPost;
 use App\Models\User_Post;
+use App\Models\Comment;
 use App\Models\Story;
+use App\Models\PostLike;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\File; 
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
@@ -292,11 +295,12 @@ class AuthController extends Controller
       
      
     }
-    public function notify($from,$owner,$info){
+    public function notify($from,$owner,$info,$source){
       Notifications::create([
         "from"=>$from,
         "owner"=>$owner,
         "info"=>$info,
+        "source"=>$source,
         "owner_has_read"=>"false"
       ]);
     }
@@ -310,7 +314,7 @@ class AuthController extends Controller
         "user"=>$user,
         "choice"=>$choice
       ]);
-      $this->notify($user,$choice,"$sender is interested in you..");
+      $this->notify($user,$choice,"$sender is interested in you..","match");
       return response([
         "success" => "You tried matching with\t".$choice."\twe have notified them"
       ]);
@@ -321,11 +325,13 @@ class AuthController extends Controller
       $avatar=$get_poster_info['profile_picture'];
       $name=$get_poster_info['first_name']."\t".$get_poster_info['last_name'];
       $user_caption=htmlspecialchars($request->input('user_caption'));
+      $post_id=rand(10,100000) . date('d');
       User_Post::create([
         "name"=>$name,
         "avatar"=>$avatar,
         "caption"=>$user_caption,
-        "email"=>$email
+        "email"=>$email,
+        "postid"=>$post_id
       ]);
       return response([
         "reply"=>"Post added successfully"
@@ -449,7 +455,7 @@ class AuthController extends Controller
       foreach($fetch_user_friends as $get_friend){
         array_push($hold_all_user_friends,$get_friend->choice);
       }
-      $find_all_user_friend_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption','user__posts.created_at','users.profile_picture','users.email')->inRandomOrder()->orderBy('user__posts.created_at','DESC')->take(5)->get();
+      $find_all_user_friend_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption', 'user__posts.postid','user__posts.created_at','users.profile_picture','users.email')->inRandomOrder()->orderBy('user__posts.created_at','DESC')->take(5)->get();
       $store_all_post=array();
       foreach($find_all_user_friend_post as $post){
         array_push($store_all_post, $post);
@@ -465,8 +471,8 @@ class AuthController extends Controller
       foreach($fetch_user_friends as $get_friend){
         array_push($hold_all_user_friends,$get_friend->choice);
       }
-      $get_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption','user__posts.created_at','users.profile_picture','user__posts.email')->inRandomOrder()->orderBy('user__posts.created_at','ASC','DESC')->first();
-      $store_all_post=array(["name"=>$get_post->name, "caption"=>$get_post->caption,"date"=>$get_post->created_at,"avatar"=>$get_post->profile_picture, 
+      $get_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption', 'user__posts.postid','user__posts.created_at','users.profile_picture','user__posts.email')->inRandomOrder()->orderBy('user__posts.created_at','ASC','DESC')->first();
+      $store_all_post=array(["name"=>$get_post->name, "caption"=>$get_post->caption,"date"=>$get_post->created_at, "postid"=>$get_post->postid,   "avatar"=>$get_post->profile_picture, 
         "email"=>$get_post->email
         ]);
    
@@ -528,12 +534,14 @@ class AuthController extends Controller
       $image_2=$request->file('image2');
       $image_3=$request->file('image3');
       $image_4=$request->file('image4');
+      $post_id=rand(10,100000) . date('d');
       if(empty($request->file('image1')) && empty($request->file('image2')) && empty($request->file('image3')) && empty($request->file('image4'))){
         $create_post=ChannelPost::create([
           "email" => $email,
           "name"  => $name,
           "avatar" => $avatar,
           "caption" => $caption,
+          "postid"  => $post_id
   
         ]);
         return response([
@@ -547,6 +555,7 @@ class AuthController extends Controller
           "avatar" => $avatar,
           "caption" => $caption,
           "post_img1" => $image_path,
+          "postid"  => $post_id
          
   
         ]);
@@ -563,6 +572,7 @@ class AuthController extends Controller
           "caption" => $caption,
           "post_img1" => $image_path,
           "post_img2" => $image_path2,
+          "postid"  => $post_id
   
         ]);
         return response([
@@ -579,7 +589,9 @@ class AuthController extends Controller
           "caption" => $caption,
           "post_img1" => $image_path,
           "post_img2" => $image_path2,
-          "post_img3" => $image_path3
+          "post_img3" => $image_path3,
+          "postid"  => $post_id
+
   
         ]);
         return response([
@@ -599,6 +611,7 @@ class AuthController extends Controller
           "post_img2" => $image_path2,
           "post_img3" => $image_path3,
           "post_img4" => $image_path4,
+          "postid"  => $post_id
   
         ]);
         return response([
@@ -654,10 +667,176 @@ class AuthController extends Controller
       array_push($keep_all_persons_who_user_follow, $person_who_user_follows->choice);
      }
      $find_all_channels_of_who_user_follows=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->join('channels','channel_posts.email','=','channels.channel_owner')
-     ->whereIn('channel_posts.email',$keep_all_persons_who_user_follow)->select('channel_posts.name','channel_posts.caption','channel_posts.created_at','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','users.profile_picture','channels.channel_bio',   'channel_posts.email','channel_posts.id')->inRandomOrder()->take(10)->orderBy('channel_posts.id','DESC')->get();
+     ->whereIn('channel_posts.email',$keep_all_persons_who_user_follow)->select('channel_posts.name','channel_posts.caption','channel_posts.created_at','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.postid', 'users.profile_picture','channels.channel_bio',   'channel_posts.email','channel_posts.id')->inRandomOrder()->take(10)->orderBy('channel_posts.id','DESC')->get();
       return response([
         "reply" => $find_all_channels_of_who_user_follows
       ]);
 
     }
+    public function checkIfUserLiked(Request $request){
+      $current_user=$request->input('email');
+      $post_id=$request->input('post_id');
+      $check_if_user_has_liked_post_already=PostLike::where(['user_who_liked'=>$current_user, 'post_id'=>$post_id])->first();
+      if($check_if_user_has_liked_post_already){
+        return response([
+          "reply" => "false"
+        ]);
+      }else{
+        PostLike::create([
+          "user_who_liked" => $current_user,
+          "post_id" => $post_id
+        ]);
+       // $this->notify($user,$choice,"$sender is interested in you..");
+        return response([
+          "reply" => "true"
+        ]);
+      }
+    }
+    public function findPostLikeCounts(Request $request){
+      $post_id=$request->input('post_id');
+      $post_like_collection=array();
+      $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
+      foreach($no_of_likes as $post_like){
+        array_push($post_like_collection,$post_like);
+      }
+      $number_of_post_likes=count($post_like_collection);
+      return response([
+        "reply" => $number_of_post_likes
+      ]);
+     
+    }
+    public function findPostCommentCounts(Request $request){
+      $post_id=$request->input('post_id');
+      $post_like_collection=array();
+      $no_of_likes=Comment::where(['post_id'=>$post_id])->get();
+      foreach($no_of_likes as $post_like){
+        array_push($post_like_collection,$post_like);
+      }
+      $number_of_post_likes=count($post_like_collection);
+      return response([
+        "reply" => $number_of_post_likes
+      ]);
+     
+    }
+    public function findAllPostUserLiked(Request $request){
+      $post_id=$request->input('post_id');
+      $current_user=$request->input('email');
+      $check_if_user_liked_post=DB::table('post_likes')->where(['post_id'=>$post_id, 'user_who_liked'=>$current_user])->first();
+      if($check_if_user_liked_post){
+        return response([
+          "reply" => "true"
+        ]);
+      }else{
+        return response([
+          "reply" => "false"
+        ]);
+      }
+    }
+    public function DeleteLike(Request $request){
+      $post_id=$request->input('post_id');
+      $current_user=$request->input('email');
+      DB::table('post_likes')->where(['post_id'=>$post_id, 'user_who_liked'=>$current_user])->delete();
+      return response([
+        "reply" => "successful"
+      ]);
+   
+     
+    }
+    public function findStatus(Request $request){
+      $post_id=$request->input('post_id');
+      $check_post_table=User_Post::where('postid',$post_id)->first();
+      if($check_post_table){
+        $show_all_post_info=array("name"=>$check_post_table['name'],
+        "caption"=>$check_post_table['caption'], "avatar"=>$check_post_table['avatar'],"user_email"=>$check_post_table['email'], "post_date"=>$check_post_table['created_at'],"img_1"=>null,"img_2"=>null,"img_3"=>null,"img_4"=>null
+      );
+        return response([
+          "reply" => $show_all_post_info
+        ]);
+      }else{
+        $check_channels_table=ChannelPost::where('postid',$post_id)->first();
+        $show_all_post_info=array("name"=>$check_channels_table['name'],
+        "caption"=>$check_channels_table['caption'], "avatar"=>$check_channels_table['avatar'], "user_email"=>$check_channels_table['email'], "post_date"=>$check_channels_table['created_at'],
+        "img_1"=>$check_channels_table['post_img1'], "img_2"=>$check_channels_table['post_img2'], "img_3"=>$check_channels_table['post_img3'], "img_4"=>$check_channels_table['post_img4']
+      );
+        return response([
+          "reply" => $show_all_post_info
+        ]);
+      }
+   
+     
+    }
+    public function postComment(Request $request){
+      $post_id=$request->input('post_id');
+      $comment=$request->input('comment');
+      $user_who_comment=$request->input('user');
+      $post_owner=$request->input('post_owner');
+      $user_who_comment_name=$request->input('user_who_comment_name');
+      $current_date=date('Y-m-d H:i:s');
+      $post_user_comment=Comment::create([
+        "comment"=>$comment,
+        "user_who_comment"=>$user_who_comment,
+        "post_id"=>$post_id
+      ]);
+      if($post_owner === $user_who_comment){
+        
+      }else{
+        $this->notify($user_who_comment,$post_owner,"$user_who_comment_name made a comment on your post.",$post_id);
+      }
+      $find_user_who_comment_info=User::where('email',$user_who_comment)->first();
+      $all_info=array(
+        "comment"=>$comment,
+        "post_id"=>$post_id,
+        "user_who_comment"=>$user_who_comment,
+        "avatar"=>$find_user_who_comment_info['profile_picture'],
+        "first_name"=>$find_user_who_comment_info['first_name'],
+        "last_name"=>$find_user_who_comment_info['last_name'],
+        "comment_date"=>$current_date
+
+      );
+      return response([
+        "reply"=>$all_info
+      ]);
+    }
+    public function findAllComments(Request $request){
+      $post_id=$request->input("post_id");
+      $find_all_comment=DB::table('comments')->join('users','comments.user_who_comment','=','users.email')->where('comments.post_id',$post_id)->select('users.first_name','users.profile_picture', 'comments.created_at','comments.comment','comments.user_who_comment')->orderBy('comments.created_at','DESC')->get();
+      return response([
+        "reply"=>$find_all_comment
+      ]);
+    }
+    
+    public function DeleteComment(Request $request){
+      $post_id=$request->input('date');
+      $current_user=$request->input('email');
+      DB::table('comments')->where(['created_at'=>$post_id, 'user_who_comment'=>$current_user])->delete();
+      return response([
+        "reply" => "successful"
+      ]);
+   
+     
+    }
+    public function findNotifications(Request $request){
+      $current_user=$request->input('email');
+      $find_all_user_notifications=DB::table('notifications')->join('users','notifications.from','=','users.email')->where('notifications.owner',$current_user)->
+      select('notifications.created_at','notifications.owner','notifications.from','notifications.info','notifications.source','notifications.owner_has_read','users.profile_picture')->orderBy('notifications.id','DESC')->get();
+      Notifications::where('owner',$current_user)->update([
+        'owner_has_read'  =>"true",
+  
+      ]);
+      return response([
+        "reply" => $find_all_user_notifications
+      ]);
+    }
+    public function findNotifyCount(Request $request){
+     $owner=$request->input('owner');
+     $find_new_notifications_count=Notifications::where(['owner'=>$owner, 'owner_has_read'=>'false'])->get();
+     $notify_count_array=array();
+     foreach($find_new_notifications_count as $get_count){
+      array_push($notify_count_array,$get_count->from);
+     }
+     return response([
+      "reply"=> count($notify_count_array)
+     ]);
+    }
+
 }
