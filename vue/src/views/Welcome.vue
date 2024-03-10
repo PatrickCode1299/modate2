@@ -18,6 +18,7 @@ const features=[
 
 ]
 const router=useRouter();
+
 const signup=() =>{
    return router.push('/signup');
 }
@@ -35,10 +36,10 @@ const signup=() =>{
     <div class="container details-holder">
     <div class="d-flex holder justify-content-center align-items-center">
         <div for="text" class="p-4 text">
-            <h5>We created Modate2</h5>
-            <h3>to delete your</h3>
-            <h2>Dating Apps</h2>
-            <p class="fs-5">We designed a platform to get you out of comfort <br /> dating app zone and get back to real life.</p>
+            <h5>We created NearbyNess</h5>
+            <h3>to forget your</h3>
+            <h2>Friendship Apps</h2>
+            <p class="fs-5">We designed a platform to get you out of toxic <br /> friendship  zone and get back to real life.</p>
             <button @click="signup" class="btn btn-md btn-primary shadow-sm">I'm Ready</button>
             
         </div>
@@ -50,7 +51,7 @@ const signup=() =>{
         </div>
     </div>
 </div>
-<div class="container m-2 d-flex justify-content-center align-items-center p-2">
+<!--<div class="container m-2 d-flex justify-content-center align-items-center p-2">
                 <div class="row">
                 <div class="col-sm-4" v-for="f in features">
                 <div height="200" class="card m-2 fs-6 card-default shadow-sm p-2">
@@ -61,7 +62,7 @@ const signup=() =>{
                 </div>
             </div>
         </div>
-</div>
+</div>-->
 </div>
 <Footer />
 </main>

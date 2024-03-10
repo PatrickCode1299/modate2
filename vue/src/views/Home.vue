@@ -1,15 +1,33 @@
 <script setup>
 import axios from "axios";
-import Header from "../component/Header.vue";
-import SideNav from "../component/SideNav.vue";
-import StoriesandPost from "../component/StoriesandPost.vue";
 import store from "../store";
 import axiosClient from "../axios.js";
 import { useRouter } from "vue-router";
 import { reactive } from "vue";
+import { inject } from "vue";
 
+import { defineAsyncComponent } from "vue";
+
+const Header=defineAsyncComponent({
+   loader:  () => import("../component/Header.vue"),
+  
+});
+const SideNav=defineAsyncComponent({
+    loader: () => import("../component/SideNav.vue")
+});
+const StoriesandPost=defineAsyncComponent({
+    loader: () => import("../component/StoriesandPost.vue")
+});
 let user_mail;
 const router=useRouter();
+
+if(sessionStorage.getItem('USER_MAIL') === null){
+    $cookies=inject('$cookies');
+    let user_cookie=$cookies.get('User');
+    sessionStorage.setItem('USER_MAIL',user_cookie);
+}
+user_mail=sessionStorage.getItem('USER_MAIL');
+
 
 
 function deleteOldStories(){
@@ -23,7 +41,7 @@ let info=reactive({
     info_value:"",
 });
 function checkIfUserHasCompleteProfile(){
-    user_mail=store.state.user.data;
+    user_mail=sessionStorage.getItem('USER_MAIL');
     axiosClient.post("/profile",{email:user_mail}).then((response=>{
     if(response.data.info==="false"){
        info.info_value="true";
@@ -35,13 +53,14 @@ function checkIfUserHasCompleteProfile(){
     console.log(error);
 }))
 }
+
 deleteOldStories();
 </script>
 <template>
     {{ checkIfUserHasCompleteProfile() }}
-    <Header />
+    <Header style="background-color:white; padding:0px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav />
-    <div v-if="info.info_value==='true'" class="incomplete d-flex justify-content-center">
+    <div v-if="info.info_value==='true'" style="margin-top: 100px;" class=" incomplete d-flex justify-content-center">
         <h2 class="fs-2 m-4">Click on Profile and Complete your profile to be Visible</h2>
     </div>
     <div v-else  class="story-and-post">

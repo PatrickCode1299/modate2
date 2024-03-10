@@ -30,10 +30,15 @@ function registerUser(e){
 function hiderr(){
    err.value=null;
 }
-/** 
-watch(email, () => {
-    console.log(user.email.value);
-}); */
+
+if(sessionStorage.getItem('USER_COOKIE')){
+    let user_cookie=sessionStorage.getItem('USER_COOKIE');
+   store.dispatch('cookieisSet',user_cookie);
+   //router.push('/home');
+}else{
+    console.log('');
+}
+
 </script>
 <template>
 <Header />
@@ -193,7 +198,7 @@ input{
 .signup-holder{
     width:50%;
     margin:0px auto;
-    margin-top:10vh;
+    margin-top:2vh;
     background-color: rgba(0, 0, 0, 0.6);
     padding-top: 20px;
     padding-left: 20px;
