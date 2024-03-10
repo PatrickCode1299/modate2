@@ -14,7 +14,11 @@ import CreateStories from "../views/CreateStories.vue";
 import User from "../views/User.vue";
 import Channel from "../views/Channels.vue";
 import LaunchChannel from "../views/LaunchChannel.vue";
+import Status from "../views/Status.vue";
+import Notifications from "../views/Notifications.vue";
 import store from '../store/index.js';
+import VueCookies from 'vue-cookies';
+
 
 const routes=[
     
@@ -89,6 +93,12 @@ const routes=[
         component:CreateStories
     },
     {
+        path:"/notify",
+        name:"Notifications",
+        meta:{requiresAuth:true},
+        component:Notifications
+    },
+    {
         path:"/user/:info",
         name:"User",
         component:User
@@ -97,10 +107,18 @@ const routes=[
         path:"/channel",
         name:"Channel",
         component:Channel,
-        children:{
-            path:"/channel/:uid",
-            name:"Channel",
-        }
+        children:[
+            {
+                path:"/channel/:uid",
+                component:Channel
+            }
+        ]
+       
+    },
+    {
+        path:"/status/:postid",
+        name:"Status",
+        component:Status,  
     },
     {
         path:"/create_channel",
@@ -113,13 +131,18 @@ const router=createRouter({
 history:createWebHistory(import.meta.env.BASE_URL),
 routes
 })
+const user_cookie=VueCookies.get('User');
+   
+
 router.beforeEach((to,from,next) =>{
-if(to.meta.requiresAuth && !store.state.user.token){
+if(to.meta.requiresAuth && !store.state.user.token && user_cookie === 'deleted'){
     next({name: 'Sign Up'});
-}else if(store.state.user.token && (to.name === 'Sign Up' || to.name === 'welcome' || to.name ==='Login')){
-    next({name:'Home'});
 }
-else{
+else if(store.state.user.token && user_cookie !='deleted' && (to.name === 'Sign Up' || to.name === 'welcome' || to.name ==='Login')){
+    next({name:'Home'});
+}else if(!store.state.user.token && user_cookie !='deleted' && (to.name === 'Sign Up' || to.name === 'welcome' || to.name ==='Login')){
+    next({name:'Home'});
+}else{
     next();
 }
 })
