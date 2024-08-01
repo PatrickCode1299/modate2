@@ -26,7 +26,10 @@ class User extends Authenticatable
         'profile_picture',
         'coverText',
         'coverPhoto',
-        'isPaid'
+        'isPaid',
+        'school',
+        'religion',
+        'interest'
     ];
 
     /**

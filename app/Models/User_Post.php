@@ -12,7 +12,9 @@ class User_Post extends Model
         'name',
         'avatar',
         'caption',
-        'email'
+        'email',
+        'postid',
+        'isReply'
         
        
     ];

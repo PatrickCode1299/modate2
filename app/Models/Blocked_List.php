@@ -5,18 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Messages extends Model
+class Blocked_List extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'sender',
-        'reciever',
-        'conversation',
-        'file',
-        'file_status',
-        'unique_id',
-        'isRead',
-
+        'user_who_block',
+        'user_getting_blocked'
         
+       
     ];
 }

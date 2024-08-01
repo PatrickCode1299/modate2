@@ -11,6 +11,8 @@ class Story extends Model
     protected $fillable = [
         'user_email',
         'user_image',
+        'user_text',
+        'background',
         'user_video',
         'date_posted'
        

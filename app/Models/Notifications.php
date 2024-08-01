@@ -12,7 +12,7 @@ class Notifications extends Model
         'owner',
         'from',
         'info',
-        'date_posted',
+        'source',
         'owner_has_read'
        
     ];
