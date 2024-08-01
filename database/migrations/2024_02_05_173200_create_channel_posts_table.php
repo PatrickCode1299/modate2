@@ -25,6 +25,8 @@ class CreateChannelPostsTable extends Migration
             $table->text("post_img3")->nullable();
             $table->text("post_img4")->nullable();
             $table->text("video")->nullable();
+            $table->text('postid')->nullable();
+            $table->text('isReply')->nullable();
         });
     }
 

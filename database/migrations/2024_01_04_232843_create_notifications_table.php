@@ -19,7 +19,7 @@ class CreateNotificationsTable extends Migration
             $table->text("owner");
             $table->text("from");
             $table->text("info");
-            $table->text("date_posted")->nullable();
+            $table->text("source")->nullable();
             $table->text("owner_has_read")->nullable();
         });
     }

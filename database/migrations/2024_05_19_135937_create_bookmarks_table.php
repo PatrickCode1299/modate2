@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Messages extends Migration
+class CreateBookmarksTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,11 @@ class Messages extends Migration
      */
     public function up()
     {
-        Schema::create('messages', function (Blueprint $table) {
+        Schema::create('bookmarks', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->text('sender');
-            $table->text('reciever');
-            $table->text('unique_id');
-            $table->text('conversation');
-            $table->text('file');
-            $table->text('isRead');
+            $table->text('user_who_bookmark')->nullable();
+            $table->text('bookmarked_post_id')->nullable();
         });
     }
 
@@ -32,6 +28,6 @@ class Messages extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('messages');
+        Schema::dropIfExists('bookmarks');
     }
 }
