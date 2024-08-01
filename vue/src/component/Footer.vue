@@ -1,7 +1,7 @@
 <script setup>
 const footeritems=[
     {
-        header:"Join NearbyNess",
+        header:"Join Hexarex",
         firstinfo:new Date().toLocaleString()
     },
     {
@@ -50,6 +50,7 @@ const footeritems=[
 <style scoped>
 @media screen and (min-width:320px) {
     .app-footer{
+    display: none;
     background-color: rgb(23, 23, 23);
     bottom: 0px;
     padding-top: 20px;
@@ -79,6 +80,7 @@ align-items: flex-start;
 }
 @media screen and (min-width:620px) {
     .app-footer{
+        display: none;
     background-color: rgb(23, 23, 23);
     bottom: 0px;
     padding-top: 20px;
@@ -108,6 +110,7 @@ align-items:center;
 }
 @media screen and (min-width:1224px) {
     .app-footer{
+    display: block;
     background-color: rgb(23, 23, 23);
     bottom: 0px;
     padding-top: 20px;

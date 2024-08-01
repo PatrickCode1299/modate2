@@ -25,6 +25,11 @@ const sidenavitems=[
         itemname:"Channel",
         itemicon:"fa-solid fa-tv"
     },
+    {
+        itemname:"Bookmarks",
+        itemicon:"fa-regular fa-newspaper"
+    },
+
 
   
 ]
@@ -41,6 +46,7 @@ let  badge=ref(5);
 @media screen and (min-width:320px) {
     .side-nav-container{
         display: none;
+        
     }
 }
 @media screen and (min-width:620px) {

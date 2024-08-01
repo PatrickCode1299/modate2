@@ -1,147 +1,199 @@
-<script setup>
-import { RouterLink } from 'vue-router';
-import axiosClient from "../axios.js";
-import { useStore } from 'vuex';
-import { useRoute } from 'vue-router';
-import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
-import {ref} from "vue";
-import { watch } from 'vue';
-import { reactive } from 'vue';
-let links;
-const router=useRouter();
-const route=useRoute();
-const store=useStore();
-let user_mail;
-let current_route;
-onMounted(()=>{
-    current_route=route;
-});
-if(store.state.user.token != null){
-    links=[
-    {
-    linkname:store.state.user.data.name,
-    location:"login"
-    },
-    {
-     linkname:"Home",
-     location:"home",
-     property:"link",
-
-     function:function gotoHome(){
-        if(current_route.path === "/home"){
+<template>
+    <nav style="height:auto;" class="nav navbar navbar-fixed-top">
+      <div class="container-fluid">
+        <RouterLink v-if="!store.state.user.token" class="navbar-brand p-2 fs-2" to="/">
+          <img src="../landing/hexarex.png" style="height:30px; width:30px;">
+        </RouterLink>
+        <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled p-2 fs-5">
+          <RouterLink
+            :to="link.location"
+            @click="link.function ? link.function() : null"
+            :class="[link.property, { 'magenta': link.location === $route.path }]"
+            v-for="(link, index) in links"
+            :key="index"
+          >
+            <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:red; border-radius: 5px; background-color: whitesmoke; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' : 
+            notify_msg_count.count < 1 ? '': notify_msg_count.count }}</small>
+            <small v-if="link.linkname === 'Notifications'" class="fs-6" style="color:red; border-radius: 5px; background-color: whitesmoke; font-weight:bold;">{{ notify_count.count > 10 ? '10+' : notify_count.count < 1 ? '' : notify_count.count }}</small>
+            <i :class="link.itemicon"></i>
+          </RouterLink>
+        </ul>
+        <ul v-else class="d-none-mobile-login list-unstyled p-2 fs-5">
+          <RouterLink
+            :to="link.location"
+            @click="link.function ? link.function() : null"
+            :class="[link.property]"
+            v-for="(link, index) in links"
+            :key="index"
+          >
+          {{link.linkname }}
+          </RouterLink>
+        </ul>
+        <span style="position:absolute; top:0px; right:0px;" @click="displayLinks" v-if="!store.state.user.token" class="icon-bar">&#8801;</span>
+      </div>
+      <div v-if="store.state.user.token" id="mobile-nav" class="mobile-nav">
+        <RouterLink
+          :to="link.location"
+          @click="link.function ? link.function() : null"
+          class="mobile-link"
+          active-class="magenta"
+          v-for="(link, index) in links"
+          :key="index"
+        >
+          <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:red; position:fixed; top:0px; border-radius: 5px; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' : notify_msg_count.count < 1 ? '' : notify_msg_count.count }}</small>
+          <small v-if="link.linkname === 'Notifications'" class="fs-6" style="color:red; position:fixed; top:0px; border-radius: 5px; font-weight:bold;">{{ notify_count.count > 10 ? '10+' : notify_count.count    < 1 ? '' : notify_count.count }}</small>
+          <i :class="link.itemicon"></i>
+        </RouterLink>
+      </div>
+      <div id="sidecontainer" class="container-fluid shadow-lg p-4 side-container">
+        <RouterLink
+          :to="link.location"
+          @click="link.function ? link.function() : null"
+          class="side-link"
+          v-for="(link, index) in links"
+          :key="index"
+        >
+          <i :class="link.itemicon"></i>
+          {{ link.linkname }}
+        </RouterLink>
+      </div>
+    </nav>
+  </template>
+  
+  <script setup>
+  import { RouterLink } from 'vue-router';
+  import axiosClient from "../axios.js";
+  import { useStore } from 'vuex';
+  import { useRoute } from 'vue-router';
+  import { useRouter } from 'vue-router';
+  import { onMounted, ref, reactive, watch } from 'vue';
+  
+  const router = useRouter();
+  const route = useRoute();
+  const store = useStore();
+  let user_mail;
+  
+  let current_route;
+  
+  onMounted(() => {
+    current_route = route;
+  });
+  
+  let links = ref([]);
+  
+  if (store.state.user.token !== null) {
+    links.value = [
+      {
+        linkname: store.state.user.data.name,
+        location: "login"
+      },
+      {
+        linkname: "Home",
+        location: "/home",
+        property: "link",
+        function: function gotoHome() {
+          if (current_route.path === "/home") {
             location.reload();
-        }else{
-            router.push({
-            name:'Home'
-        })
+          } else {
+            router.push({ name: 'Home' });
+          }
+        },
+        itemicon: "fa-light fa-house"
+      },
+      {
+        linkname: "Match",
+        location: "/match",
+        property: "link",
+        function: function gotoMatch() {
+          router.push({ name: 'Match' });
+        },
+        itemicon: "fa-light fa-user-group"
+      },
+      {
+        linkname: "Profile",
+        location: "/profile",
+        property: "link",
+        function: function gotoProfile() {
+          router.push({ name: 'Profile' });
+        },
+        itemicon: "fa-light fa-user"
+      },
+      {
+        linkname: "Messages",
+        location: "#",
+        property: "link",
+        function: function gotoMessages() {
+          router.push({ name: 'Messages' });
+        },
+        itemicon: "fa-light fa-envelope"
+      },
+      {
+        linkname: "Channels",
+        location: "/channel",
+        property: "link",
+        itemicon: "fa-light fa-tv"
+      },
+      {
+        linkname: "Bookmarks",
+        location: "/bookmarks",
+        property: "link",
+        itemicon: "fa-light fa-note-sticky"
+      },
+      {
+        linkname: "Notifications",
+        location: "/notify",
+        property: "link",
+        itemicon: "fa-light fa-bell",
+        badge: 6
+      },
+      {
+        linkname: "Sign Out",
+        location: "#",
+        property: "link",
+        itemicon: "fa-light fa-right-from-bracket",
+        function: function logout() {
+          var ask_if_user_wants_to_logout = confirm("Do you want to logout?");
+          if (ask_if_user_wants_to_logout) {
+            store.commit('logout');
+            router.push({ name: 'welcome' });
+          } else {
+            var get_current_route = route.params.name;
+            router.push({ name: get_current_route });
+          }
         }
-       
-     },
-     itemicon:"fa-solid fa-house"
-
-    },
-    {
-     linkname:"Match",
-     location:"match",
-     property:"link",
-     function:function gotoMatch(){
-        router.push({
-            name:'Match'
-        })
-     },
-     itemicon:"fa-solid fa-user-group"
-    },
-    {
-     linkname:"Profile",
-     location:"profile",
-     property:"link",
-     function:function gotoProfile(){
-        router.push({
-            name:'Profile'
-        })
-     },
-     itemicon:"fa-solid fa-user"
-    },
-    {
-     linkname:"Messages",
-     location:"#",
-     property:"link",
-     function:function gotoMessages(){
-        alert('Not created yet');
-     },
-     itemicon:"fa-solid fa-envelope"
-    },
-    {
-     linkname:"Channels",
-     location:"channel",
-     property:"link",
-     itemicon:"fa-solid fa-tv"
-    },
-    {
-     linkname:"Notifications",
-     location:"notify",
-     property:"link",
-     itemicon:"fa-solid fa-bell",
-     badge:6
-    },
-    {
-        linkname:"Sign Out",
-        location:"#",
-        property:"link",
-        itemicon:"fa-solid fa-right-from-bracket",
-        function:function logout(){
-                var ask_if_user_wants_to_logout=confirm("Do you want to logout");
-                if(ask_if_user_wants_to_logout){
-                    store.commit('logout');
-                    router.push({
-                    name:'welcome'
-                    });
-                }else{
-                    var get_current_route=route.params.name;
-                    router.push({
-                    name:get_current_route
-                    });
-                }
-                
-    }
-
-    },
-    
-   
-]
-}else{
-    links=[
-    {
-     linkname:"Home",
-     location:"home",
-     property:"link"
-    },
-    {
-    linkname:"Features",
-    location:"features",
-    property:"link"
-    },
-    {
-    linkname:"Contact",
-    location:"contact",
-    property:"link"
-    },
-    {
-    linkname:"Log in",
-    location:"login",
-    property:"link magenta-rounded-bold"
-    },
-    {
-    linkname:"Signup Now",
-    location:"signup",
-    property:"link magenta-rounded-bold"
-    
-    }
-]
-}
-let sideBar=ref("");
-let checklink=reactive({
+      }
+    ];
+  } else {
+    links.value = [
+      {
+        linkname: "Home",
+        location: "/home",
+        property: "link"
+      },
+      {
+        linkname: "Features",
+        location: "/features",
+        property: "link"
+      },
+      {
+        linkname: "Contact",
+        location: "/contact",
+        property: "link"
+      },
+      {
+        linkname: "Log in",
+        location: "/login",
+        property: "link magenta-rounded-bold"
+      },
+      {
+        linkname: "Join Now",
+        location: "/signup",
+        property: "link purple-rounded-bold"
+      }
+    ];
+  }
+  
+  let checklink=reactive({
     status:false,
     count:0
 });
@@ -166,151 +218,228 @@ if(checklink.count == 0){
 
 
 });
-let notify_count=reactive({
-    count:""
-});
-onMounted(()=>{
-    user_mail=sessionStorage.getItem('USER_MAIL');
-let formData=new FormData();
-formData.append("owner",user_mail);
-axiosClient.post("/findNotifyCount",formData).then(response=>{
-notify_count.count=response.data.reply;
-}).catch(e=>{
-    console.log('error');
-});
-});
-</script>
-<template>
-<nav class="nav navbar navbar-fixed-top">
-    <div class="container-fluid p-2">
-    <RouterLink v-if="store.state.user.token==null" class="navbar-brand p-2 fs-2" to="/">NearbyNess</RouterLink>
-    <ul class="d-none-mobile justify-content-flex-end list-unstyled p-2 fs-5">
-        <RouterLink   :to="link.location" @click="link.function"   :class="link.property" v-for="link in links"><small v-if="link.linkname==='Notifications'"  class='fs-6'  style='color:red; border-radius: 5px; background-color: whitesmoke; font-weight:bold;   '>{{notify_count.count }}</small><i :class="link.itemicon"></i>{{ link.linkname }}
-         
-        </RouterLink>
+  
+  let notify_count = reactive({
+    count: ""
+  });
+  
+  let notify_msg_count = reactive({
+    count: ""
+  });
+  
+  onMounted(() => {
+    user_mail = localStorage.getItem('USER_MAIL');
+    let formData = new FormData();
+    formData.append("owner", user_mail);
+  
+    axiosClient.post("/findNotifyCount", formData).then(response => {
+      notify_count.count = response.data.reply;
+    }).catch(e => {
+      console.log('error');
+    });
+  
+    axiosClient.post("/findMsgCount", formData).then(response => {
+      notify_msg_count.count = response.data.reply;
+    }).catch(e => {
+      console.log('error');
+    });
+  });
+  </script>
+  
+  <style scoped>
+  @media screen and (min-width: 320px) {
+    .mobile-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0px;
+      z-index: 1;
+      width: 100%;
+      padding-top:0px;
+    }
+  
+    .mobile-nav > .mobile-link {
+      margin-right: 20px;
+      margin-top: 2px;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom:10px;
+    }
+  
+    .link {
+      color: magenta;
+      display: none;
       
-        
-      
-    </ul>
-    <span @click="displayLinks" class="icon-bar">&#8801;</span>
-    </div>
-    <div id="sidecontainer" class="container-fluid  p-4 side-container">
-        <RouterLink :to="link.location" @click="link.function"   class="side-link" v-for="link in links">{{ link.linkname }}
-         
-        </RouterLink>
-    </div>
-</nav>
-
-</template>
-<style scoped>
-@media screen and (min-width:320px) {
-    .link{
-    color:magenta;
-    display: none;
-    margin-right:20px;
-}
-.navbar-brand{
-    color:rgb(0,0,0);
-    font-family: tahoma;
-    font-weight: bold;
-}
-.icon-bar{
-    margin-left: auto;
-    font-size: 45px;
-    display: inline;
-    cursor: pointer;
-    color: magenta;
-    font-weight: bold;
-    
-}
-.side-container{
-    display: none;
-    position: fixed;
-    left: 0px;
-    height: 100%;
-    bottom: 0px;
-    background-color:rgb(210, 35, 210);
-    color:black;
-    width:200px;
-    transition: width 5s;
-    z-index: 1;
-    flex-direction: column;
-    
-    
-}
-.side-container:hover{
-    width: 200px;
-    border-radius: 2px;
-    cursor: pointer;
-    color:rgb(249, 255, 83);
-}
-
-.side-link{
-    font-weight: bold;
-}
-.d-none-mobile{
-    display: none;
-}
-}
-@media screen and (min-width:620px) {
-.link{
-    color:rgb(0, 0, 0);
-    display: block;
-    margin-right:20px;
-    font-weight: bold;
-}   
-.navbar-brand{
-    color:rgb(0,0,0);
-    font-family: tahoma;
-    font-weight: bold;
-}
-.icon-bar{
-    display: none;
-    
-}
-.side-container{
-    display: none;
-}
-.d-none-mobile{
-    display: flex;
-    justify-content: flex-end;
-    margin-left: auto;
-}
-}
-@media screen and (min-width:1224px) {
-.link{
-    color:rgb(0, 0, 0);
-    display: block;
-    margin-right:20px;
-    font-weight: bold;
-}
-.navbar-brand{
-    color:rgb(255, 0, 119);
-    font-family: tahoma;
-    font-weight: bold;
-}
-.icon-bar{
-    display: none;
-}
-.side-container{
-    display: none;
-}
-.magenta-rounded-bold{
-    background-color: #ff0084;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    font-weight: bolder;
-    padding-top: 5px;
-    padding-bottom: 10px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 5px;
-    color: white;
-}
-.d-none-mobile{
-    display: flex;
-    justify-content: flex-end;
-    margin-left: auto;
-}
-}
-</style>
+    }
+  
+    .navbar-brand {
+      color: rgb(0, 0, 0);
+      font-family: tahoma;
+      font-weight: bold;
+    }
+  
+    .icon-bar {
+      margin-left: auto;
+      font-size: 45px;
+      display: inline;
+      cursor: pointer;
+      color: magenta;
+      font-weight: bold;
+      margin-right:20px;
+      margin-top:0px;
+      position:absolute;
+      top:0px;
+    }
+  
+    .side-container {
+      display: none;
+      position: fixed;
+      left: 0px;
+      height: 100%;
+      bottom: 0px;
+      background-color: rgb(255, 255, 255);
+      color: black;
+      width: 200px;
+      transition: width 5s;
+      z-index: 1;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      margin-top: 0px;
+    }
+  
+    .side-container > .side-link {
+      flex-basis: 5%;
+      flex-grow: 1;
+      flex-shrink: -1;
+    }
+  
+    .side-link {
+      font-weight: bold;
+    }
+  
+    .d-none-mobile {
+      display: flex;
+    }
+  }
+  
+  @media screen and (min-width: 620px) {
+    .mobile-nav {
+      display: none;
+    }
+  
+    .link {
+      color: rgb(0, 0, 0);
+      display: block;
+      margin-right: 20px;
+      font-weight: bold;
+    }
+  
+    .navbar-brand {
+      color: rgb(0, 0, 0);
+      font-family: tahoma;
+      font-weight: bold;
+    }
+  
+    .icon-bar {
+      display: none;
+    }
+  
+    .side-container {
+      display: none;
+    }
+  
+    .d-none-mobile {
+      display: flex;
+      flex-direction: row;
+      margin: 0px auto;
+    }
+  
+    .d-none-mobile > a {
+      margin-left: 20px;
+      font-size: 22px;
+    }
+  
+    .d-none-mobile-login {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      margin-left: auto;
+    }
+  }
+  
+  @media screen and (min-width: 1224px) {
+    .mobile-nav {
+      display: none;
+    }
+  
+    .link {
+      color: rgb(0, 0, 0);
+      display: block;
+      margin-right: 20px;
+      font-weight: bold;
+    }
+  
+    .navbar-brand {
+      color: rgb(255, 0, 119);
+      font-family: tahoma;
+      font-weight: bold;
+    }
+  
+    .icon-bar {
+      display: none;
+    }
+  
+    .side-container {
+      display: none;
+    }
+  
+    .magenta-rounded-bold {
+      background-color: #ff0084;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      font-weight: bolder;
+      padding-top: 5px;
+      padding-bottom: 10px;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 5px;
+      color: white;
+    }
+    .purple-rounded-bold{
+      background-color: #8a0478;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      font-weight: bolder;
+      padding-top: 5px;
+      padding-bottom: 10px;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 5px;
+      color: white;
+    }
+    .d-none-mobile {
+      display: flex;
+      flex-direction: row;
+      margin: 0px auto;
+    }
+  
+    .d-none-mobile > a {
+      margin-left: 20px;
+      font-size: 22px;
+    }
+  
+    .d-none-mobile-login {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      margin-left: auto;
+    }
+  
+    .magenta {
+      font-weight: bold;
+      border-bottom: 2px solid magenta;
+    }
+  }
+  </style>
