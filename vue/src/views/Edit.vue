@@ -5,7 +5,7 @@ import store from "../store";
 import { ref } from "vue";
 import axiosClient from "../axios";
 import { useRouter } from "vue-router";
-const user_mail=sessionStorage.getItem('USER_MAIL');
+const user_mail=localStorage.getItem('USER_MAIL');
 const allStates=[
 "Lagos","Abuja","Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue",
 "Borno","Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","Gombe","Imo","Jigawa",
@@ -13,12 +13,23 @@ const allStates=[
 "Ondo","Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe","Zamafara"
 
 ];
+const allReligion=[
+"Christian","Muslim","Traditional","Deist","Atheist"
+
+];
+const allInterests=[
+    "Technology","Sport","Education","Gaming","Engineering & Construction","Lotto","Fashion",
+    "Religion","Politics","Military","Hunting","Health","Music","Comedy","Lifestyle","Internet Currency"
+];
 let state=ref('');
 let first_name=ref('');
 let last_name=ref('');
 let user_gender=ref('');
 let user_birthdate=ref('');
 let phone=ref('');
+let religion=ref('');
+let school=ref('');
+let interest=ref('');
 let info;
 const router=useRouter();
 function updateProfile(e){
@@ -31,10 +42,13 @@ function updateProfile(e){
     gender:user_gender.value,
     state:state.value,
     birthday:user_birthdate.value,
-    phone:phone.value
+    phone:phone.value,
+    school:school.value,
+    religion:religion.value,
+    interest:interest.value
    }}).then(response=>{
       info=false;
-       sessionStorage.setItem('INCOMPLETE',info);
+       localStorage.setItem('INCOMPLETE',info);
        alert(response.data.success);
         router.push({
             name:"Profile"
@@ -47,8 +61,8 @@ function updateProfile(e){
 
 </script>
 <template>
-    <Header />
-    <SideNav />
+    <Header style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
+    <SideNav style="display:none;" />
     <div class="container p-4 shadow-sm edit-container">
         <form @submit="updateProfile">
             <h2 class="text-danger fs-6 m-4 text-center">Please Fill All Details Correctly and Crosscheck Before Submitting This is your only chance...</h2>
@@ -80,6 +94,22 @@ function updateProfile(e){
             <div class="form-group m-2">
                 <label class="green-text-bold"  for="birthday">Your Birthday</label>
                 <input v-model="user_birthdate" type="date" class="form-control" name="birthday" required>
+            </div>
+            <div class="form-group m-2">
+                <label class="green-text-bold"  for="Interest">Your Interest</label>
+                <select v-model="interest" class="form-control" name="interest" required>
+                    <option v-for="i in allInterests" :value=i>{{i}}</option>
+                </select>
+            </div>
+            <div class="form-group m-2">
+                <label class="green-text-bold"  for="Interest">Your Religion</label>
+                <select v-model="religion" class="form-control" name="religion" required>
+                    <option v-for="r in allReligion" :value=r>{{r}}</option>
+                </select>
+            </div>
+            <div class="form-group m-2">
+                <label class="green-text-bold"  for="Interest">College Attended (can be empty)</label>
+                <input v-model="school" type="text" placeholder="Example: University of Lagos" class="form-control rounded">
             </div>
             <div class="form-group m-2">
                 <label class="green-text-bold"  for="Phone Number">Phone Number</label>
@@ -136,6 +166,7 @@ function updateProfile(e){
     .edit-container{
     width: 50%;
     margin:0px auto;
+    margin-top:50px;
     background-color: rgb(253, 253, 253);
     height: auto;
     border-radius: 10px;

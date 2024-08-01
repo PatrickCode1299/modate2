@@ -1,34 +1,59 @@
 <script setup>
 import Header from "../component/Header.vue";
 import SideNav from "../component/SideNav.vue";
+import OldLikeShareComment from "../component/OldLikeShareComment.vue";
+import BlockReportUserComponent from "../component/BlockReportUserComponent.vue";
 import store from "../store";
-import { ref,reactive } from "vue";
+import { ref,reactive,onMounted } from "vue";
 import axiosClient from "../axios";
 import {useRoute, useRouter } from "vue-router";
+import { nanoid } from 'nanoid'
+import moment from 'moment'
 const route=useRoute();
+const router=useRouter();
 const user_mail=route.params.info;
+const current_user=localStorage.getItem('USER_MAIL');
 let info=reactive({
     info_value:"false",
     coverbgVal:"false",
     bgUrl:"",
-    cover_text:""
+    cover_text:"",
+    isBlocked:"",
+    isUserFollowed:""
+});
+onMounted(()=>{
+let formData=new FormData();
+formData.append("current_user",current_user);
+formData.append("user_who_blocked",user_mail);
+axiosClient.post("/isUserBlocked",formData).then(response=>{
+info.isBlocked=response.data.reply;
+}).catch(error=>{
+console.log(error);
+});
+});
+onMounted(()=>{
+let formData=new FormData();
+formData.append("current_user",current_user);
+formData.append("user_to_follow",user_mail);
+axiosClient.post("/isUserFollowed",formData).then(response=>{
+info.isUserFollowed=response.data.reply;
+}).catch(error=>{
+console.log(error);
+});
 });
 let personal_info=reactive({
         u_first_name:"",
         u_last_name:"",
         u_location:"",
         u_phone_number:"",
-        u_profile_pic:""
+        u_profile_pic:"",
+        u_followers_count:"",
      });
-     let coverbgVal=false;
+
+let coverbgVal=false;
 var cover_bg;
 var cover_photo;
-var first_name;
-var last_name;
-var location;
-var phone;
-var incomplete;
-var user_profile_pic;
+
 axiosClient.post("/profile",{email:user_mail}).then((response=>{
   
        info.info_value="false";
@@ -36,10 +61,16 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
        
             info.coverbgVal="true";
             cover_bg=response.data.coverPhoto;
-            cover_photo=`http://localhost:8000/storage/${cover_bg}`;
-            info.bgUrl='url('+cover_photo+')';
+            if(cover_bg === null){
+                info.bgUrl="linear-gradient(to right, orange,magenta)";
+            }else{
+                cover_photo=`https://res.cloudinary.com/fishfollowers/image/upload/${cover_bg}`;
+            
+                info.bgUrl='url('+cover_photo+')';
+            }
+            
             if(response.data.coverText==null){
-               info.cover_text="I am a Uhangout member...";
+               info.cover_text="I am an Hexarex User...";
                
             }else{
                 
@@ -53,6 +84,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
         personal_info.u_last_name=response.data.last_name;
         personal_info.u_location=response.data.location;
         personal_info.u_profile_pic=response.data.profile_picture;
+     
       
         
         
@@ -63,55 +95,251 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 })).catch((error =>{
     alert('Network Error...');
 }));
-       
+onMounted(()=>{
+let formData=new FormData();
+formData.append("email",user_mail);
+axiosClient.post("/findUserPost",formData).then(response=>{
+profile_post.thoughts=response.data.reply;
+}).catch(error=>{
+console.log(error);
+});
+});
+onMounted(()=>{
+let formData=new FormData();
+formData.append("email",user_mail);
+axiosClient.post("/findFollowersCount",formData).then(response=>{
+    personal_info.u_followers_count=response.data.followers;
+}).catch(error=>{
+    console.log(error);
+});
+});
+let profile_post=reactive({
+thoughts:"",
+replies:""
+});
+function gotoChat(){
+    let $reciever=route.params.info;
+    let $sender=localStorage.getItem('USER_MAIL');
+    let $unique_id = nanoid();
+    let formData=new FormData();
+    console.log($sender);
+    formData.append("sender",$sender);
+    formData.append("reciever",$reciever);
+    formData.append("unique_id",$unique_id);
+    axiosClient.post("/convo",formData).then(response=>{
+        let $id=response.data.reply;
+        
+       window.location.href='/chat/'+$id;
+     
+    }).catch(e=>{
+        alert("Something wrong happened");
+    })
+    
+  
+}
+function showReplies(){
+    document.getElementById("thoughts").style.display="none";
+    document.getElementById("replies").style.display="block";
+    document.getElementById("active_menu").style.borderBottom="0px";
+    document.getElementById("reply_menu").style.borderBottom="2px solid magenta";
+    
+    let formData=new FormData();
+    formData.append("user_email",user_mail);
+    axiosClient.post("/findAllUserReply",formData).then(response=>{
+       profile_post.replies=response.data.reply;
+    }).catch(error=>{
+        console.log(error);
+    });
+    
+}
+function hideReplies(){
+    document.getElementById("thoughts").style.display="block";
+    document.getElementById("replies").style.display="none";
+    document.getElementById("active_menu").style.borderBottom="2px solid magenta";
+    document.getElementById("reply_menu").style.borderBottom="0px";
+}
+function reduceNameLength(name){
+    if(name.length > 14){
+        let reduced_name=name.slice(0,14) + "..";
+        return reduced_name;
+    }else{
+        return name;
+    }
+}
+function checkIfFriendPostIsLong(text, key){
+     if(text==null){
+        return;
+    }else if(text.length < 400){
+        return text;
+    }
+    else if(text.length > 400){
+        let caption_new=text.slice(0,400) + "....See More";
+        return caption_new;
+    }
+}
+function followUser(){
+    axiosClient.post("/choice",{
+        user:current_user,
+        choice:user_mail
+    }).then(response=>{
+        info.isUserFollowed='true';
+        alert(response.data.success);
+    }).catch(e=>{
+        let error="You already tried following this user, we have notified them";
+        alert(error);
+    });
+}
+function unfollowUser(){
+    axiosClient.post("/removeChoice",{
+        user:current_user,
+        choice:user_mail
+    }).then(response=>{
+        info.isUserFollowed='false';
+        alert(response.data.success);
+    }).catch(e=>{
+        let error="You already  unfollowed this user";
+        alert(error);
+    });
+}
+function url_to_link(text) {
+    const urlPattern = /(?:https?:\/\/|www\.)?(?:[\w-]+\.)+(?:[a-z]{2,})(\/\S*)?/gi;
+    if (!urlPattern.test(text)) {
+        return text; // No URLs found, return original text
+      }else{
+        return text.replace(urlPattern, match => {
+        const href = match.match(/^https?:\/\//i) ? match : `http://${match}`;
+        return `<a style='font-weight:bold; color:purple;' href="${href}" target="_blank">${match}</a>`;
+      });
+      }
+}
 </script>
 <template>
-    <Header />
-    <SideNav v-if="store.state.user.token != null" />
-   <div class="container user-profile p-2">
+     <Header class="shadow-sm" style="background-color:white; position:fixed; padding-bottom:10px;  width: 100%; z-index: 1; top: 0px;" />
+    <SideNav style="display:none;" v-if="store.state.user.token != null" />
+    <div v-if="info.isBlocked === 'true'" class="isBlocked"  > 
+        <h2  class="m-4 text-center">You are Blocked from Seeing <span style="font-weight:bold;">{{ personal_info.u_first_name}} {{ personal_info.u_last_name }}</span> Posts, we recommend you give up on reaching this user..</h2>
+    </div>
+   <div style="position: relative;" v-else class="container user-profile">
     <div :style="{backgroundImage:info.bgUrl}" class="images p-4">
         <span style="word-wrap: break-word;" class="fs-5">{{ info.cover_text }}</span>
-       
-        <div class="user-pic-name">
+        <div v-if="store.state.user.token != null" style="position:absolute; z-index:1; top:150px; right:20px;" class="d-flex justify-content-flex-start">
+            <button style="margin-right:10px; color:black;"  @click="gotoChat" class="btn btn-default btn-sm "><i style=" border-radius: 5px;" class="fa  fa-envelope fs-1"></i></button>
+            <button v-if="info.isUserFollowed === 'false' && user_mail!=current_user" @click="followUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-success  font-bold">Follow</button>
+            <button   v-else v-if="user_mail !=current_user" @click="unfollowUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-danger font-bold">Unfollow</button>
 
-            <img v-if="personal_info.u_incomplete === 'true'" src="../landing/blondie.jpg" class="user-profile-img" />
-            <img v-else :src="`http://localhost:8000/storage/${personal_info.u_profile_pic}`" class="user-profile-img" />
-            <span style="text-shadow: none;" class="fs-2 text-black text-bold bold">{{ personal_info.u_first_name }}</span>
+        </div>
+        <div class="user-pic-name">
+            <img v-if="personal_info.u_profile_pic === null" src="../pictures/profile.png" class="user-profile-img" />
+            <img v-else :src="`https://res.cloudinary.com/fishfollowers/image/upload/${personal_info.u_profile_pic}`" class="user-profile-img" />
+            <span style="text-shadow: none;" class="fs-4 text-black text-bold bold">{{ personal_info.u_first_name }}</span>
         </div>
        
     </div>
-    <div class="user-info-card p-2">
-        <div class="bg-white shadow-sm user-info-card p-2">
-            <div class="heading-edit-btn">
+    <div class="user-info-card">
+        <div class="bg-white shadow-sm user-info-card ">
+            <div class="all-user-info p-2">
                 <div class="heading p-2">
-                <h2 class="fs-3 user-info-title">Personal information</h2>
-                <small class="helper-text">Update your information about you and details here.</small>
+                
                 </div>
-            </div>
-            <div class="all-user-info p-4">
                 <div    class="complete-profile">
-                    <ul>
-                    <li class="d-flex justify-content-flex-start"><span class="title">First Name</span><span>{{personal_info.u_first_name}}</span></li>
-                    <li class="d-flex justify-content-flex-start"><span class="title">Last Name</span><span>{{personal_info.u_last_name}}</span></li>
-                    <li class="d-flex justify-content-flex-start"><span class="title">Location</span><span>{{personal_info.u_location}}</span></li>
-                    <li class="d-flex justify-content-flex-start"><span class="title">Phone Number</span><span>Message User to get this detail</span></li>
+                <ul class="d-flex" style="margin-top:60px; cursor: pointer;">
+                    <li class=" m-2"><span class="title m-2"><i class="fa-light fa-location-dot"></i></span><span>{{personal_info.u_location}}</span></li>
+                    <li class="m-2"><span class="title m-2"><i class="fa-solid fa-user"></i></span><span class="font-bold">{{personal_info.u_followers_count.toString()}} </span>Followers</li>
                 </ul>
                 </div>
             </div>
-        </div>
+        <div style="border-radius: 5px;" class="user-activity shadow-sm card">
+        <ul class="activity-link">
+            <li @click="hideReplies" id="active_menu" class="list-unstyled thought-link">Thoughts</li>
+            <li @click="showReplies" id="reply_menu" class="list-unstyled">Replies</li>
+            <li class="list-unstyled"><RouterLink :to="`/channel/${user_mail}`">Channel</RouterLink></li>
+        </ul>
+        <div class="spinner" v-if="profile_post.thoughts === ''"></div>
+        <div v-else  class="all-activity-info-div">
+            <div id="thoughts" class='thoughts'>
+            <div style="border:none;" class="card p-2 card-default m-2" v-for="x in profile_post.thoughts">
+            <div  style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
+        <span class="d-flex" style="margin-right: auto; "><img v-if="x.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(x.name)}}</span></span><BlockReportUserComponent style="cursor: pointer;" :post_owner="x.email" :post_id="x.postid" />
+            </div>
+   <p v-html="url_to_link(x.caption)" style="white-space:pre-wrap;" class='p-2 fs-6'></p>
+   <OldLikeShareComment :post_content="{
+                    post_caption:x.caption,
+                    post_owner_name:x.name,
+                    post_owner_email:x.email,
+                    post_owner_avatar:x.profile_picture,
+                    post_is_comment_status:x.isReply,
+                    post_likes_count:x.likes,
+                    post_comments_count:x.comments,
+                    post_shares_count:x.shares
+                  }" :post_owner="x.email"    :post_id="x.postid" /> 
+    <ul class='inline-flex'>
+       <li class='list-unstyled'>{{moment(x.created_at).fromNow()}}</li>
+    </ul>
+    </div>
+    </div>
+    <div id="replies" class='replies'>
+        <div v-if="profile_post.replies === ''"><img style="margin:0px auto;" width="100px" height="100px" src="../landing/loading-loader.gif"></div>
+        <div v-else v-for="i in profile_post.replies"  style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default'>
+      <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
+                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" class="img-circle small-thumbnail" loading="lazy" src="../pictures/profile.png" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}</span></span><BlockReportUserComponent style="cursor:pointer;" post_owner="i.email" :post_id="i.postid" />
+                    <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
+                   </div>
+                   <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;"   class='p-2 fs-6' v-html="checkIfFriendPostIsLong(url_to_link(i.quote))"></p></RouterLink>
+                    <div class="card">
+                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.avatar_of_original_poster}`'/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
+                    <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="checkIfFriendPostIsLong(url_to_link(i.caption))"></p></RouterLink>
+                    <div class="flex-img">
+                        <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
+                        <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />
+                        <img v-if="i.post_img3 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img3}`' />
+                        <img v-if="i.post_img4 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img4}`' />
+                    </div>
+                    <div v-if="i.video != null" class="flex-video">
+                        <video controls>
+                            <source :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.video}#t=0.0010`' />
+                        </video>
+                    </div>
+                </div>
+                <OldLikeShareComment :post_content="{
+                    post_caption:i.quote,
+                    post_owner_name:i.name_of_user_who_shared,
+                    post_owner_email:i.email_of_user_who_shared,
+                    post_owner_avatar:i.profile_picture,
+                    post_image_one:i.post_img1,
+                    post_image_two:i.post_img2,
+                    post_image_three:i.post_img3,
+                    post_image_four:i.post_img4,
+                    post_video:i.video,
+                    post_is_comment_status:i.isReply,
+                    post_likes_count:i.likes,
+                    post_comments_count:i.comments,
+                    post_shares_count:i.shares
+                  }" :post_owner="i.email_of_user_who_shared" :post_id="i.postid" />
+                    <ul class='inline-flex'>
+                    <li style="font-size: 12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
+                    </ul>
+         
+    </div>
+    </div>
     </div>
    </div>
+   </div>
+</div>
+</div>
 </template>
 <style scoped>
 @media screen and (min-width:320px) {
     .user-profile{
     width: 100%;
     background-color: rgb(252, 252, 252);
-    height: 1000px;
-    margin:0 auto;
+    height:100%;
+    padding:0px;
+    position: relative;
+    margin-top:35px;
+    
 }
 .images{
-    border-radius: 10px;
+    border-radius: 0px;
     background-image: linear-gradient(to right, orange,rgb(150, 29, 142),magenta);
     opacity: 0.8;
     color: white;
@@ -123,6 +351,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
     background-attachment: scroll;
     text-shadow: 2px 2px 2px rgb(21, 21, 21);
     font-weight: bold;
+    position:relative;
 }
 .user-profile-img{
     border-radius: 50%;
@@ -136,14 +365,16 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .edit-btn{
     margin-left: auto;
-    margin-top: 10px;
 }
 .edit-profile{
     box-sizing: border-box;
+    position:absolute;
+    bottom:0px;
+    right:5%;
 }
 .user-info-card{
-    margin-top: 110px;
-    border-radius: 5px;
+    margin-top: 0px;
+    border-radius: 0px;
     
 
 }
@@ -154,6 +385,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .user-info-title{
     font-weight: bold;
+    margin-top: 45px;
 }
 .helper-text{
     color:rgb(174, 174, 174);
@@ -171,13 +403,92 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 .complete-profile > ul > li{
     margin-top: 15px;
 }
+.user-activity{
+    margin-top: 10px;
+    border: none;
+}
+.activity-link{
+    display: flex;
+    justify-content:space-around;
+    font-weight: bold;
+    font-size:15px;
+    cursor: pointer;
+
+}
+
+.small-thumbnail{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.img-circle{
+    border-radius: 50px;
+}
+#active_menu{
+    border-bottom: 2px solid rgb(255, 132, 255);
+}
+.user-info-title{
+    margin-top: 100px;
+}
+.all-user-info{
+    margin-top:0px;
+}
+.user-pic-name{
+    position:absolute;
+    top:100px;
+}
+.replies{
+    display:none;
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    margin-top: 2px;
+    object-fit: cover;
+    flex: 1;
+    flex-basis: 40%;
+    height: 400px;
+   
+    
+}
+.isBlocked{
+    margin-top:200px;
+}
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 }
 @media screen and (min-width:620px) {
     .user-profile{
     width: 80%;
     background-color: rgb(252, 252, 252);
-    height: 1000px;
+    height: 100%;
     margin:0 auto;
+    margin-top:70px;
 }
 .images{
     border-radius: 10px;
@@ -195,8 +506,8 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .user-profile-img{
     border-radius: 50%;
-    height: 200px;
-    width: 200px;
+    height: 150px;
+    width: 150px;
     object-position: center center;
     object-fit: cover;
 }
@@ -211,7 +522,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
     box-sizing: border-box;
 }
 .user-info-card{
-    margin-top: 110px;
+    margin-top: 50px;
     border-radius: 5px;
     
 
@@ -223,6 +534,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .user-info-title{
     font-weight: bold;
+    margin-top:155px;
 }
 .helper-text{
     color:rgb(174, 174, 174);
@@ -240,13 +552,87 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 .complete-profile > ul > li{
     margin-top: 15px;
 }
+.user-activity{
+    margin-top: 10px;
+    border: none;
+}
+.activity-link{
+    display: flex;
+    justify-content:space-around;
+    font-weight: bold;
+    font-size:25px;
+    cursor: pointer;
+
+}
+.small-thumbnail{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.img-circle{
+    border-radius: 50px;
+}
+#active_menu{
+    border-bottom: 2px solid rgb(255, 132, 255);
+}
+.user-info-title{
+    margin-top: 100px;
+}
+.all-user-info{
+    margin-top:30px;
+}
+.replies{
+    display:none;
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    margin-top: 2px;
+    object-fit: cover;
+    flex: 1;
+    flex-basis: 40%;
+    height: 400px;
+   
+    
+}
+.isBlocked{
+    margin-top:200px;
+}
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 }
 @media screen and (min-width:1224px) {
     .user-profile{
     width: 60%;
     background-color: rgb(252, 252, 252);
-    height: 1000px;
+    height: 100%;
     margin:0 auto;
+    margin-top:70px;
 }
 .images{
     border-radius: 10px;
@@ -263,8 +649,8 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .user-profile-img{
     border-radius: 50%;
-    height: 200px;
-    width: 200px;
+    height:150px;
+    width:150px;
     object-position: center center;
     object-fit: cover;
 }
@@ -273,13 +659,12 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .edit-btn{
     margin-left: auto;
-    margin-top: 10px;
 }
 .edit-profile{
     box-sizing: border-box;
 }
 .user-info-card{
-    margin-top: 110px;
+    margin-top: 50px;
     border-radius: 5px;
     
 
@@ -291,6 +676,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .user-info-title{
     font-weight: bold;
+    margin-top:155px;
 }
 .helper-text{
     color:rgb(174, 174, 174);
@@ -307,6 +693,79 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 }
 .complete-profile > ul > li{
     margin-top: 15px;
+}
+.user-activity{
+    margin-top: 10px;
+    border:none;
+}
+.activity-link{
+    display: flex;
+    justify-content:space-around;
+    font-weight: bold;
+    font-size:25px;
+    cursor: pointer;
+
+}
+.small-thumbnail{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.img-circle{
+    border-radius: 50px;
+}
+#active_menu{
+    border-bottom: 2px solid rgb(255, 132, 255);
+}
+.user-info-title{
+    margin-top: 100px;
+}
+.all-user-info{
+    margin-top:0px;
+}
+.replies{
+    display:none;
+}
+.flex-img{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    
+}
+.flex-img > img{
+    margin-left: 2px;
+    margin-top: 2px;
+    object-fit: cover;
+    flex: 1;
+    flex-basis: 40%;
+    height: 400px;
+   
+    
+}
+.isBlocked{
+    margin-top:200px;
+}
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 }
 

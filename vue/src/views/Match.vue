@@ -2,127 +2,101 @@
 import Header from "../component/Header.vue";
 import SideNav from "../component/SideNav.vue";
 import store from "../store";
-import {ref,reactive} from "vue";
+import { useRouter } from "vue-router";
+import {ref,reactive,onMounted,} from "vue";
 import StoriesandPost from "../component/StoriesandPost.vue";
 import axiosClient from "../axios";
-const currentDate=new Date();
-const currentYear=currentDate.getFullYear();
-const user_email=sessionStorage.getItem('USER_MAIL');
-var setNextChoice=reactive({
-    next_profile_pic:null,
-    next_first_name:null,
-    next_last_name:null,
-    next_user_age:null,
-    next_user_email:null,
-});
-var server_response=reactive({
-    server_info:""
-});
-axiosClient.post('/find', {data:user_email}).then(response =>{
-if(response.data.reply ===null || response.data.reply==='User match not found'){
-    server_response.server_info="true";
-}else{
-    server_response.server_info="false";
-    sessionStorage.setItem('USER_MATCH_FIRST_NAME',response.data.reply.first_name);
-    sessionStorage.setItem('USER_MATCH_LAST_NAME',response.data.reply.last_name);
-    sessionStorage.setItem('USER_MATCH_IMG',response.data.reply.profile_picture);
-    sessionStorage.setItem('USER_MATCH_AGE',response.data.reply.birthday);
-    sessionStorage.setItem('USER_MATCH_EMAIL',response.data.reply.email);
-    let user_birthday=sessionStorage.getItem('USER_MATCH_AGE');
-    var user_match_birthday=user_birthday.slice(0,4);
-    var user_match_birthdate=parseInt(user_match_birthday);
-    var user_match_age=currentYear-user_match_birthdate;
-    setNextChoice.next_profile_pic=sessionStorage.getItem('USER_MATCH_IMG');
-    setNextChoice.next_first_name=sessionStorage.getItem('USER_MATCH_FIRST_NAME');
-    setNextChoice.next_last_name=sessionStorage.getItem('USER_MATCH_LAST_NAME');
-    setNextChoice.next_user_email=sessionStorage.getItem('USER_MATCH_EMAIL');
-    setNextChoice.next_user_age=user_match_age;
-    setNextChoice.next_user_age=user_match_age+"\tYrs";
-
-}
-
-
-});
-
-
-function findNextMatch(){
-    sessionStorage.removeItem('USER_MATCH_IMG');
-    sessionStorage.removeItem('USER_MATCH_FIRST_NAME');
-    sessionStorage.removeItem('USER_MATCH_LAST_NAME');
-    sessionStorage.removeItem('USER_MATCH_EMAIL');
-    axiosClient.post('/find', {data:user_email}).then(response =>{
-sessionStorage.setItem('USER_MATCH_FIRST_NAME',response.data.reply.first_name);
-sessionStorage.setItem('USER_MATCH_LAST_NAME',response.data.reply.last_name);
-sessionStorage.setItem('USER_MATCH_IMG',response.data.reply.profile_picture);
-setNextChoice.next_profile_pic=response.data.reply.profile_picture;
-setNextChoice.next_first_name=response.data.reply.first_name;
-setNextChoice.next_last_name=response.data.reply.last_name;
-setNextChoice.next_user_email=response.data.reply.email;
-
-let birthday=response.data.reply.birthday;
-
-
-    var user_match_birthday=birthday.slice(0,4);
-   var user_match_birthdate=parseInt(user_match_birthday);
-   var user_match_age=currentYear-user_match_birthdate;
-    setNextChoice.next_user_age=user_match_age+"\tYrs";
-   
-
-
-
+const router=useRouter();
+const user_mail=localStorage.getItem('USER_MAIL');
+function gotoFind(){
+router.push({
+    name:"Find"
 });
 }
-setNextChoice.next_profile_pic=sessionStorage.getItem('USER_MATCH_IMG');
-setNextChoice.next_first_name=sessionStorage.getItem('USER_MATCH_FIRST_NAME');
-setNextChoice.next_last_name=sessionStorage.getItem('USER_MATCH_LAST_NAME');
-setNextChoice.next_user_email=sessionStorage.getItem('USER_MATCH_EMAIL');
-
-let match_error=ref();
-function setUserMatch(e){
-    e.stopImmediatePropagation();
+let hold_user_suggestion=reactive({
+interest:"",
+religion:"",
+school:"",
+});
+onMounted(()=>{
+document.title='Find People';
+let formData=new FormData();
+formData.append("email",user_mail);
+axiosClient.post("/suggestUsers",formData).then(response=>{
+   hold_user_suggestion.interest    =response.data.user_with_similar_interest;
+   hold_user_suggestion.religion    =response.data.user_with_similar_religion;
+   hold_user_suggestion.school      =response.data.user_with_similar_school;
+}).catch(error=>{
+    console.log(error);
+});
+});
+function setUserMatch(email){
+    document.getElementById(email).setAttribute("disabled",true);
     axiosClient.post("/choice",{
-        user:user_email,
-        choice:setNextChoice.next_user_email
+        user:user_mail,
+        choice:email
     }).then(response=>{
         alert(response.data.success);
     }).catch(e=>{
-        match_error.value="You already tried matching with this user, we have notified them";
-        alert(match_error.value);
+       let error="You can't follow this user";
+        alert(error);
     });
 }
 </script>
 <template>
-    <Header />
-    <SideNav />
-    <div v-if="server_response.server_info==='true'" class="match-error d-flex justify-content-center align-item-center font-weight-bold">
-        <h2 class="fs-3">We would show you matches as they appear</h2>
+    <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
+    <SideNav style="display:none;" />
+    <div  v-if="hold_user_suggestion.interest === ''" class="d-flex spinner justify-content-center align-items-center">
     </div>
-    <div v-else class="story-and-post">
-    <div class="user-match">
-        <img class="user-match-img rounded" :src="`http://localhost:8000/storage/${setNextChoice.next_profile_pic}`" />
+    <div v-else class="container-fluid">
+    <div style="margin-bottom:10px;"  class=" d-flex search-bar justify-content-center align-items-center">
+    <input @click="gotoFind" style="border-radius:20px;" width="100%" type="text" placeholder="Search" />
     </div>
-    <div class="user-match-info">
-    <h5 class="fs-3"><span class="m-2">{{ setNextChoice.next_first_name }}</span><span class="m-2">{{ setNextChoice.next_last_name}}</span></h5>
-    <h5 class="fs-5">{{setNextChoice.next_user_age}}</h5>
-    <h6 class="fs-5">Around You</h6>
-    <div class="d-flex next-cancel">
-    <button class="btn btn-success btn-sm" @click="findNextMatch">Next</button>
-    <button class="btn btn-danger btn-sm" @click="setUserMatch">Choose</button>
+<h2 v-if="hold_user_suggestion.interest.length > 0" class="text-center font-bold fs-5">You might like</h2>
+<div  class="story-and-post" >
+    <div v-for="i in hold_user_suggestion.interest" class="d-flex p-2 religion-suggestions justify-content-center align-items-center">
+        <div style="position:relative;" class="card p-4 card-default shadow-sm user-suggestion-card">
+        <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
+        <img v-else class="img-circle avatar"  :src='`http://localhost:8000/storage/${i.profile_picture}`' />
+        <h6 class="fs-6">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
+        </div>
     </div>
     </div>
+    <h2 v-if="hold_user_suggestion.religion.length > 0" class="text-center font-bold fs-5">People with similar religion</h2>
+<div  class="story-and-post" >
+    <div  v-for="i in hold_user_suggestion.religion" class="d-flex p-2 religion-suggestions justify-content-center align-items-center">
+        <div style="position:relative;" class="card p-4 card-default shadow-sm user-suggestion-card">
+        <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
+        <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
+        <h6 class="fs-6">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
+        </div>
     </div>
-    
-
+    </div>
+    <h2 v-if="hold_user_suggestion.school.length > 0" class="text-center font-bold fs-5">You attended same school with them</h2>
+<div  class="story-and-post" >
+    <div v-for="i in hold_user_suggestion.school" class="d-flex p-2 religion-suggestions justify-content-center align-items-center">
+        <div style="position:relative;" class="card p-4 card-default shadow-sm user-suggestion-card">
+        <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
+        <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
+        <h6 class="fs-6">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
+        </div>
+    </div>
+    </div>
+</div>
 </template>
 <style scoped>
-@media screen and (min-width:400px) {
+@media screen and (min-width:320px) {
     .story-and-post{
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:space-between;
     cursor: pointer;
     width: 100%;
-    margin:0px auto;
+    
 }
 .user-match{
     flex: 1;
@@ -130,8 +104,8 @@ function setUserMatch(e){
 
 }
 .user-match-img{
-    width:100%;
-    height: 400px;
+    width:200px;
+    height:200px;
     object-fit: cover;
     object-position: center;
 }
@@ -147,7 +121,8 @@ function setUserMatch(e){
 }
 .next-cancel{
     position:absolute;
-    bottom: 0px;
+    margin-top:40px;
+    top:20px;
     justify-content: space-around;
 }
 .next-cancel > button{
@@ -162,46 +137,133 @@ function setUserMatch(e){
     margin-top: 15vh;
     font-weight: bold;
 }
+.search-bar{
+    margin-top:60px; 
+    margin-bottom:20px;
+}
+.religion-suggestions{
+    margin-top:0px;
+    width:200px;
+    flex:1;
+}
+.avatar{
+    width:100px;
+    height:100px;
+    border-radius:50px;
+    object-fit:cover;
+}
+.follow-suggestion-btn{
+    bottom:0px;
+    width:100%;
+    border-radius:20px;
+    margin-top:20px;
+}
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+}
+@media screen and (min-width:620px) {
+    .story-and-post{
+    display: flex;
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    cursor: pointer;
+    width: 100%;
+    margin:0px auto;
+}
+.search-bar{
+    margin-top:200px; 
+    margin-bottom:20px;
+}
+.follow-suggestion-btn{
+    bottom:0px;
+    width:100%;
+    border-radius:20px;
+    margin-top:20px;
+}
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 }
 @media screen and (min-width:700px) {
     .story-and-post{
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction:row;
+    flex-wrap:wrap;
     cursor: pointer;
-    width: 50%;
-    margin:0px auto;
+    width: 80%;
+    
+    
 }
-.user-match{
-    flex: 1;
-    height: 400px;
-
+.search-bar{
+    margin-top:100px; 
+    margin-bottom:0px;
 }
-.user-match-img{
+.avatar{
+    width:100px;
+    height:100px;
+    border-radius:50px;
+    object-fit:cover;
+}
+.user-suggestion-card{
+   width:200px;
+   display:flex;
+   flex-direction:column;
+   justify-content:center;
+   align-items:center;
+   margin:10px;
+}
+.follow-suggestion-btn{
+    bottom:0px;
     width:100%;
-    height: 400px;
-    object-fit: cover;
-    object-position: center;
-}
-.user-match-info{
-    flex: 1;
-    height: 400px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    position: relative;
-}
-.next-cancel{
-    position:absolute;
-    bottom: 0px;
-    justify-content: space-around;
-}
-.next-cancel > button{
-    margin-right: 20px;
-    width: 80px;
     border-radius:20px;
+    margin-top:20px;
+}
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 }
 

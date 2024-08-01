@@ -4,7 +4,9 @@ import store from "../store";
 import axiosClient from "../axios.js";
 import { useRouter } from "vue-router";
 import { reactive } from "vue";
+import BookmarkPosts from "../component/BookmarkPosts.vue";
 import { defineAsyncComponent } from "vue";
+let user_mail;
 const Header=defineAsyncComponent({
    loader:  () => import("../component/Header.vue"),
   
@@ -12,20 +14,7 @@ const Header=defineAsyncComponent({
 const SideNav=defineAsyncComponent({
     loader: () => import("../component/SideNav.vue")
 });
-const StoriesandPost=defineAsyncComponent({
-    loader: () => import("../component/StoriesandPost.vue")
-});
-let user_mail;
-const router=useRouter();
 
-
-function deleteOldStories(){
-    axiosClient.post("/deleteOldStory",{data:""}).then(response=>{
-
-    }).catch(err=>{
-        console.log(err)
-    });
-}
 let info=reactive({
     info_value:"",
 });
@@ -42,19 +31,19 @@ function checkIfUserHasCompleteProfile(){
     console.log(error);
 }))
 }
-document.title='Home';
-deleteOldStories();
+document.title='Bookmarks';
+
 
 </script>
 <template>
     {{ checkIfUserHasCompleteProfile() }}
     <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
-    <SideNav style="display:none;" />
+    <SideNav style="display:none;"/>
     <div v-if="info.info_value==='true'" style="margin-top: 100px;" class=" incomplete d-flex justify-content-center">
-        <h2 class="fs-5 font-bold m-4">Click on profile icon above and complete your profile to be visible</h2>
+        <h2 class="fs-5 m-4 font-bold">Click on profile icon and complete your profile to be Visible</h2>
     </div>
     <div v-else  class="story-and-post">
-    <StoriesandPost  />
+    <BookmarkPosts  />
     </div>
 </template>
 <style scoped>

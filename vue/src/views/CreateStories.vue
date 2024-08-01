@@ -1,12 +1,15 @@
 <script setup>
-import { ref,reactive } from 'vue';
+import { ref,reactive, onMounted } from 'vue';
 import axiosClient from '../axios';
 import 'text-image/dist/text-image.js';
 import Header from '../component/Header.vue';
-const user_mail=sessionStorage.getItem('USER_MAIL');
-const user_picture=sessionStorage.getItem('PICTURE');
-const user_firstname=sessionStorage.getItem('FIRSTNAME');
-const user_last_name=sessionStorage.getItem('LASTNAME');
+import LoadJsVideoComponent from "../component/LoadJsVideoComponent.vue";
+import ProgressBar from "../component/ProgressBar.vue";
+import { RouterLink } from 'vue-router';
+const user_mail=localStorage.getItem('USER_MAIL');
+const user_picture=localStorage.getItem('PICTURE');
+const user_firstname=localStorage.getItem('FIRSTNAME');
+const user_last_name=localStorage.getItem('LASTNAME');
 function selectFile(){
     const picture=document.getElementById('picture');
     picture.click();
@@ -15,7 +18,10 @@ function selectFile(){
 let   picture1=ref('');
 const user_pictures=reactive({
     story_img_url:"",
-    story_img:""
+    story_img:"",
+    story_video:"",
+    story_video_url:"",
+    progress:0
 
 });
 let user_text=reactive({
@@ -24,32 +30,93 @@ let user_text=reactive({
 });
 function addPictures(e){
     const story_img=e.target.files[0];
-  picture1.value=story_img;
-  user_pictures.story_img=story_img;
-  const reader=new FileReader();
-  reader.onload=() =>{
-    user_pictures.story_img_url=reader.result;
-  };
-  reader.readAsDataURL(story_img);
+    let pattern=new RegExp('[^.]+$');
+    let check_extension=story_img.name.match(pattern);
+    let file_extension=check_extension[0];
+   let reader=new FileReader();
+    switch(file_extension.toLowerCase()){
+        case 'jpg':
+        picture1.value=story_img;
+        user_pictures.story_img=story_img;
+        reader.onload=() =>{
+        user_pictures.story_img_url=reader.result;
+        user_pictures.story_video_url="";
+        };
+        reader.readAsDataURL(story_img);
+        break;
+        case 'jpeg':
+        picture1.value=story_img;
+        user_pictures.story_img=story_img;
+        reader.onload=() =>{
+        user_pictures.story_img_url=reader.result;
+        user_pictures.story_video_url="";
+        };
+        reader.readAsDataURL(story_img);
+        break;
+        case 'png':
+        picture1.value=story_img;
+        user_pictures.story_img=story_img;
+        reader.onload=() =>{
+        user_pictures.story_img_url=reader.result;
+        user_pictures.story_video_url="";
+        };
+        reader.readAsDataURL(story_img);
+        break;
+        case 'gif':
+        picture1.value=story_img;
+        user_pictures.story_img=story_img;
+        reader.onload=() =>{
+        user_pictures.story_img_url=reader.result;
+        user_pictures.story_video_url="";
+        };
+        reader.readAsDataURL(story_img);
+        break;
+        case 'jfif':
+        picture1.value=story_img;
+        user_pictures.story_img=story_img;
+        reader.onload=() =>{
+        user_pictures.story_img_url=reader.result;
+        user_pictures.story_video_url="";
+        };
+        reader.readAsDataURL(story_img);
+        break;
+        case 'mp4':
+        user_pictures.story_img="";
+        user_pictures.story_img=story_img;
+        let video= document.getElementById("video");
+        if (!story_img) return;
+        let url = URL.createObjectURL(story_img);
+        url += '#t=0,10';
+        video.src = url;
+    }
   let story_holder=document.getElementById("story_img_preview");
   story_holder.style.display="block";
 }
 function hidePreview(){
     let story_holder=document.getElementById("story_img_preview");
   story_holder.style.display="none";
+  if(document.getElementById("video"))
+  document.getElementById("video").pause();
+else
+return;
 }
 function uploadUserStory(e){
     e.preventDefault();
+    e.stopImmediatePropagation();
     let formData=new FormData();
     formData.append('email',user_mail);
     formData.append('story_post',user_pictures.story_img);
-    axiosClient.post('/uploadStory',formData).then(response=>{
+    axiosClient.post('/uploadStory',formData,{onUploadProgress:(event)=>{
+            user_pictures.progress= Math.round((event.loaded * 100) / event.total);
+        }}).then(response=>{
        alert("You added a new story");
-       let story_holder=document.getElementById("story_img_preview");
-  story_holder.style.display="none";
+       let  story_holder=document.getElementById("story_img_preview");
+            story_holder.style.display="none";
     }).catch(err=>{
         alert("We cannot accomodate this file or network error");
-    });
+    }).finally(()=>{
+        user_pictures.progress=0;
+    })
    
 }
 function postUserStory(e){
@@ -70,18 +137,30 @@ function textColor(color){
 }
 let user_text_type=ref('');
 function createImage(color){
+    let formData=new FormData();
+    formData.append('email',user_mail);
+    formData.append('story_post',user_text_type.value);
+    formData.append('bgColor',color);
+    axiosClient.post('/uploadTextStory',formData).then(response=>{
+       alert("You added a new story");
+    }).catch(err=>{
+        alert("We cannot accomodate this file or network error");
+    });
 let story_holder=document.getElementById("story_text_preview");
+story_holder.style.display="none";
+user_text_type.value="";
+/**
 switch(color){
     case 'user_text_purple':
     var style = {
     font: 'sans-serif',
     align: 'left',
     color: 'white',
-    size: 15,
+    size: 12,
     background: 'purple',
-    fontWeight:'bold',
-    lineHeight:'34px',
-    height:'100vh',
+    fontWeight:'normal',
+    lineHeight:'15px',
+    height:'100%',
     width:'400px'
 };
     var newTextImage=TextImage();
@@ -97,11 +176,11 @@ switch(color){
     font: 'sans-serif',
     align: 'left',
     color: 'white',
-    size: 15,
+    size: 12,
     background: 'maroon',
-    fontWeight:'bold',
-    lineHeight:'34px',
-    height:'100vh',
+    fontWeight:'normal',
+    lineHeight:'15px',
+    height:'100%',
     width:'400px'
 };
     var newTextImage=TextImage();
@@ -117,11 +196,11 @@ switch(color){
     font: 'sans-serif',
     align: 'left',
     color: 'white',
-    size: 15,
+    size: 12,
     background: 'forestgreen',
-    fontWeight:'bold',
-    lineHeight:'34px',
-    height:'100vh',
+    fontWeight:'normal',
+    lineHeight:'15px',
+    height:'100%',
     width:'400px'
 };
     var newTextImage=TextImage();
@@ -135,13 +214,13 @@ switch(color){
 default:
 var style = {
     font: 'sans-serif',
-    align: 'left',
+    align: 'center',
     color: 'white',
-    size: 15,
+    size: 12,
     background: 'magenta',
-    fontWeight:'bold',
-    lineHeight:'34px',
-    height:'100vh',
+    fontWeight:'normal',
+    lineHeight:'15px',
+    height:'100%',
     width:'400px'
 };
     var newTextImage=TextImage();
@@ -156,11 +235,11 @@ var style = {
     let rand=Math.random(10,1000);
     let name=rand+"modate";
     dataURLtoFile(user_text.story_text_img,name);
+**/
 
-
-}
+} 
   
-    function dataURLtoFile(dataurl, filename) {
+   /**  function dataURLtoFile(dataurl, filename) {
     var arr = dataurl.split(","),
       mime = arr[0].match(/:(.*?);/)[1],
       bstr = atob(arr[arr.length - 1]),
@@ -178,23 +257,28 @@ var style = {
     }).catch(err=>{
         alert("We cannot accomodate this file or network error");
     });
-    //return new File([u8arr], filename, { type: mime });
     
-  }
+    
+} */
+  onMounted(()=>{
+    let text_area=document.getElementById("text");
+    text_area.setAttribute("placeholder","What's on your Mind?");
+  });
+
 </script>
 <template>
-<Header />
+<Header class="shadow-sm" style="background-color:white; position:fixed; padding-bottom:10px;  width: 100%; z-index: 1; top: 0px;" />
 <div class="container-fluid two-flex-div">
     <div class="fixed-side-story-div p-4 shadow-md">
-        <h2 class="fs-5 font-weight-bold text-black">Your Story</h2>
-    <div class="user-info"><img class="circle-thumbnail" :src='`http://localhost:8000/storage/${user_picture}`'><span class="names fs-5">{{ user_firstname}}</span><span class="names fs-5">{{ user_last_name }}</span></div>
+        <h2 class="fs-5 font-weight-bold text-black" style="margin-top:50px;">Your Story</h2>
+    <div class="user-info"><img v-if="user_picture === null || user_picture === 'null'" class="circle-thumbnail" src="../pictures/profile.png"><img v-else class="circle-thumbnail" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${user_picture}`'><span class="names fs-5">{{ user_firstname}}</span><span class="names fs-5"><RouterLink to="/profile">{{ user_last_name }}</RouterLink></span></div>
     </div>
     <div class="all-forms-div">
         <div class="block-div">
         <form id="story-form" class="for-pictures-video">
-            <label>
+            <label style="flex-direction:column;" class="d-flex justify-content-center align-items-center">
                 <span @click="selectFile" for="picture" class="fs-70 cursor-pointer">&plus;</span>
-                <p>Add Photo</p>
+                <p>Add Media</p>
             </label>
             <input v-on:change="addPictures" id="picture" type="file" name="file" />
             
@@ -202,16 +286,19 @@ var style = {
         <form class="for-pictures-video">
             <label>
                 <span @click="openTextDialogue" class="fs-2 cursor-pointer">Text Story..</span> 
-                <a  :href="user_text.story_text_img" :download="user_text.story_text_img"> Download</a>
             </label>
         </form>
         
     </div>
     <div id="story_img_preview" class="story_preview_holder">
-    <div  class="story-img-preview m-2">
-        <span @click="hidePreview" style="color: white; font-size: 75px; cursor: pointer; font-weight: bold;" class=" m-2 fs-1">&times;</span>
-       <img style="border-radius: 5px; cursor: pointer;" width="300px" height="100vh" alt="preview-story" :src="user_pictures.story_img_url" class="img-responsive">
-       <button @click="postUserStory" style="font-weight: bold;" type="submit" class="m-2 btn btn-success btn-md">Add Story</button>
+    <div  class="story-img-preview ">
+        <span @click="hidePreview" style="color: white; margin-top:50px; font-size: 75px; cursor: pointer; font-weight: bold;" class="fs-1">&times;</span>
+        <button @click="postUserStory" style="font-weight: bold;" type="submit" class="m-2 btn btn-success btn-md">Add Story</button>
+       <img v-if="user_pictures.story_img_url !=''" style="border-radius: 5px; cursor: pointer;" width="300px" height="100vh" alt="preview-story" :src="user_pictures.story_img_url" class="img-responsive">
+        <video id="video" style="width:300px; border-radius:5px; height:300px;" autoplay controls  v-else>
+            
+        </video>
+        <ProgressBar :progress="user_pictures.progress"/>
     </div>
     </div>
     <div id="story_text_preview" class="story_preview_holder">
@@ -224,10 +311,10 @@ var style = {
             <button @click="textColor('user_text_story')" class="btn-md magenta"></button>
         </div>
     </div>
-    <div  class="story-img-preview m-2">
-        <span @click="hideText" style="color: white; font-size: 75px; cursor: pointer; font-weight: bold;" class=" m-2 fs-1">&times;</span>
-        <span class="text-white cursor-pointer" @click="createImage(user_text.text_area_class)">Create Text Story.</span>
-        <textarea v-model="user_text_type" id="text" :class="user_text.text_area_class">
+    <div  class="story-img-preview">
+        <span @click="hideText" style="color: white; margin-top:50px; font-size: 75px; cursor: pointer; font-weight: bold;" class=" fs-1">&times;</span>
+        <span class="text-white cursor-pointer font-bold" @click="createImage(user_text.text_area_class)">Create Text Story.</span>
+        <textarea rows="10" cols="50" style="text-align:left; white-space:pre-wrap;" v-model="user_text_type" id="text" :class="user_text.text_area_class">
 
         </textarea>
     </div>
@@ -245,20 +332,15 @@ var style = {
     display: none;
     position: fixed;
     top: 0px;
-    background-color: rgba(1, 1, 1, 0.361);
+    background-color: rgba(0, 0, 0, 0.596);
     width: 100%;
     left: 0px;
     flex-direction: column;
     align-items: center;
     height: 100vh;
+    padding-top: 0px;
 }
-.story-img-preview{
-    width:100%;
-    border-radius: 10px;
-    display: block;
-    
 
-}
 .fs-70{
     font-size: 70px;
     font-weight: bold;
@@ -270,7 +352,7 @@ var style = {
     justify-content: space-evenly;
 }
 .block-div{
-    width: 80%;
+    width: 100%;
     margin: 0px auto;
     display: flex;
     flex-direction: column;
@@ -279,7 +361,7 @@ var style = {
     margin-top: 200px;
 }
 .block-div > form{
-    margin-left: 50px;
+    margin-left: 0px;
 }
 .two-flex-div > .all-forms-div{
  display: flex;
@@ -293,7 +375,8 @@ var style = {
     position: fixed;
     display: none;
     left: 0px;
-    z-index: 1;
+    z-index: 2;
+    padding:0px;
 }
 .user-info{
     display: flex;
@@ -303,6 +386,7 @@ var style = {
     width: 50px;
     height: 50px;
     margin-right: auto;
+    object-fit: cover;
     
 }
 .names{
@@ -316,9 +400,8 @@ var style = {
 }
 .user_text_story{
     resize: none;
-    height: 600px;
-    width: 80%;
-    margin: 0px auto;
+    height: 100vh;
+    width: 100%;
     border: none;
     outline: none;
     background-color: rgb(244, 69, 209);
@@ -331,7 +414,7 @@ var style = {
 .user_text_purple{
     resize: none;
     height: 100vh;
-    width: 400px;
+    width: 100%;
     margin: 0px auto;
     border: none;
     outline: none;
@@ -345,7 +428,7 @@ var style = {
 .user_text_maroon{
     resize: none;
     height: 100vh;
-    width: 400px;
+    width: 100%;
     margin: 0px auto;
     border: none;
     outline: none;
@@ -359,7 +442,7 @@ var style = {
 .user_text_green{
     resize: none;
     height: 100vh;
-    width: 400px;
+    width: 100%;
     margin: 0px auto;
     border: none;
     outline: none;
@@ -398,6 +481,21 @@ var style = {
     position: absolute; 
     right: 0px; 
     top: 0px;
+}
+.story-img-preview{
+    width:100%;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding:0px;
+
+
+    
+}
+::placeholder{
+    color: white;
 }
 }
 @media screen and (min-width:620px) {
@@ -445,7 +543,7 @@ var style = {
     height: 100vh;
     position: fixed;
     left: 0px;
-    z-index: 1;
+    z-index: 2;
     display:none;
 }
 .user-info{
@@ -456,6 +554,7 @@ var style = {
     width: 50px;
     height: 50px;
     margin-right: auto;
+    object-fit: cover;
     
 }
 .names{
@@ -471,12 +570,13 @@ var style = {
     display: none;
     position: fixed;
     top: 0px;
-    background-color: rgba(1, 1, 1, 0.361);
+    background-color: rgba(0, 0, 0, 0.596);
     width: 100%;
     left: 0px;
     flex-direction: column;
     align-items: center;
     height: 100vh;
+    padding-top: 0px;
 }
 .user_text_story{
     resize: none;
@@ -558,6 +658,10 @@ var style = {
     width: 50px;
     height: 50px;
 }
+::placeholder{
+    color: white;
+}
+
 }
 @media screen and (min-width:1224px) {
     input[type="file"]{
@@ -606,7 +710,7 @@ var style = {
     height: 100vh;
     position: fixed;
     left: 0px;
-    z-index: 1;
+    z-index: 2;
     display: block;
 }
 .user-info{
@@ -617,6 +721,7 @@ var style = {
     width: 50px;
     height: 50px;
     margin-right: auto;
+    object-fit: cover;
     
 }
 .names{
@@ -632,12 +737,13 @@ var style = {
     display: none;
     position: fixed;
     top: 0px;
-    background-color: rgba(1, 1, 1, 0.216);
+    background-color: rgba(0, 0, 0, 0.596);
     width: 100%;
     left: 0px;
     flex-direction: column;
     align-items: center;
     height: 100vh;
+    padding-top: 0px;
 }
 .user_text_story{
     resize: none;
@@ -724,6 +830,9 @@ var style = {
  
     right:0px;
     top: 100px;
+}
+::placeholder{
+    color: white;
 }
 }
 

@@ -31,8 +31,8 @@ function hiderr(){
    err.value=null;
 }
 
-if(sessionStorage.getItem('USER_COOKIE')){
-    let user_cookie=sessionStorage.getItem('USER_COOKIE');
+if(localStorage.getItem('USER_COOKIE')){
+    let user_cookie=localStorage.getItem('USER_COOKIE');
    store.dispatch('cookieisSet',user_cookie);
    //router.push('/home');
 }else{
@@ -41,11 +41,10 @@ if(sessionStorage.getItem('USER_COOKIE')){
 
 </script>
 <template>
-<Header />
-
+<Header  class="shadow-sm" />
 <main>
 <div class="container signup-holder">
-<h2 class="fs-2 sign-up-header font-weight-bold m-2">Signup Today We are Waiting for you.</h2>
+<h2 class="fs-2 sign-up-header font-weight-bold m-2">Signup today we are waiting for you.</h2>
 <form class="" method="POST" @submit="registerUser">
 <div v-if="err != null" class="d-flex justify-content-center align-items-center text-danger border-radius-5 text-bold bg-danger text-white p-2">
 {{ err }}
@@ -199,7 +198,6 @@ input{
     width:50%;
     margin:0px auto;
     margin-top:2vh;
-    background-color: rgba(0, 0, 0, 0.6);
     padding-top: 20px;
     padding-left: 20px;
     padding-right: 20px;
@@ -208,10 +206,10 @@ input{
     
 }
 .sign-up-header{
-    color: white;
+    color: black;
 }
 main{
-        background-image:url("./pictures/hand 1.jpg");
+        background-image:none;
         background-repeat: no-repeat;
         background-attachment: fixed;
         background-size: cover;
@@ -229,7 +227,7 @@ form{
     margin-top: 20px;
 }
 .terms{
-    color: yellow;
+    color: magenta;
     font-weight: bold;
 }
 .footer-fixed-bottom{
@@ -237,11 +235,11 @@ position: fixed;
 bottom: 0px;
 }
 .form-label{
-    color: white;
+    color: black;
     font-weight: bold;
 }
 .signup-info-tag{
-    color: white;
+    color: black;
 }
 }
 

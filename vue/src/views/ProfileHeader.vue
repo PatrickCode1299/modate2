@@ -10,12 +10,12 @@ const cover_photo=ref('');
 let cover_text=ref('');
 let img_model=ref({
         image_uri:"",
-        cover_uri:null
+        cover_uri:""
     
 });
 function editProfilePic(e){
 e.preventDefault();
-const current_user=sessionStorage.getItem('USER_MAIL');
+const current_user=localStorage.getItem('USER_MAIL');
 const formData=new FormData();
 formData.append('owner',current_user);
 formData.append('profile_pic',image.value);
@@ -28,7 +28,7 @@ router.push({
 }
 function addCoverPhoto(e){
     e.preventDefault();
-const current_user=sessionStorage.getItem('USER_MAIL');
+const current_user=localStorage.getItem('USER_MAIL');
 const formData=new FormData();
 formData.append('owner',current_user);
 formData.append('coverPhoto',cover_photo.value);
@@ -41,7 +41,7 @@ router.push({
 }
 function addCoverText(e){
     e.preventDefault();
-    const current_user=sessionStorage.getItem('USER_MAIL');
+    const current_user=localStorage.getItem('USER_MAIL');
     const formData=new FormData();
     formData.append('email',current_user);
     formData.append('cover_text',cover_text.value);
@@ -60,7 +60,7 @@ function user_profile_img(e){
     img_model.value.image_uri=reader.result;
   };
   reader.readAsDataURL(img);
- 
+  document.getElementById("plus-icon").style.color="grey";
  
 
   
@@ -76,41 +76,49 @@ function user_cover_photo(e){
 }
 watch(cover_text, ()=>{
 let cover_text_btn=document.getElementById("cover_text_button");
-if(cover_text.value.length > 128){
+if(cover_text.value.length > 65){
 cover_text_btn.setAttribute("disabled",true);
 }else{
 cover_text_btn.removeAttribute("disabled");
 }
 });
+function findPicture(){
+    document.getElementById("profile-picture").click();
+}
+function findCoverPhoto(){
+    document.getElementById("cover-photo").click();
+}
 </script>
 <template>
-    <Header />
-    <SideNav />
+    <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
+    <SideNav style="display:none;" />
     <div class="profile-header-container shadow-sm container p-4">
-        <form @submit="editProfilePic">
+        <form style="position:relative;" @submit="editProfilePic">
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Edit Profile Picture</label>
                 <h2 class="text-danger fs-6 m-2">We recommend a very clear headshot that is visible...</h2>
-                <img v-if="img_model.image_uri == ''" src="../pictures/profile.png"  class="img-responsive preview-img" alt="preview img">
-                <img v-else :src=img_model.image_uri  class="img-responsive preview-img" alt="preview img">
-                <input ref="file" v-on:change="user_profile_img" class="m-2 form-control md" type="file" name="file" />
+                <img @click="findPicture" v-if="img_model.image_uri == ''" src="../pictures/profile.png"  class="img-responsive preview-img" alt="preview img">
+                <img @click="findPicture" v-else :src=img_model.image_uri  class="img-responsive preview-img" alt="preview img">
+                <input ref="file" v-on:change="user_profile_img" id="profile-picture" class="m-2 form-control md profile-picture" type="file" name="file" />
+                <span @click="findPicture" id="plus-icon" class="plus-icon"><i class="fa-solid fa-circle-plus"></i></span>
             </div>
             <button class="btn m-2 edit-profile-btn btn-block btn-md btn-success">Edit</button>
         </form>
-        <form @submit="addCoverPhoto">
+        <form style="position:relative;" @submit="addCoverPhoto">
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Add Cover Photo</label>
-                <h2 class="text-danger fs-6 m-2">Ensure your cover photo is set to a Landscape size with an height of 150px</h2>
-                <img v-if="img_model.cover_uri== ''" src="../pictures/cover_photo.jpg"  class="img-responsive  cover-img" alt="preview img">
-                <img v-else :src=img_model.cover_uri  class="img-responsive  cover-img" alt="preview img">
-                <input v-on:change="user_cover_photo" class="m-2 form-control md" type="file" name="coverPhoto" />
+                <h2 class="text-danger fs-6 m-2">Ensure your cover photo is set to a Landscape size with a width of 933px and height of 150px</h2>
+                <img @click="findCoverPhoto" v-if="img_model.cover_uri===''" src="../pictures/cover_photo.jpg"  class="img-responsive  cover-img" alt="preview img">
+                <img @click="findCoverPhoto" v-else :src=img_model.cover_uri  class="img-responsive  cover-img" alt="preview img">
+                <input  id="cover-photo" v-on:change="user_cover_photo" class="m-2 form-control cover-photo md" type="file" name="coverPhoto" />
+                <span @click="findCoverPhoto" class="cover-icon"><i class="fa-solid fa-circle-plus"></i></span>
             </div>
             <button class="btn m-2 edit-profile-btn btn-block btn-md btn-success">Add</button>
         </form>
         <form @submit="addCoverText">
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Add Cover Text</label>
-                <h2 class="text-danger fs-6 m-2">Your cover text cannot be greater than 128 characters...</h2>
+                <h2 class="text-danger fs-6 m-2">Your cover text cannot be greater than 65 characters...</h2>
                 <textarea required v-model="cover_text" placeholder="I am a bored introvert currently working at Modate2..." class="form-control covertext" ></textarea>
             </div>
             <button id="cover_text_button" class="btn m-2 cover-text-btn btn-block btn-md btn-success">Add Cover Text</button>
@@ -123,6 +131,7 @@ cover_text_btn.removeAttribute("disabled");
     background-color: red;
     width: 100%;
     margin:0 auto;
+    margin-top:20px;
     background-color: rgb(253, 253, 253);
     height: 800px;
     border-radius: 10px;
@@ -151,12 +160,35 @@ cover_text_btn.removeAttribute("disabled");
     object-fit: cover;
     object-position: center;
 }
+.plus-icon{
+    position:absolute;
+    bottom:100px;
+    left:85px;
+    color:white;
+    font-size:35px;
+    cursor: pointer;
+}
+.profile-picture{
+    display:none;
+}
+.cover-photo{
+    display:none;
+}
+.cover-icon{
+    color:black; 
+    font-size:35px; 
+    position:absolute; 
+    cursor: pointer; 
+    top:180px; 
+    left:200px;
+}
 }
 @media screen and (min-width:620px) {
     .profile-header-container{
     background-color: red;
     width: 50%;
     margin:0 auto;
+    margin-top: 50px;
     background-color: rgb(253, 253, 253);
     height: auto;
     border-radius: 10px;
@@ -185,12 +217,35 @@ cover_text_btn.removeAttribute("disabled");
     object-fit: cover;
     object-position: center;
 }
+.plus-icon{
+    position:absolute;
+    bottom:100px;
+    left:85px;
+    color:white;
+    font-size:35px;
+    cursor: pointer;
+}
+.profile-picture{
+    display:none;
+}
+.cover-photo{
+    display:none;
+}
+.cover-icon{
+    color:black; 
+    font-size:35px; 
+    position:absolute; 
+    cursor: pointer; 
+    top:120px; 
+    left:300px;
+}
 }
 @media screen and (min-width:1224px) {
     .profile-header-container{
     background-color: red;
     width: 50%;
     margin:0 auto;
+    margin-top:50px;
     background-color: rgb(253, 253, 253);
     height: auto;
     border-radius: 10px;
@@ -224,6 +279,28 @@ cover_text_btn.removeAttribute("disabled");
     object-fit: cover;
     object-position: left center;
     height: 150px;
+}
+.profile-picture{
+    display:none;
+}
+.plus-icon{
+    position:absolute;
+    bottom:80px;
+    left:85px;
+    color:white;
+    font-size:35px;
+    cursor: pointer;
+}
+.cover-photo{
+    display:none;
+}
+.cover-icon{
+    color:black; 
+    font-size:35px; 
+    position:absolute; 
+    cursor: pointer; 
+    top:120px; 
+    left:300px;
 }
 }
 

@@ -23,7 +23,7 @@ function login(e){
             name:'Home'
         })
     }).catch(e=>{
-        err.value="Incorrect Username or Password"
+        err.value="Incorrect Email or Password";
         
         
     })
@@ -31,9 +31,10 @@ function login(e){
 function hiderr(){
    err.value=null;
 }
+document.title='Login';
 </script>
 <template>
-<Header style="color:black;" />
+<Header  class="shadow-sm" />
 
 <main>
 <div class="container signup-holder">
@@ -195,7 +196,7 @@ position: fixed;
 bottom: 0px;
 }
 main{
-background-image:url("./pictures/hand 2.jpg");
+background-image:none;
 background-repeat: no-repeat;
 background-attachment: fixed;
 background-size: cover;
@@ -254,7 +255,7 @@ form{
     margin-top: 20px;
 }
 .signup{
-    color: rgb(255, 255, 0);
+    color: black;
     font-weight: bold;
 }
 .border-radius-5{
@@ -270,30 +271,8 @@ form{
 position: fixed; 
 bottom: 0px;
 }
-.form-label{
-    color: white;
-    font-weight: bold;
-}
-.signup-info-tag{
-    color: white;
-}
-.signup-holder{
-    width:50%;
-    margin:0px auto;
-    margin-top:10vh;
-    background-color: rgba(0, 0, 0, 0.6);
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 20px;
-    border-radius: 20px;
-    
-}
-.sign-up-header{
-    color: white;
-}
 main{
-background-image:url("./pictures/hand 2.jpg");
+background-image:none;
 background-repeat: no-repeat;
 background-attachment: fixed;
 background-size: cover;
