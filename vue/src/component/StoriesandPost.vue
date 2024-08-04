@@ -289,7 +289,7 @@ function setTaggedUser(email,first_name,last_name){
    }
    let current_caption=caption.value;
    caption.value=current_caption+'\t'+all_tagged_users.value.join(" ");
-  
+   document.getElementById("tag_box").style.display="none";
     
     
 }
@@ -335,6 +335,12 @@ const prevStorySlide = () => {
 const nextStorySlide = () => {
   currentStorySlide.value = (currentStorySlide.value === user_story.story_src.length - 1) ? 0 : currentStorySlide.value + 1;
 };
+function hideTextPost(){
+    document.getElementById('text_post').style.display='none';
+}
+function createNewPost(){
+    document.getElementById('text_post').style.display='block';
+}
 </script>
 <template>
 <div class="stories-and-div-container">
@@ -357,13 +363,17 @@ const nextStorySlide = () => {
 </div>
 </div>
 <div style="position: relative;" class="user-post">
+    <button @click="createNewPost" id="create_new_post" class="btn create_new_post  p-2 m-2 fs-1 btn-md">&plus;</button>
+    <div id="text_post" class='user-text-post shadow-md'>
+    <span @click="hideTextPost" class="back-arrow font-bold fs-1 cursor-pointer">&times;</span>
     <form style="margin:0px auto;" @submit="sendUserPost" class="user-posting-form">
         <textarea style="outline: none; outline: 0; outline-style: none; margin:0px;  " v-model="caption" class="post-text form-control" placeholder="Feeling good write something.."></textarea>
         <span class="position-to-right"><button style="margin-top:5px;" id="post-button" disabled   class="btn border-20px btn-md btn-success">Post</button></span>
     </form>
-    <div id="tag_box" class="card tag_users_box card-default cursor-pointer p-2" style="position: absolute; top:50px; z-index:1; left:10px; overflow-x: hidden;  overflow-y: scroll;  height:200px; border-radius:5px; width:auto;">
+    <div id="tag_box" class="card tag_users_box card-default cursor-pointer p-2" style="position: absolute; top:155px; z-index:1; left:10px; overflow-x: hidden;  overflow-y: scroll;  height:200px; border-radius:5px; width:auto;">
         <div style="display:block;"><span @click="hideTagBox" class="m-2"><i class="fa fa-arrow-left"></i></span></div>
             <li @click="setTaggedUser(u.email,u.first_name,u.last_name)" class="list-unstyled m-4" v-for="u in taglist.tagged_users_result"><img v-if="u.profile_picture === null || u.profile_picture === 'null'" loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  src="../pictures/profile.png"  ><img v-else loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  :src="`https://res.cloudinary.com/fishfollowers/image/upload/${u.profile_picture}`"   ><span class="m-2">{{ u.first_name + '\t' + u.last_name }}</span></li>
+    </div>
     </div>
     <FetchUserPost style="width: 100%; margin-top:0px;" :latest="latest_post_data" />
 </div>
@@ -615,6 +625,33 @@ background-color:rgba(0,0,0,0.8);
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.tag_box{
+    display:none;
+}
+.user-text-post{
+    background:rgb(255, 255, 255);
+    position:fixed;
+    width:100%;
+    height:100vh;
+    border-radius:10px;
+    z-index:1;
+    top:0px;
+    padding-top:0px;
+    padding-left:5px;
+    padding-right:5px;
+   display:none;
+}
+.create_new_post{
+    position:fixed; 
+    background-color:rgba(255, 22, 255, 0.607); 
+    color:white; 
+    right:0px; 
+    border-radius:50px; 
+    height:auto; 
+    width:40px; 
+    z-index:1;
+    bottom:300px;
+}
 }
 @media screen and (min-width:620px) {
     .story-posts-container{
@@ -812,6 +849,31 @@ background-color:rgba(0,0,0,0.8);
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.tag_box{
+    display:none;
+}
+.user-text-post{
+    background:rgb(250, 249, 249);
+    position:fixed;
+    width:50%;
+    height:400px;
+    margin:0px auto;
+    border-radius:10px;
+    z-index:1;
+    top:120px;
+    padding-top:0px;
+    display:none;
+}
+.create_new_post{
+    position:fixed; 
+    background-color:rgba(255, 22, 255, 0.65); 
+    color:white; 
+    right:0px; 
+    border-radius:50px; 
+    height:80px; 
+    width:80px; 
+    bottom:150px;
+}
 }
 @media screen and (min-width:1224px) {
     .story-posts-container{
@@ -1008,11 +1070,35 @@ background-color:rgba(0,0,0,0.8);
   height: 30px;
   animation: spin 2s linear infinite;
 }
+.tag_box{
+    display:none;
+}
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
+.user-text-post{
+    background:rgb(255, 255, 255);
+    position:fixed;
+    width:50%;
+    height:50vh;
+    margin:0px auto;
+    border-radius:10px;
+    z-index:1;
+    top:120px;
+    padding-top:0px;
+    display:none;
+}
+.create_new_post{
+    position:fixed; 
+    background-color:rgba(255, 22, 255, 0.631); 
+    color:white; 
+    right:0px; 
+    border-radius:50px; 
+    height:80px; 
+    width:80px; 
+    bottom:100px;
+}
 }
 </style>

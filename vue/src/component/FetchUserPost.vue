@@ -372,7 +372,7 @@ function url_to_link(text) {
     </div>
   
     <span v-if="new_friend_post.loader==='true'" class="text-bold cursor-pointer fs-4"><img style="margin:0px auto;" width="100px" height="100px" src="../landing/loading-loader.gif"></span>
-    <div  v-for="j in new_friend_post.fresh_new_post" style='border: none; border-radius: 5px;' class='card p-2 post-container card-default'>
+    <div  v-for="j in new_friend_post.fresh_new_post" style='border: none; border-radius: 5px;' class='card  post-container card-default'>
     <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex p-2 panel-header'>
         <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${j.email}`'><img v-if="j.avatar===null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${j.avatar}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(j.name)}} <ul class='inline-flex'>
         <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(j.date).fromNow()}}</li>
@@ -400,7 +400,7 @@ function url_to_link(text) {
    </div>
 </div> 
 <div  v-for="k in new_channel_post.fresh_channel_post" style='border: none; border-radius: 5px;' class='card p-2 post-container card-default'>
-    <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
+    <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex  panel-header">
                     <span style="margin-right: auto; display: flex;"><RouterLink :to='`/channel/${k.email}`'><img v-if="k.avatar===null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${k.avatar}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(k.name)}}<i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="far fa-check-circle"></i><p style='font-size:12px;'>{{k.first_name + '\t' + k.last_name}}</p></span></span><BlockReportUserComponent :post_owner="k.email" :post_id="k.postid" />
                    </div>
                    <RouterLink :to='`/status/${k.postid}`'><p style="white-space:pre-wrap; word-wrap: break-word;" v-html="url_to_link(checkIfFriendPostIsLong(k.caption))"  class='p-2 fs-6'></p></RouterLink>
