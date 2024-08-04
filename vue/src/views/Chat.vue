@@ -63,7 +63,7 @@ let all_convo=response.data.reply;
 conversation.convo=all_convo;
 all_convo.forEach(elem => {
 
-        conversation.message_chat.push({convo: elem.conversation, file:elem.file, file_status:elem.file_status, sender:elem.sender, reciever:elem.reciever, date:elem.created_at});
+        conversation.message_chat.push({convo: elem.conversation, file:elem.file, file_status:elem.file_status, sender:elem.sender, reciever:elem.reciever, isRead:elem.isRead, date:elem.created_at});
        
  
 });
@@ -208,13 +208,14 @@ function sendMessage(e){
             conversation.uploadProgress = Math.round((event.loaded * 100) / event.total);
         }}).then(response=>{
         user_message.value='';
+        document.getElementById("file-preview").style.display="none";
         //conversation.message_chat.push({convo: response.data.reply.conversation, file:response.data.reply.file, sender:response.data.reply.sender, reciever:response.data.reply.reciever, date:response.data.reply.created_at});
     }).catch(error=>{
         console.log(error);
     }).finally(()=>{
         conversation.uploadProgress = 0;
     });
-   document.getElementById("file-preview").style.display="none";
+
 
     }
 
@@ -253,7 +254,7 @@ onMounted(()=>{
 });
 const channel = pusher.subscribe('chat');
 channel.bind('send_message', function(data) {
-    conversation.message_chat.push({convo: data[0].conversation, file:data[0].file, file_status:data[0].file_status, sender:data[0].sender, reciever:data[0].reciever, date:data[0].created_at});
+    conversation.message_chat.push({convo: data[0].conversation, file:data[0].file, file_status:data[0].file_status, sender:data[0].sender, reciever:data[0].reciever,isRead:data[0].isRead, date:data[0].created_at});
     document.getElementById("unlike").play();
     scrollToBottom();
 });
@@ -278,7 +279,7 @@ channel.bind('send_message', function(data) {
                 @click="showDocument(x.file,x.file_status)"><i class="fs-2 fa fa-file"></i></span></p><br /><small style="color: lightslategray;">{{moment(x.date).fromNow()}}</small></div>
             
             <div v-else-if="x.sender == user_mail && x.convo !=''" class="message-sent"><p>{{x.convo }}</p><p class="m-4" style="cursor: pointer;" v-if="x.file != ''"><span   
-                @click="showDocument(x.file,x.file_status)"><i class="fs-2 fa fa-file"></i></span></p><br /><small style="color: lightslategray;">{{moment(x.date).fromNow()}}</small></div>
+                @click="showDocument(x.file,x.file_status)"><i class="fs-2 fa fa-file"></i></span></p><br /><small v-if="x.isRead != 'false'" style="color:magenta;"><i class="fas fa-check-double"></i></small><small v-else style="color:grey;"><i class="fas fa-check-double"></i></small><br /><small style="color: lightslategray;">{{moment(x.date).fromNow()}}</small></div>
         </div>
     </div>
     <div id="file-preview" style="position:fixed; z-index:1;  background-color:rgba(0,0,0,0.8); width:100%; height:100%; left:0px; top:0%;"  v-if="message_data.doc_uri !=''"  class="file-preview">
@@ -298,7 +299,7 @@ channel.bind('send_message', function(data) {
         <div class="chat_doc_content" style="display:flex; justify-content:center; flex-direction:column; align-items:center;">
         <div style="margin-top:0px;"><span @click="hideDoc" class="fs-1 cancel  text-white font-bold">&times;</span></div>
         <div class="content_div">
-        <img v-if="conversation.doc_ext === 'image' " style="width:100%; margin:0px auto;  height:80vh" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${conversation.chat_doc}`'>
+        <img class="chat-image" v-if="conversation.doc_ext === 'image' "  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${conversation.chat_doc}`'>
         <VideoPlayerComponent :video_info="{
                             source:conversation.chat_doc
                         }"  class="doc-video" v-else-if="conversation.doc_ext ==='video'"/>
@@ -466,6 +467,11 @@ z-index: 0;
     display:block;
     font-weight:400;
 }
+.chat-image{
+    width:100%; 
+    margin:0px auto;  
+    height:100%;
+}
 }
 @media screen and (min-width:620px) {
     .edit-container{
@@ -576,6 +582,11 @@ z-index: 0;
     margin-top: 0px;
     display:block;
     font-weight:400;
+}
+.chat-image{
+    width:100%; 
+    margin:0px auto;  
+    height:80vh;
 }
 }
 @media screen and (min-width:1224px) {
@@ -702,6 +713,11 @@ z-index:0;
     margin-top: 0px;
     display:block;
     font-weight:400;
+}
+.chat-image{
+    width:100%; 
+    margin:0px auto;  
+    height:80vh;
 }
 }
 
