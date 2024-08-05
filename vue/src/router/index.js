@@ -16,9 +16,17 @@ import Channel from "../views/Channels.vue";
 import LaunchChannel from "../views/LaunchChannel.vue";
 import Status from "../views/Status.vue";
 import Notifications from "../views/Notifications.vue";
+import ShowMessage from "../views/ShowMessage.vue";
+import Chat from "../views/Chat.vue";
+import NotFound from "../views/NotFound.vue";
+import Bookmark from "../views/Bookmarks.vue";
+import Find from "../views/Find.vue";
+import CreateLiveVideo from "../views/CreateLiveVideo.vue";
+import WatchLiveStream from "../views/WatchLiveStream.vue";
+import CommentDiscuss from "../views/CommentDiscuss.vue";
+import ChannelPostComponent from "../component/ChannelPostComponent.vue";
+import SharedPostComponent from "../component/SharedPostComponent.vue";
 import store from '../store/index.js';
-import VueCookies from 'vue-cookies';
-
 
 const routes=[
     
@@ -34,11 +42,16 @@ const routes=[
         component:Home,
         meta:{requiresAuth:true},
         children:[
-            {   path:"/home",
-                name:"Home",
-                component:Header
-            }
-            
+            {
+                name:"ChannelPosts",
+                path:"/home/:cat",
+                component:ChannelPostComponent
+            },
+            {
+                name:"SharedPosts",
+                path:"/home/:cat",
+                component:SharedPostComponent
+            },
         ]
     },
     {
@@ -99,9 +112,33 @@ const routes=[
         component:Notifications
     },
     {
+        path:"/find",
+        name:"Find",
+        meta:{requiresAuth:true},
+        component:Find
+    },
+    {
+        path:"/messages",
+        name:"Messages",
+        meta:{requiresAuth:true},
+        component:ShowMessage
+    },
+    {
+        path:"/live",
+        name:"Live",
+        meta:{requiresAuth:true},
+        component:CreateLiveVideo,
+    },
+    {
+        path: '/live/:streamId',
+        name: 'WatchLiveStream',
+        component:WatchLiveStream
+    },
+     {
         path:"/user/:info",
         name:"User",
-        component:User
+        component:User,
+        
     },
     {
         path:"/channel",
@@ -112,37 +149,61 @@ const routes=[
                 path:"/channel/:uid",
                 component:Channel
             }
+            
         ]
        
     },
     {
         path:"/status/:postid",
         name:"Status",
-        component:Status,  
+        component:Status,
+    },
+    {
+        path:"/comment/:comment_id",
+        component:CommentDiscuss
+        
+    },
+    {
+        path:"/chat/:uid",
+        name:"Chat",
+        meta:{requiresAuth:true},
+        component:Chat,
+       
     },
     {
         path:"/create_channel",
         name:"channel_create",
+        meta:{requiresAuth:true},
         component:LaunchChannel,
         
     },
+    {
+        path:"/bookmarks",
+        name:"bookmark",
+        meta:{requiresAuth:true},
+        component:Bookmark,
+        
+    },
+    {
+        path:"/:pathMatch(.*)*",
+        name:"NotFound",
+        component:NotFound
+    }
 ]
 const router=createRouter({
 history:createWebHistory(import.meta.env.BASE_URL),
 routes
 })
-const user_cookie=VueCookies.get('User');
-   
-
 router.beforeEach((to,from,next) =>{
-if(to.meta.requiresAuth && !store.state.user.token && user_cookie === 'deleted'){
+if(to.meta.requiresAuth && !store.state.user.token && !store.state.user.cookieToken){
     next({name: 'Sign Up'});
 }
-else if(store.state.user.token && user_cookie !='deleted' && (to.name === 'Sign Up' || to.name === 'welcome' || to.name ==='Login')){
+else if(store.state.user.token && (to.name === 'Sign Up' || to.name === 'welcome' || to.name ==='Login')){
     next({name:'Home'});
-}else if(!store.state.user.token && user_cookie !='deleted' && (to.name === 'Sign Up' || to.name === 'welcome' || to.name ==='Login')){
+}else if(store.state.user.cookieToken && (to.name === 'Sign Up' || to.name === 'welcome' || to.name ==='Login')){
     next({name:'Home'});
-}else{
+}
+else{
     next();
 }
 })
