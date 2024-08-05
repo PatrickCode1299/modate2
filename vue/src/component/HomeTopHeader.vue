@@ -98,70 +98,24 @@
             router.push({ name: 'Home' });
           }
         },
-        itemicon: "fa-light fa-house"
+        itemicon: "fa fa-regular fa-comment"
+       
       },
       {
-        linkname: "Match",
-        location: "/match",
+        linkname: "Conversation",
+        location: "/home/sharedposts",
         property: "link",
-        function: function gotoMatch() {
-          router.push({ name: 'Match' });
+        function: function gotoSharedPost() {
+          router.push({ name: 'SharedPosts' });
         },
-        itemicon: "fa-light fa-user-group"
+        itemicon: "far  fa-edit"
       },
       {
-        linkname: "Profile",
-        location: "/profile",
-        property: "link",
-        function: function gotoProfile() {
-          router.push({ name: 'Profile' });
-        },
-        itemicon: "fa-light fa-user"
-      },
-      {
-        linkname: "Messages",
-        location: "#",
-        property: "link",
-        function: function gotoMessages() {
-          router.push({ name: 'Messages' });
-        },
-        itemicon: "fa-light fa-envelope"
-      },
-      {
-        linkname: "Channels",
-        location: "/channel",
+        linkname: "ChannelPosts",
+        location: "/home/channelposts",
         property: "link",
         itemicon: "fa-light fa-tv"
       },
-      {
-        linkname: "Bookmarks",
-        location: "/bookmarks",
-        property: "link",
-        itemicon: "fa-light fa-note-sticky"
-      },
-      {
-        linkname: "Notifications",
-        location: "/notify",
-        property: "link",
-        itemicon: "fa-light fa-bell",
-        badge: 6
-      },
-      {
-        linkname: "Sign Out",
-        location: "#",
-        property: "link",
-        itemicon: "fa-light fa-right-from-bracket",
-        function: function logout() {
-          var ask_if_user_wants_to_logout = confirm("Do you want to logout?");
-          if (ask_if_user_wants_to_logout) {
-            store.commit('logout');
-            router.push({ name: 'welcome' });
-          } else {
-            var get_current_route = route.params.name;
-            router.push({ name: get_current_route });
-          }
-        }
-      }
     ];
   } else {
     links.value = [

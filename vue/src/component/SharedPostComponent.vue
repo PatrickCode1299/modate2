@@ -2,7 +2,7 @@
 import store from '../store';
 import axiosClient from '../axios';
 import { computed, onMounted,onBeforeUnmount, onUpdated, reactive, ref, watch } from 'vue';
-import FetchUserPost from './FetchUserPost.vue';
+import FetchConversation from './FetchConversation.vue';
 import { useRouter } from 'vue-router';
 import StoriesComponent from './StoriesComponent.vue';
 import 'swiper/css';
@@ -43,7 +43,7 @@ const latest_post_data=reactive({
 <div class="stories-and-div-container">
 <div style="position: relative;" class="user-post">
     <StoriesComponent  />
-    <FetchUserPost style="width: 100%; margin-top:0px;" :latest="latest_post_data" />
+    <FetchConversation style="width: 100%; margin-top:0px;" :latest="latest_post_data" />
 </div>
 </div>
 
