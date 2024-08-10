@@ -223,7 +223,7 @@ function url_to_link(text) {
     <div :style="{backgroundImage:info.bgUrl}" class="images p-4">
         <span style="word-wrap: break-word;" class="fs-5">{{ info.cover_text }}</span>
         <div v-if="store.state.user.token != null" style="position:absolute; z-index:1; top:150px; right:20px;" class="d-flex justify-content-flex-start">
-            <button style="margin-right:10px; color:black;"  @click="gotoChat" class="btn btn-default btn-sm "><i style=" border-radius: 5px;" class="fa  fa-envelope fs-1"></i></button>
+            <button style="margin-right:10px; color:black;"  @click="gotoChat" class="btn btn-default btn-sm "><i style="border-radius:5px;" class="fs-3 fa-light fa-envelope"></i></button>
             <button v-if="info.isUserFollowed === 'false' && user_mail!=current_user" @click="followUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-success  font-bold">Follow</button>
             <button   v-else v-if="user_mail !=current_user" @click="unfollowUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-danger font-bold">Unfollow</button>
 

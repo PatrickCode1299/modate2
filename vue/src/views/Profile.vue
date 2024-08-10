@@ -49,6 +49,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
         localStorage.setItem('PICTURE',response.data.profile_picture);
         localStorage.setItem('COVER_PHOTO',response.data.coverPhoto);
         localStorage.setItem('COVER_TEXT',response.data.coverText);
+        sessionStorage.setItem('BIRTHDAY',response.data.birthday);
         if(response.data.coverPhoto===null){
             info.coverbgVal="false";
             cover_bg="";
@@ -176,9 +177,41 @@ function url_to_link(text) {
       });
       }
 }
+function check_if_its_user_birthday(){
+   let $user_birthdate=sessionStorage.getItem('BIRTHDAY');
+   const date = new Date($user_birthdate);
 
+// Extract the month and day
+const month = (date.getMonth() + 1).toString(); // Month is zero-indexed, so add 1
+const day = date.getDate().toString(); // Get the day of the month
+
+// Format the date as M/D (ignore the year)
+const formattedDate = `${month}/${day}`;
+
+
+// Current date (ignoring the year)
+const currentDate = new Date();
+const currentMonth = (currentDate.getMonth() + 1).toString();
+const currentDay = currentDate.getDate().toString();
+
+// Format the current date as M/D
+const formattedCurrentDate = `${currentMonth}/${currentDay}`;
+
+// Compare the formatted birthdate with the current date
+if (formattedDate === formattedCurrentDate) {
+  console.log("The dates match!");
+    const balloon = document.getElementById("balloon").style.display="block";
+
+   }else{
+    return;
+   }
+}
+onMounted(()=>{
+    check_if_its_user_birthday();
+})
+let balloon_num=ref(10);
 </script>
-<template>h
+<template>
     <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
    <div  class="container user-profile">
@@ -228,6 +261,7 @@ function url_to_link(text) {
             <li @click="hideReplies" id="active_menu" class="list-unstyled thought-link">Thoughts</li>
             <li @click="showReplies" id="reply_menu" class="list-unstyled">Replies</li>
             <li @click="gotoChannels" class="list-unstyled">Channel</li>
+            <!--<li @click="gotoChannels" class="list-unstyled">Highlights</li>-->
         </ul>
         <div v-if="profile_post.thoughts === ''" class="spinner p-2"></div>
         <div v-else  class="all-activity-info-div">
@@ -299,6 +333,12 @@ function url_to_link(text) {
     </div>
 
     </div>
+    </div>
+    <div  class="balloon_animate" id="balloon">
+        <h2 class="fs-4" style="text-shadow:2px 2px 2px black;">Happy Birthday  {{personal_info.u_first_name}} We Love You..</h2>
+        <div class="d-flex justify-content-flex-start">
+        <div style="display:flex;" v-for=" x in 5"  class='balloon m-2'></div>
+        </div>
     </div>
    </div>
 </template>
@@ -465,6 +505,61 @@ function url_to_link(text) {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-30vh) rotate(30deg); /* Move up and rotate */
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-60vh) rotate(-30deg); /* Move up further and rotate more */
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-90vh) rotate(30deg); /* Move closer to the top and rotate */
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-120vh) rotate(-30deg); /* Move off-screen and rotate */
+    opacity: 0;
+  }
+}
+.balloon_animate{
+    display:none;
+    animation: floatUp 8s linear forwards; /* Animation lasts 8 seconds */
+    position: fixed;
+     bottom: 0; /* Start from the bottom of the screen */
+    left: 0%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width:100%;
+}
+.balloon {
+ /* Center horizontally */
+  width: 80px;
+  height: 80px;
+  background: red; /* Balloon color */
+  border-top-left-radius:80px;
+  border-top-right-radius:80px;
+  border-bottom-left-radius:80px;
+  border-bottom-right-radius:80px;
+  
+}
+
+.balloon::after {
+display:none;
+  content: "";
+  position: absolute;
+  bottom: -30px; /* Position the string below the balloon */
+  left: 50%;
+  width: 4px;
+  height: 50px;
+  background: black; /* Balloon string color */
+  transform: translateX(-50%);
+}
 }
 @media screen and (min-width:620px) {
     .user-profile{
@@ -472,7 +567,7 @@ function url_to_link(text) {
     background-color: rgb(252, 252, 252);
     height: 100%;
     margin:0 auto;
-    margin-top:80px;
+    margin-top:50px;
 }
 .images{
     border-radius: 10px;
@@ -618,6 +713,57 @@ function url_to_link(text) {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-30vh) rotate(30deg); /* Move up and rotate */
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-60vh) rotate(-30deg); /* Move up further and rotate more */
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-90vh) rotate(30deg); /* Move closer to the top and rotate */
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-120vh) rotate(-30deg); /* Move off-screen and rotate */
+    opacity: 0;
+  }
+}
+.balloon_animate{
+    display:none;
+    animation: floatUp 8s linear forwards; /* Animation lasts 8 seconds */
+    position: fixed;
+     bottom: 0; /* Start from the bottom of the screen */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+.balloon {
+ /* Center horizontally */
+  width: 100px;
+  height: 150px;
+  background: red; /* Balloon color */
+  border-radius: 50% 50% 40% 40%; /* Balloon shape */
+  
+}
+
+.balloon::after {
+display:none;
+  content: "";
+  position: absolute;
+  bottom: -30px; /* Position the string below the balloon */
+  left: 50%;
+  width: 4px;
+  height: 50px;
+  background: black; /* Balloon string color */
+  transform: translateX(-50%);
+}
 }
 @media screen and (min-width:1224px) {
     .user-profile{
@@ -625,7 +771,7 @@ function url_to_link(text) {
     background-color: rgb(252, 252, 252);
     height: 100%;
     margin:0 auto;
-    margin-top:80px;
+    margin-top:50px;
     position: relative;
 }
 .images{
@@ -771,6 +917,58 @@ function url_to_link(text) {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-30vh) rotate(30deg); /* Move up and rotate */
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-60vh) rotate(-30deg); /* Move up further and rotate more */
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-90vh) rotate(30deg); /* Move closer to the top and rotate */
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-120vh) rotate(-30deg); /* Move off-screen and rotate */
+    opacity: 0;
+  }
+}
+.balloon_animate{
+    display:none;
+    animation: floatUp 8s linear forwards; /* Animation lasts 8 seconds */
+    position: fixed;
+     bottom: 0; /* Start from the bottom of the screen */
+    left:0px;
+
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+.balloon {
+ /* Center horizontally */
+  width: 100px;
+  height: 150px;
+  background: red; /* Balloon color */
+  border-radius: 50% 50% 40% 40%; /* Balloon shape */
+  
+}
+
+.balloon::after {
+display: none;
+  content: "";
+  position: absolute;
+  bottom: -30px; /* Position the string below the balloon */
+  left: 50%;
+  width: 4px;
+  height: 50px;
+  background: black; /* Balloon string color */
+  transform: translateX(-50%);
 }
 }
 

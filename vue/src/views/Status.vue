@@ -425,7 +425,7 @@ function checkIfCommentIsLong(text){
   <form class="comment-form" style="margin-top:0px;" v-if="user_mail!=null"  @submit="postComment">
   <textarea v-if="all_post_info.isReply === ''"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; z-index:2; font-weight:600; margin-top: 0px; border:none;   width: 100%;"></textarea>
   <span     v-if="all_post_info.isReply === ''"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-md btn-success">Post</button></span>
-  <div id="tag_box" class="card tag_users_box card-default shadow-sm cursor-pointer p-2">
+  <div id="tag_box" class="card tag_users_box card-default shadow-md cursor-pointer p-2">
         <div style="display:block;"><span @click="hideTagBox" class="m-2"><i class="fa fa-arrow-left"></i></span></div>
             <li @click="setTaggedUser(u.email,u.first_name,u.last_name)" class="list-unstyled m-4" v-for="u in taglist.tagged_users_result"><img v-if="u.profile_picture === null || u.profile_picture === 'null'" loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  src="../pictures/profile.png"  ><img v-else loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  :src="`https://res.cloudinary.com/fishfollowers/image/upload/${u.profile_picture}`"   ><span class="m-2">{{ u.first_name + '\t' + u.last_name }}</span></li>
     </div>
@@ -591,7 +591,6 @@ function checkIfCommentIsLong(text){
 .tag_users_box{
     display:none;
     position: absolute; 
-    bottom:120px;
     z-index:1; 
     left:20px; 
     overflow-x: hidden;  
@@ -709,7 +708,6 @@ function checkIfCommentIsLong(text){
 .tag_users_box{
     display:none;
     position: absolute; 
-    bottom:120px;
     z-index:1; 
     left:20px; 
     overflow-x: hidden;  

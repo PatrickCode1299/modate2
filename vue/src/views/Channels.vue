@@ -673,7 +673,7 @@ border-radius: 5px;
     object-fit: cover;
     flex: 1;
     flex-basis: 40%;
-    height: 400px;
+    height: 100%;
    
     
 }
@@ -813,7 +813,7 @@ border-radius: 5px;
     object-fit: cover;
     flex: 1;
     flex-basis: 40%;
-    height: 400px;
+    height: 100%;
    
     
 }
@@ -962,7 +962,7 @@ border-radius: 5px;
     object-fit: cover;
     flex: 1;
     flex-basis: 40%;
-    height: 400px;
+    height: 100%;
    
     
 }

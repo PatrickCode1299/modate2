@@ -313,7 +313,7 @@ var style = {
     </div>
     <div  class="story-img-preview">
         <span @click="hideText" style="color: white; margin-top:50px; font-size: 75px; cursor: pointer; font-weight: bold;" class=" fs-1">&times;</span>
-        <span class="text-white cursor-pointer font-bold" @click="createImage(user_text.text_area_class)">Create Text Story.</span>
+        <span style="margin-top:0px;" class="text-white cursor-pointer font-bold" @click="createImage(user_text.text_area_class)">Create Text Story.</span>
         <textarea rows="10" cols="50" style="text-align:left; white-space:pre-wrap;" v-model="user_text_type" id="text" :class="user_text.text_area_class">
 
         </textarea>

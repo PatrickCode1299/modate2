@@ -2,18 +2,29 @@
 import axios from "axios";
 import store from "../store";
 import axiosClient from "../axios.js";
-import { useRouter } from "vue-router";
+import { useRouter,useRoute } from "vue-router";
 import { reactive } from "vue";
 import { defineAsyncComponent } from "vue";
 const Header=defineAsyncComponent({
    loader:  () => import("../component/Header.vue"),
   
 });
+const HomeTopHeader=defineAsyncComponent({
+   loader:  () => import("../component/HomeTopHeader.vue"),
+  
+});
+const route=useRoute();
 const SideNav=defineAsyncComponent({
     loader: () => import("../component/SideNav.vue")
 });
 const StoriesandPost=defineAsyncComponent({
     loader: () => import("../component/StoriesandPost.vue")
+});
+const ChannelPostComponent=defineAsyncComponent({
+    loader: () => import("../component/ChannelPostComponent.vue")
+});
+const SharedPostComponent=defineAsyncComponent({
+    loader: () => import("../component/SharedPostComponent.vue")
 });
 let user_mail;
 const router=useRouter();
@@ -44,17 +55,20 @@ function checkIfUserHasCompleteProfile(){
 }
 document.title='Home';
 deleteOldStories();
-
+console.log(route.params.cat);
 </script>
 <template>
     {{ checkIfUserHasCompleteProfile() }}
+    <HomeTopHeader class="shadow-lg" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
     <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
     <div v-if="info.info_value==='true'" style="margin-top: 100px;" class=" incomplete d-flex justify-content-center">
         <h2 class="fs-5 font-bold m-4">Click on profile icon above and complete your profile to be visible</h2>
     </div>
     <div v-else  class="story-and-post">
-    <StoriesandPost  />
+    <ChannelPostComponent v-if="route.params.cat=='channelposts'" />
+    <SharedPostComponent v-else-if="route.params.cat=='sharedposts'" />
+    <StoriesandPost v-else />
     </div>
 </template>
 <style scoped>

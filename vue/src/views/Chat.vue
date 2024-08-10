@@ -182,6 +182,7 @@ function chat_document(e){
 }
 function sendMessage(e){
     e.preventDefault();
+    document.getElementById("send_msg").setAttribute("disabled","true");
     let message_id=route.params.uid;
     let formData=new FormData();
     if(message_data.file ===''){
@@ -269,9 +270,9 @@ channel.bind('send_message', function(data) {
 <template>
    <Header class="shadow-sm" style="background-color:white; display:none; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <div id="container" class="container  edit-container">
-     <div class="reciever-details-header p-2">
-        <img v-if="chat_info.avatar === null" style="object-fit: cover;" src="../pictures/profile.png"  class="reciever-img"/>
-        <img v-else style="object-fit: cover;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${chat_info.avatar}`'  class="reciever-img"/><span class="fs-6 cursor-pointer reciever-name">{{chat_info.name}}<small class="user-last-activity">Active 4hrs ago..</small></span>
+     <div class="reciever-details-header">
+        <img  v-if="chat_info.avatar === null" style="object-fit: cover; margin-right:auto;" src="../pictures/profile.png"  class="reciever-img"/>
+        <img v-else style="object-fit: cover; margin-right:auto;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${chat_info.avatar}`'  class="reciever-img"/><span  class="fs-6 cursor-pointer"><RouterLink :to='`/user/${chat_info.reciever_email}`'>{{chat_info.name}}</RouterLink><small class="user-last-activity">Active 4hrs ago..</small></span>
      </div>
     <div class="conversation p-4" style="margin-bottom:200px;">
         <div v-for="x in conversation.message_chat">
@@ -318,7 +319,7 @@ channel.bind('send_message', function(data) {
         <textarea  v-model="user_message" placeholder="Type your message..." class="message-box"></textarea>
         <div class="send-message-box">
         <button  id="send_msg" disabled class="btn btn-success btn-lg send-msg-btn"><i class="fa fa-paper-plane"></i></button>
-        <button @click="showFile"  class="btn btn-sm btn-default show-file"><i class="fa fa-image fs-2"></i></button>
+        <span @click="showFile"  class="btn btn-sm btn-default show-file"><i class="fa fa-image fs-2"></i></span>
         </div>
         </form>
         <h2 v-else class="text-center font-bold fs-5">You can no longer send messages to this user</h2>
@@ -359,6 +360,15 @@ channel.bind('send_message', function(data) {
 }
 .reciever-details-header{
 position: relative;
+padding: 0px;
+width:100%;
+left:0px;
+background-color:rgb(255, 236, 236);
+z-index:1;
+display:flex;
+flex-direction:row;
+justify-content:flex-start;
+position:fixed;
 }
 .reciever-img{
     width: 40px;
@@ -502,12 +512,21 @@ z-index: 0;
 }
 .reciever-details-header{
 position: relative;
+padding: 0px;
+width:100%;
+left:0px;
+background-color:rgb(255, 236, 236);
+z-index:1;
+display:flex;
+flex-direction:row;
+justify-content:flex-start;
+position:fixed;
 }
 .reciever-img{
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    margin-top: 10px;
+    margin-top: 0px;
 }
 .reciever-name{
     position: absolute;
@@ -591,7 +610,7 @@ z-index: 0;
 }
 @media screen and (min-width:1224px) {
     .edit-container{
-    max-width: 100%;
+    max-width: 50%;
     margin:0px auto;
     background-color: rgb(253, 253, 253);
     height: auto;
@@ -619,12 +638,22 @@ z-index: 0;
 .reciever-details-header{
 position: relative;
 padding: 0px;
+width:50%;
+left:20px;
+right:20px;
+margin:0px auto;
+background-color:rgb(255, 236, 236);
+z-index:1;
+display:flex;
+flex-direction:row;
+justify-content:flex-start;
+position:fixed;
 }
 .reciever-img{
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    margin-top: 10px;
+    margin-top: 0px;
 }
 .reciever-name{
     position: absolute;
@@ -633,12 +662,18 @@ padding: 0px;
     font-weight: bold;
 }
 .message-box{
-    width: 100%;
+    width: 50%;
     resize: none;
     margin-top: 100px;
     border-radius: 50px;
     background-color: rgb(255, 236, 246);
     border:none;
+}
+.message-box-holder{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
 }
 .message-recieved{
     background-color: rgb(255, 212, 255);
@@ -671,6 +706,7 @@ padding: 0px;
 .send-message-box{
 position: relative;
 z-index:0;
+width:50%;
 }
 .send-msg-btn{
     position: absolute;
