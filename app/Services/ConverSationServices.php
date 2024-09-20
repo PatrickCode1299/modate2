@@ -45,19 +45,6 @@ public function createUserComment($data){
     $this->userServices->notifyUser($user_who_comment,$post_owner,"$user_who_comment_name made a comment on your post: $comment",$post_id);
   }
 }
-    $find_user_who_comment_info=User::where('email',$user_who_comment)->first();
-    $all_info=array(
-      "comment"=>$comment,
-      "post_id"=>$post_id,
-      "user_who_comment"=>$user_who_comment,
-      "avatar"=>$find_user_who_comment_info['profile_picture'],
-      "first_name"=>$find_user_who_comment_info['first_name'],
-      "last_name"=>$find_user_who_comment_info['last_name'],
-      "comment_date"=>$current_date
-    );
-    return response([
-      "reply"=>$all_info,
-    ]);
 }
 public function sharePost($data){
     Shared_Post::create([
