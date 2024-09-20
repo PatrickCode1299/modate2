@@ -4,15 +4,19 @@ import SideNav from "../component/SideNav.vue";
 import OldLikeShareComment from "../component/OldLikeShareComment.vue";
 import UserPostSettings from "../component/UserPostSettings.vue";
 import VideoPlayerComponent from "../component/VideoPlayerComponent.vue";
+import ProfileSkeletonLoader from "../component/ProfileSkeletonLoader.vue";
+import PostSkeletonLoader from "../component/PostSkeletonLoader.vue";
+import UserPostHeaderComponent from "../component/UserPostHeaderComponent.vue"
 import moment from 'moment';
 import store from "../store";
-import { ref,reactive, onMounted } from "vue";
+import { ref,reactive, onMounted, onUpdated } from "vue";
 import axiosClient from "../axios";
 import { useRouter } from "vue-router";
 const user_mail=localStorage.getItem('USER_MAIL');
 let info=reactive({
     info_value:"false",
     coverbgVal:"false",
+    isLoading:false,
     bgUrl:"",
     cover_text:""
 });
@@ -36,12 +40,17 @@ var user_profile_pic;
 axiosClient.post("/profile",{email:user_mail}).then((response=>{
     if(response.data.info==="false"){
        info.info_value="true";
+       info.isLoading=true;
        localStorage.setItem('INCOMPLETE',info.info_value);
        incomplete=localStorage.getItem('INCOMPLETE');
        personal_info.u_incomplete=localStorage.getItem('INCOMPLETE');
+       console.log(personal_info.u_incomplete);
     }else{
        info.info_value="false";
-       
+       info.isLoading=true;
+       localStorage.setItem('INCOMPLETE',info.info_value);
+       incomplete=localStorage.getItem('INCOMPLETE');
+       personal_info.u_incomplete=localStorage.getItem('INCOMPLETE');
         localStorage.setItem('FIRSTNAME',response.data.first_name);
         localStorage.setItem('LASTNAME',response.data.last_name);
         localStorage.setItem('LOCATION',response.data.location);
@@ -49,6 +58,9 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
         localStorage.setItem('PICTURE',response.data.profile_picture);
         localStorage.setItem('COVER_PHOTO',response.data.coverPhoto);
         localStorage.setItem('COVER_TEXT',response.data.coverText);
+        localStorage.setItem('ISPRIVATE',response.data.isPrivate);
+        localStorage.setItem('ISSOUND',response.data.isSound);
+        sessionStorage.setItem('ISCOLOR',response.data.isColor);
         sessionStorage.setItem('BIRTHDAY',response.data.birthday);
         if(response.data.coverPhoto===null){
             info.coverbgVal="false";
@@ -91,18 +103,11 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
        
       
 const goto=useRouter();
-function gotoEdit(){
-    goto.push({
-        name:"Edit"
-    });
-}
+
 function gotoProfileHeader(){
     goto.push({
         name:"EditHeader"
     })
-}
-function gotoSupport(){
-    alert("Please Contact Support");
 }
 const router=useRouter();
 function gotoChannels(){
@@ -178,8 +183,8 @@ function url_to_link(text) {
       }
 }
 function check_if_its_user_birthday(){
-   let $user_birthdate=sessionStorage.getItem('BIRTHDAY');
-   const date = new Date($user_birthdate);
+    let $user_birthdate=sessionStorage.getItem('BIRTHDAY');
+    const date = new Date($user_birthdate);
 
 // Extract the month and day
 const month = (date.getMonth() + 1).toString(); // Month is zero-indexed, so add 1
@@ -196,25 +201,32 @@ const currentDay = currentDate.getDate().toString();
 
 // Format the current date as M/D
 const formattedCurrentDate = `${currentMonth}/${currentDay}`;
-
 // Compare the formatted birthdate with the current date
 if (formattedDate === formattedCurrentDate) {
-  console.log("The dates match!");
     const balloon = document.getElementById("balloon").style.display="block";
 
    }else{
     return;
    }
 }
-onMounted(()=>{
+function replaceHashTagWithLink(text) {
+    return (text || '').replace(/#(\w+)/g, function (match, tag) {
+  return `<a style='color:#1DA1F2;' href="/related/${tag}">${match}</a>`;
+});
+}
+onUpdated(()=>{
+    if(info.isLoading)
     check_if_its_user_birthday();
+    else
+    console.log("nothing");
 })
 let balloon_num=ref(10);
 </script>
 <template>
     <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
-   <div  class="container user-profile">
+    <ProfileSkeletonLoader v-if="!info.isLoading" />
+   <div v-else  class="container user-profile">
     <div :style="{backgroundImage:info.bgUrl}" class="images p-4">
         <span style="word-wrap: break-word;" class="fs-5">{{ info.cover_text }}</span>
         <div class="edit-profile d-flex justify-content-flex-start">
@@ -222,7 +234,7 @@ let balloon_num=ref(10);
         </div>
         <div class="user-pic-name">
 
-            <img v-if="personal_info.u_incomplete === 'true'" src="../landing/blondie.jpg" class="user-profile-img" />
+            <img v-if="personal_info.u_incomplete === 'true'" src="../pictures/profile.png" class="user-profile-img" />
             <img v-else-if="user_profile_pic === 'null' || user_profile_pic === null || user_profile_pic===undefined" src="../pictures/profile.png" class="user-profile-img" />
             <img v-else :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${user_profile_pic}`" class="user-profile-img" />
             <span style="text-shadow: none; text-align:center;" class="fs-4  text-black text-bold bold">{{ personal_info.u_first_name }}</span>
@@ -236,15 +248,14 @@ let balloon_num=ref(10);
                     <small style="display: block;" class="helper-text ">Update your  details ere.</small></h2>
                 -->
                 </div>
-                <div style="margin-top:50px;" class="edit-btn p-2">
-                    <button v-if="personal_info.u_incomplete === 'true'" class="btn btn-default font-bold fs-5 edit btn-sm" @click="gotoEdit">Edit</button>
-                    <button v-else class="btn btn-default edit btn-sm font-bold" @click="gotoSupport">Modify</button>
+                <div style="margin-top:100px;" class="edit-btn p-2">
+                   
                 </div>
             </div>
             <div class="all-user-info p-2">
                 <div v-if="personal_info.u_incomplete === 'true'" class="incomplete-profile">
                     <h2 class="fs-4 font-bold text-bold text-center">Your profile is not visible to other users.</h2>
-                    <p class="text-center m-3">Click on Edit at the right side to add your info and the green Customize button to update your photo and cover text</p>
+                    <p class="text-center m-3">Click on  the green Customize button to update your details, photo and cover text</p>
                 </div>
                 <div v-else class="complete-profile" style="margin-top:0px;">
                    <!-- <ul>
@@ -263,14 +274,17 @@ let balloon_num=ref(10);
             <li @click="gotoChannels" class="list-unstyled">Channel</li>
             <!--<li @click="gotoChannels" class="list-unstyled">Highlights</li>-->
         </ul>
-        <div v-if="profile_post.thoughts === ''" class="spinner p-2"></div>
+        <PostSkeletonLoader v-if="profile_post.thoughts === ''" />
         <div v-else  class="all-activity-info-div">
             <div id="thoughts" class='thoughts'>
             <div :id="'post'+x.postid" style="border:none;" class="card p-2 card-default m-2" v-for="x in profile_post.thoughts">
-            <div  style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
-        <span class="d-flex" style="margin-right: auto; "><img v-if="x.profile_picture === null" loading="lazy" src="../pictures/profile.png" class='img-circle small-thumbnail'><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(x.name)}}</span></span><UserPostSettings :post_id="x.postid"  class="m-2 cursor-pointer"  />
-            </div>
-   <p style="white-space:pre-wrap;" v-html="url_to_link(x.caption)" class='p-2 fs-6'></p>
+           <UserPostHeaderComponent :post_header="{
+            profile_picture:x.profile_picture,
+            name:x.name,
+            created_at:x.created_at,
+            postid:x.postid
+           }" />
+   <p style="white-space:pre-wrap;" v-html="url_to_link(replaceHashTagWithLink(x.caption))" class='p-2 fs-6'></p>
    <OldLikeShareComment :post_content="{
                     post_caption:x.caption,
                     post_owner_name:x.name,
@@ -281,22 +295,22 @@ let balloon_num=ref(10);
                     post_comments_count:x.comments,
                     post_shares_count:x.shares
                   }" :post_owner="x.email"    :post_id="x.postid" /> 
-    <ul class='inline-flex'>
-       <li class='list-unstyled'>{{moment(x.created_at).fromNow()}}</li>
-    </ul>
+    
     </div>
     </div>
     <div id="replies" class='replies'>
-        <div v-if="profile_post.replies === ''" class='spinner p-2'></div>
+        <PostSkeletonLoader v-if="profile_post.replies === ''"/>
         <div v-else v-for="i in profile_post.replies"  style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default' :id="'post'+i.postid">
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}</span></span><UserPostSettings :post_id="i.postid"  class="m-2 cursor-pointer"  />
+                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}} <ul class='inline-flex' style="display:block;">
+            <li style="font-size:12px; color:grey;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
+            </ul></span></span><UserPostSettings :post_id="i.postid"  class="m-2 cursor-pointer"  />
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;"   class='p-2 fs-6' v-html="checkIfFriendPostIsLong(url_to_link(i.quote))"></p></RouterLink>
                     <div class="card">
                     <RouterLink :to='`/user/${i.email}`'><h5 class="m-2">{{reduceNameLength(i.name)}}</h5></RouterLink>
-                    <RouterLink :to='`/status/${i.postid}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="checkIfFriendPostIsLong(url_to_link(i.caption))"></p></RouterLink>
+                    <RouterLink :to='`/status/${i.postid}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="checkIfFriendPostIsLong(url_to_link(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <div class="flex-img">
                         <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
                         <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />
@@ -309,10 +323,10 @@ let balloon_num=ref(10);
                         }"/>
                     </div>
                 </div>
-                  <OldLikeShareComment :post_content="{
-                    post_caption:i.caption,
-                    post_owner_name:i.name,
-                    post_owner_email:i.email,
+                <OldLikeShareComment :post_content="{
+                    post_caption:i.quote,
+                    post_owner_name:i.name_of_user_who_shared,
+                    post_owner_email:i.email_of_user_who_shared,
                     post_owner_avatar:i.profile_picture,
                     post_image_one:i.post_img1,
                     post_image_two:i.post_img2,
@@ -323,10 +337,8 @@ let balloon_num=ref(10);
                     post_likes_count:i.likes,
                     post_comments_count:i.comments,
                     post_shares_count:i.shares
-                  }" :post_owner="i.email" :post_id="i.postid" />
-                    <ul class='inline-flex'>
-                    <li style="font-size: 12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
-                    </ul>
+                  }" :post_owner="i.email_of_user_who_shared" :post_id="i.postid" />
+                    
          
     </div>
     </div>
@@ -335,9 +347,9 @@ let balloon_num=ref(10);
     </div>
     </div>
     <div  class="balloon_animate" id="balloon">
-        <h2 class="fs-4" style="text-shadow:2px 2px 2px black;">Happy Birthday  {{personal_info.u_first_name}} We Love You..</h2>
+        <h2 class="fs-4" style="color:magenta; font-weight:700;">Happy Birthday  {{personal_info.u_first_name}} We Love You..</h2>
         <div class="d-flex justify-content-flex-start">
-        <div style="display:flex;" v-for=" x in 5"  class='balloon m-2'></div>
+        <img src="../landing/balloon.png" />
         </div>
     </div>
    </div>
@@ -348,9 +360,10 @@ let balloon_num=ref(10);
     width: 100%;
     background-color: rgb(252, 252, 252);
     height:100%;
-    margin-top:0px;
+    margin-top:35px;
     padding:0px;
     position: relative;
+
     
 }
 .images{
@@ -375,6 +388,7 @@ let balloon_num=ref(10);
     object-position: center center;
     object-fit: cover;
     border:3px solid rgb(254, 213, 238);
+    background-color:white;
 }
 .bold{
     font-weight: bold;

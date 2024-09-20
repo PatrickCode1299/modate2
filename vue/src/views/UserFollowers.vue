@@ -1,29 +1,29 @@
 <script setup>
 import Header from "../component/Header.vue";
 import SideNav from "../component/SideNav.vue";
-import NotificationsSkeletonLoader from "../component/NotificationsSkeletonLoader.vue";
 import store from "../store";
 import { onMounted, onUpdated, reactive, ref, watch } from "vue";
 import axiosClient from "../axios";
-import { useRouter } from "vue-router";
-const user_mail=localStorage.getItem('USER_MAIL');
-let all_notifications=reactive({
-    info:"",
+import { useRouter, useRoute } from "vue-router";
+const route=useRoute();
+const user_mail=atob(route.params.uid);
+let followers=reactive({
+    all_followers:[],
     isLoading:"true",
-});
+})
 
 onMounted(()=>{
 let formData=new FormData();
 formData.append('email',user_mail);
-axiosClient.post("/findNotifications",formData).then(response=>{
-all_notifications.info=response.data.reply;
-all_notifications.isLoading="false";
+axiosClient.post("/findUserFollowers",formData).then(response=>{
+followers.all_followers=response.data.reply;
+followers.isLoading="false";
 }).catch(e=>{
     console.log(e);
 })
 });
 onMounted(()=>{
-document.title='Notifications';
+document.title='Followers';
 });
 function checkifInfoIsLong(text){
      if(text==null){
@@ -39,16 +39,16 @@ function checkifInfoIsLong(text){
 </script>
 <template>
     <Header style="position:fixed; top:0px; width:100%;" class="shadow-sm bg-white" />
-    <SideNav style="display:none;" />
-    <div class="container  p-2  edit-container">
-        <NotificationsSkeletonLoader v-if="all_notifications.isLoading==='true'"  />
-        <div v-else>
-       <p class="m-4" v-for="x in all_notifications.info"><RouterLink v-if="x.source==='match'" :to='`/user/${x.from}`'><span class='not-info' v-if="x.owner_has_read === 'false'"><img v-if="x.profile_picture === null" class="notify-img" src="../pictures/profile.png"><img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" /><strong>{{checkifInfoIsLong(x.info)}}</strong></span><span class='not-info' v-else><img v-if="x.profile_picture === null" class="notify-img" src="../pictures/profile.png" /><img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" />{{ checkifInfoIsLong(x.info)}}</span></RouterLink>
-        <RouterLink v-else :to='`/status/${x.source}`'><span class='not-info' v-if="x.owner_has_read === 'false'"><img v-if="x.profile_picture === null" class="notify-img" src="../pictures/profile.png" ><img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" /><strong>{{checkifInfoIsLong(x.info)}}</strong></span><span class="not-info" v-else><img v-if="x.profile_picture === null" class="notify-img" src="../pictures/profile.png"><img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" />{{ checkifInfoIsLong(x.info) }}</span></RouterLink></p>
-        <h3 style="margin-top:50px; margin-bottom:50px;" class="fs-5 text-center" v-if="all_notifications.info.length===0">There are no new notifications yet</h3>
-        </div>
-
-      
+    <div v-if="followers.isLoading==='true'" class="d-flex justify-content-center spinner align-items-center loading-icon">
+    </div>
+    <div class="container edit-container">
+    <h2 class="fs-5 font-bold">Followers</h2>
+    <ul>
+      <li style="position:relative; margin-top:0px;"  v-for="x in followers.all_followers"><RouterLink class="d-flex"  :to='`/user/${x.follower}`'><img v-if="x.profile_picture === null" class="notify-img" src="../pictures/profile.png" ><img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" /><span class="font-bold" style="display:inline; margin-left:5px;  margin-top:10px;">{{ x.first_name }}</span></RouterLink><span style="position:absolute; display:none; top:0px; right:0px;" class="follow-unfollow"><button style="border-radius:20px;" class="btn btn-sm btn-success fs-6 font-bold">Follow</button><button style="border-radius:20px;" class="btn btn-sm btn-danger fs-5 font-bold">Unfollow</button></span>
+        <div style="position: relative; margin-bottom:40px;">
+        <p  style="position:absolute; left:50px;">{{ x.cover_text }}</p>
+      </div></li>  
+    </ul>
     </div>
 </template>
 <style scoped>
@@ -79,12 +79,13 @@ function checkifInfoIsLong(text){
     height: auto;
     border-radius: 10px;
     display: flex;
+    margin-top:50px;
     flex-direction: column;
 }
 .notify-img{
     border-radius: 50%;
-    height: 40px;
-    width: 40px;
+    height: 50px;
+    width: 50px;
     object-fit: cover;
 }
 .not-info{
@@ -165,13 +166,6 @@ function checkifInfoIsLong(text){
 }
 }
 @media screen and (min-width:1224px) {
-    .edit-container{
-    width: 50%;
-    margin:0px auto;
-    background-color: rgb(253, 253, 253);
-    height: auto;
-    border-radius: 10px;
-}
 .green-text-bold{
     color: green;
     font-weight: bold;
@@ -197,7 +191,7 @@ function checkifInfoIsLong(text){
     height: auto;
     border-radius: 10px;
     display: flex;
-    margin-top:50px;
+    margin-top:80px;
     justify-content: flex-start;
     flex-direction: column;
 }

@@ -1,105 +1,77 @@
 <template>
-  <div class="video-container" style="margin-top:80px;">
-    <video id="liveVideo" ref="liveVideo" controls style="width:100%;" autoplay muted></video>
+  <div>
+    <h1>Viewing Live Broadcast</h1>
+    <video ref="remoteVideo" autoplay></video>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useRoute } from "vue-router";
-import axiosClient from "../axios.js";
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import Pusher from 'pusher-js';
+import axiosClient from "../axios";
+import { useRoute } from 'vue-router';
 
-const liveVideo = ref(null);
+const remoteVideo = ref(null);
+let peerConnection;
 const route = useRoute();
-let streamId = route.params.streamId;
-let intervalId;
-let mediaSource;
-let sourceBuffer;
-let latestChunkIndex = 0;
+const broadcastId = route.params.broadcastId;
+const viewerId = Math.random().toString(36).substring(7); // Random viewer ID
+const pusher = new Pusher('d81e8911650d34cdc928', { cluster: 'eu' });
+
+const startViewing = async () => {
+  peerConnection = new RTCPeerConnection({
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  });
+
+  peerConnection.ontrack = (event) => {
+    remoteVideo.value.srcObject = event.streams[0];
+  };
+
+  peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+      sendSignal('candidate', { candidate: event.candidate });
+    }
+  };
+
+  const offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
+  sendSignal('offer', { offer });
+};
+
+const sendSignal = (type, data) => {
+  axiosClient.post('/send-signal', {
+    type,
+    data: { ...data, viewerId },
+    broadcastId,
+  });
+};
+
+const handleBroadcastSignal = (type, data) => {
+  if (type === 'answer') {
+    peerConnection.setRemoteDescription(new RTCSessionDescription(data));
+  } else if (type === 'candidate') {
+    peerConnection.addIceCandidate(new RTCIceCandidate(data));
+  }
+};
 
 onMounted(() => {
-  initializeMediaSource();
-  intervalId = setInterval(fetchLatestVideoChunk, 1000); // Fetch video chunk every 1 second
+  const channel = pusher.subscribe(`broadcast-${broadcastId}`);
+  channel.bind('answer', data => handleBroadcastSignal('answer', data.data));
+  channel.bind('candidate', data => handleBroadcastSignal('candidate', data.data));
+
+  startViewing();
 });
 
 onBeforeUnmount(() => {
-  clearInterval(intervalId);
-  if (mediaSource) {
-    mediaSource.endOfStream();
+  pusher.unsubscribe(`broadcast-${broadcastId}`);
+  if (peerConnection) {
+    peerConnection.close();
   }
 });
-
-function initializeMediaSource() {
-  mediaSource = new MediaSource();
-  liveVideo.value.src = URL.createObjectURL(mediaSource);
-
-  mediaSource.addEventListener('sourceopen', () => {
-    console.log('MediaSource opened');
-    try {
-      sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
-      sourceBuffer.addEventListener('error', (e) => console.error('SourceBuffer error:', e));
-      sourceBuffer.addEventListener('updateend', () => {
-        console.log('Update end');
-        if (liveVideo.value.paused) {
-          liveVideo.value.play().catch(error => console.log('Error playing video:', error));
-        }
-      });
-      fetchLatestVideoChunk(); // Fetch the first chunk
-    } catch (error) {
-      console.error('Error adding SourceBuffer:', error);
-    }
-  });
-}
-
-function fetchLatestVideoChunk() {
-  axiosClient.post('/live-video/chunk', {
-    streamId: streamId,
-    chunkIndex:""
-  })
-  .then(response => {
-    const chunk = response.data.chunk;
-    if (chunk) {
-      appendVideoChunk(chunk);
-      latestChunkIndex++;
-    }
-  })
-  .catch(error => console.log('Error fetching latest video chunk:', error));
-}
-
-function appendVideoChunk(chunkUrl) {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', chunkUrl.replace('http://', 'https://'), true); // Ensure the URL is HTTPS
-  xhr.responseType = 'arraybuffer';
-
-  xhr.onload = () => {
-    if (xhr.status === 200) {
-      const chunk = xhr.response;
-
-      if (sourceBuffer && mediaSource.readyState === 'open' && !sourceBuffer.updating) {
-        console.log('Appending chunk to SourceBuffer');
-        sourceBuffer.appendBuffer(chunk);
-      } else if (sourceBuffer && mediaSource.readyState === 'open') {
-        sourceBuffer.addEventListener('updateend', () => {
-          console.log('Appending chunk to SourceBuffer after updateend');
-          sourceBuffer.appendBuffer(chunk);
-        }, { once: true });
-      }
-    }
-  };
-
-  xhr.onerror = () => {
-    console.error('XHR error:', xhr.statusText);
-  };
-
-  xhr.send();
-}
 </script>
 
 <style scoped>
-.video-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+video {
   width: 100%;
 }
 </style>

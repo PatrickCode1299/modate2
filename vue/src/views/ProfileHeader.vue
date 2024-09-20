@@ -3,7 +3,7 @@ import Header from "../component/Header.vue";
 import SideNav from "../component/SideNav.vue";
 import axiosClient from "../axios";
 import { useRouter } from "vue-router";
-import {ref, watch} from "vue";
+import {ref,reactive, watch} from "vue";
 const router=useRouter();
 const  image=ref('');
 const cover_photo=ref('');
@@ -13,6 +13,7 @@ let img_model=ref({
         cover_uri:""
     
 });
+let user_mail=localStorage.getItem('USER_MAIL');
 function editProfilePic(e){
 e.preventDefault();
 const current_user=localStorage.getItem('USER_MAIL');
@@ -82,17 +83,34 @@ cover_text_btn.setAttribute("disabled",true);
 cover_text_btn.removeAttribute("disabled");
 }
 });
+
+const goto=useRouter();
+function gotoEdit(){
+    goto.push({
+        name:"Edit"
+    });
+}
 function findPicture(){
     document.getElementById("profile-picture").click();
 }
 function findCoverPhoto(){
     document.getElementById("cover-photo").click();
 }
+let personal_info=reactive({
+        u_incomplete:"",
+     });
+
+personal_info.u_incomplete=localStorage.getItem('INCOMPLETE');
+function gotoSupport(){
+    alert("Please Contact Support");
+}
 </script>
 <template>
     <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
     <div class="profile-header-container shadow-sm container p-4">
+        <button style="width:100%;" v-if="personal_info.u_incomplete === 'true'" class="btn btn-success btn-block font-bold fs-6 edit btn-sm" @click="gotoEdit">Click Here and Update Details</button>
+        <button v-else style="width:100%;" class="btn btn-default btn-success edit btn-sm font-bold" @click="gotoSupport">Modify</button>
         <form style="position:relative;" @submit="editProfilePic">
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Edit Profile Picture</label>
@@ -111,7 +129,7 @@ function findCoverPhoto(){
                 <img @click="findCoverPhoto" v-if="img_model.cover_uri===''" src="../pictures/cover_photo.jpg"  class="img-responsive  cover-img" alt="preview img">
                 <img @click="findCoverPhoto" v-else :src=img_model.cover_uri  class="img-responsive  cover-img" alt="preview img">
                 <input  id="cover-photo" v-on:change="user_cover_photo" class="m-2 form-control cover-photo md" type="file" name="coverPhoto" />
-                <span @click="findCoverPhoto" class="cover-icon"><i class="fa-solid fa-circle-plus"></i></span>
+                <div @click="findCoverPhoto" class="cover-icon"><i class="fa-solid fa-circle-plus"></i></div>
             </div>
             <button class="btn m-2 edit-profile-btn btn-block btn-md btn-success">Add</button>
         </form>
@@ -123,6 +141,7 @@ function findCoverPhoto(){
             </div>
             <button id="cover_text_button" class="btn m-2 cover-text-btn btn-block btn-md btn-success">Add Cover Text</button>
         </form>
+        
     </div>
 </template>
 <style scoped>
@@ -175,12 +194,17 @@ function findCoverPhoto(){
     display:none;
 }
 .cover-icon{
+    display:flex;
+    justify-content:center;
+    align-items:center;
     color:black; 
     font-size:35px; 
-    position:absolute; 
     cursor: pointer; 
-    top:180px; 
-    left:200px;
+    position:absolute;
+    top:150px;
+    width:100%;
+    
+    
 }
 }
 @media screen and (min-width:620px) {
@@ -234,10 +258,11 @@ function findCoverPhoto(){
 .cover-icon{
     color:black; 
     font-size:35px; 
-    position:absolute; 
+    position:absolute;
+    top:150px;
     cursor: pointer; 
-    top:120px; 
-    left:300px;
+    width:100%;
+  
 }
 }
 @media screen and (min-width:1224px) {
@@ -297,10 +322,10 @@ function findCoverPhoto(){
 .cover-icon{
     color:black; 
     font-size:35px; 
-    position:absolute; 
     cursor: pointer; 
-    top:120px; 
-    left:300px;
+    width:100%;
+    position:absolute;
+    top:150px;
 }
 }
 

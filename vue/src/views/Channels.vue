@@ -3,6 +3,7 @@ import axios from "axios";
 import Header from "../component/Header.vue";
 import SideNav from "../component/SideNav.vue";
 import OldLikeShareComment from "../component/OldLikeShareComment.vue";
+import UserPostSettings from "../component/UserPostSettings.vue";
 import store from "../store";
 import moment from 'moment';
 import axiosClient from "../axios.js";
@@ -43,7 +44,8 @@ let channel_post=reactive({
     show_current_key:"",
     expandText:"",
     isShortBtn:"",
-    current_key_is_enabled:""
+    current_key_is_enabled:"",
+    last_post_date:""
 });
 let new_channel_post=reactive({
     fresh_new_post:[
@@ -59,7 +61,7 @@ function setUpChannel(){
 
 onMounted(()=>{
     if(route.params.uid != null){
-        user_mail=route.params.uid;
+        user_mail=atob(route.params.uid);
         axiosClient.post("/checkIfUserHasChannel",{email:user_mail}).then((response=>{
     if(response.data.reply==="false"){
        info.user_has_channel="false";
@@ -125,18 +127,18 @@ onMounted(() =>{
 });
 onMounted(()=>{
     if(route.params.uid != null){
-    user_mail=route.params.uid;
+    user_mail=atob(route.params.uid);
     let formData=new FormData();
     formData.append('email',user_mail);
     axiosClient.post("/findChannelPost",formData).then((response=>{
         response.data.reply.forEach(post => {
             channel_post.old_channel_post.push(post);
-           
           
         });
       user_picture=channel_post.old_channel_post[0].profile_picture;
-      //console.log(user_picture);
-   
+      let last_post = channel_post.old_channel_post.at(-1);
+      channel_post.last_post_date=last_post.created_at;
+        
    
 })).catch((error =>{
     console.log(error);
@@ -149,11 +151,12 @@ onMounted(()=>{
     axiosClient.post("/findChannelPost",formData).then((response=>{
         response.data.reply.forEach(post => {
             channel_post.old_channel_post.push(post);
-           
+       
           
         });
-   
-   
+        let last_post = channel_post.old_channel_post.at(-1);
+        channel_post.last_post_date=last_post.created_at;
+        console.log(channel_post.last_post_date);
 })).catch((error =>{
     console.log(error);
 }))
@@ -163,26 +166,33 @@ onMounted(()=>{
 
 });
 onUpdated(() =>{
+    let isFetching = false;
     const x=channel_post.old_channel_post.length;
     if(x  < 9){
      return;
  
 }else{
-    window.onscroll=function (){
+if(channel_gallery.isPhotoActive===true){
+window.onscroll=function (){
 
-if(window.scrollY + window.innerHeight >= document.body.scrollHeight){
- axiosClient.post('/fetchRandomChannelPost',{email:user_mail}).then(response=>{
+const threshold = 0.5;
+if (!isFetching && (window.scrollY + window.innerHeight) / document.body.scrollHeight >= threshold) {
+isFetching = true;
+ axiosClient.post('/fetchRandomChannelPost',{email:user_mail,recent_date:channel_post.last_post_date}).then(response=>{
  let raw_data=response.data.reply;
  raw_data.forEach(x => {
      new_channel_post.fresh_new_post.push(x);
     
  });
-
- 
+let recent_post=new_channel_post.fresh_new_post.at(-1);
+channel_post.last_post_date=recent_post.date;
  
  }).catch(e=>{
  console.log(e);
- });
+ }).finally(()=>{
+        isFetching = false;
+});
+}
 }
 }
 }
@@ -234,6 +244,7 @@ function reduceChannelText(key, text){
 function deletePost(post_id, post_caption,post_img1,post_img2,post_img3,post_img4,user_video){
     var ask_if_user_wants_to_delete_post=confirm("Do you want to Delete This Post?");
     if(ask_if_user_wants_to_delete_post){
+    console.log(user_video);
         user_mail=localStorage.getItem('USER_MAIL');
     let formData=new FormData();
     formData.append('email',user_mail);
@@ -271,7 +282,7 @@ let channel_gallery=reactive({
 });
 onMounted(()=>{
 if(route.params.uid != null){
-user_mail=route.params.uid;
+user_mail=atob(route.params.uid);
 let formData=new FormData();
 formData.append("email",user_mail);
 axiosClient.post("/findAllChannelPhotos",formData).then(response=>{
@@ -418,6 +429,11 @@ function url_to_link(text) {
       });
       }
 }
+function replaceHashTagWithLink(text) {
+    return (text || '').replace(/#(\w+)/g, function (match, tag) {
+  return `<a style='color:#1DA1F2;' href="/related/${tag}">${match}</a>`;
+});
+}
 </script>
 <template>
    <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
@@ -456,14 +472,11 @@ function url_to_link(text) {
                 <div  v-if="channel_post.old_channel_post.length===0">
                 <h2 class="text-center font-bold">You don't have any content on your channel, try creating.</h2>
                 </div>
-                <div  v-else class=" card all_channel_content card-default" v-for="x in channel_post.old_channel_post" :id="x.id" style=" margin:0px auto; margin-top: 20px;">
+                <div  v-else class=" card all_channel_content card-default" v-for="x in channel_post.old_channel_post" :id="'post'+x.postid" style=" margin:0px auto; margin-top: 20px;">
                    <div style="position: relative; width:100%; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto;"><RouterLink to='/profile'><img v-if="x.profile_picture === null" class="img-circle small-thumbnail" src="../pictures/profile.png" /><img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'></RouterLink></span><span v-if="!route.params.uid" class='m-2'><ul :id="x.created_at+x.name" style="position: absolute; border-radius: 5px; background-color: whitesmoke; top: 70%; right:25%; z-index:1; display: none;" class="list-unstyled ">
-                        <li class="m-4 list-unstyled font-bold d-flex justify-content-flex-end">Edit Post</li>
-                        <li @click="deletePost(x.id,x.caption,x.post_img1,x.post_img2,x.post_img3,x.post_img4,x.video)" class="m-4 list-unstyled font-bold d-flex justify-content-flex-end">Delete Post <span  v-if="!route.params.uid" style="margin-left: 5px; " ><i class="fa fa-trash"></i></span></li>
-                    </ul><span @dblclick="hideDiv(x.created_at,x.name)" @click="showOptionsList(x.created_at,x.name)"><i  class="fas fa-ellipsis-h" style="margin-right: 5px;"></i></span></span><span class="m-2">{{reduceNameLength(x.name)}}</span>
+                    <span style="margin-right: auto;"><RouterLink to='/profile'><img v-if="x.profile_picture === null" class="img-circle small-thumbnail" src="../pictures/profile.png" /><img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'></RouterLink></span><span v-if="!route.params.uid" class='m-2'><UserPostSettings :post_id="x.postid" /><span class="m-2">{{reduceNameLength(x.name)}}</span></span>
                    </div>
-                    <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="channel_post.current_key_is_enabled != x.created_at"  class='p-2 fs-6' v-html="url_to_link(checkIfUserPostIsLong(x.caption))"></p>
+                    <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="channel_post.current_key_is_enabled != x.created_at"  class='p-2 fs-6' v-html="url_to_link(checkIfUserPostIsLong(replaceHashTagWithLink(x.caption)))"></p>
    
                     <p style="word-wrap: break-word;" v-if="channel_post.show_current_key === x.created_at">{{channel_post.expandText }}</p>
                     <div class="flex-img">
@@ -497,14 +510,11 @@ function url_to_link(text) {
                     </ul>
                 </div>
                 </div>
-                <div :id="k.id" class="m-2 card all_channel_content card-default" style="position: relative;" v-for="k in new_channel_post.fresh_new_post">
+                <div :id="'post'+k.postid" class="m-2 card all_channel_content card-default" style="position: relative;" v-for="k in new_channel_post.fresh_new_post">
                     <div style=" background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto;"><RouterLink to='/profile'><img v-if="k.avatar === null" class="img-circle small-thumbnail" src="../pictures/profile.png"> <img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.avatar}`' class='img-circle small-thumbnail'></RouterLink></span><span v-if="!route.params.uid" class='m-2'><ul :id="k.created_at+k.name" style="position : absolute;border-radius: 5px; background-color: whitesmoke; top: 40%; right:25%; z-index:1; display: none;" class="list-unstyled ">
-                        <li class="m-4 list-unstyled font-bold d-flex justify-content-flex-end">Edit Post</li>
-                        <li @click="deletePost(k.id,k.caption,k.post_img1,k.post_img2,k.post_img3,k.post_img4,k.video)" class="m-4 list-unstyled font-bold d-flex justify-content-flex-end">Delete Post <span  v-if="!route.params.uid" style="margin-left: 5px; " ><i class="fa fa-trash"></i></span></li>
-                    </ul><span @click="showOptionsList(k.created_at,k.name)"><i  class="fas fa-ellipsis-h" style="margin-right: 5px;"></i></span>{{reduceNameLength(k.name)}}</span>
+                    <span style="margin-right: auto;"><RouterLink to='/profile'><img v-if="k.avatar === null" class="img-circle small-thumbnail" src="../pictures/profile.png"> <img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.avatar}`' class='img-circle small-thumbnail'></RouterLink></span><span v-if="!route.params.uid" class='m-2'><UserPostSettings :post_id="k.postid" />{{reduceNameLength(k.name)}}</span>
                    </div>
-                    <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="channel_post.current_key_is_enabled != k.date"  class='p-2 fs-6' v-html="url_to_link(checkIfUserPostIsLong(k.caption))"></p>
+                    <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="channel_post.current_key_is_enabled != k.date"  class='p-2 fs-6' v-html="url_to_link(checkIfUserPostIsLong(replaceHashTagWithLink(k.caption)))"></p>
    
                     <p style="word-wrap: break-word;" v-if="channel_post.show_current_key === k.date">{{channel_post.expandText }}</p>
                     <div class="flex-img">
@@ -515,7 +525,7 @@ function url_to_link(text) {
                     </div>
                     <div v-if="k.video != null" class="flex-video">
                         <VideoPlayerComponent :video_info="{
-                            source:x.video
+                            source:k.video
                         }"/>
                     </div>
                     <OldLikeShareComment :post_content="{

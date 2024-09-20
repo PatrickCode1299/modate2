@@ -262,16 +262,19 @@ var style = {
 } */
   onMounted(()=>{
     let text_area=document.getElementById("text");
-    text_area.setAttribute("placeholder","What's on your Mind?");
+    text_area.setAttribute("placeholder","Pour out your mind!");
   });
-
+function insertLineBreak(event){
+  const text = event.target.value;
+  user_text_type.value = text.replace(/(\S{50})(?=\S)/g, "$1\n"); // 50 represents the column width
+}
 </script>
 <template>
 <Header class="shadow-sm" style="background-color:white; position:fixed; padding-bottom:10px;  width: 100%; z-index: 1; top: 0px;" />
 <div class="container-fluid two-flex-div">
-    <div class="fixed-side-story-div p-4 shadow-md">
+    <div class="fixed-side-story-div p-4 shadow-lg">
         <h2 class="fs-5 font-weight-bold text-black" style="margin-top:50px;">Your Story</h2>
-    <div class="user-info"><img v-if="user_picture === null || user_picture === 'null'" class="circle-thumbnail" src="../pictures/profile.png"><img v-else class="circle-thumbnail" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${user_picture}`'><span class="names fs-5">{{ user_firstname}}</span><span class="names fs-5"><RouterLink to="/profile">{{ user_last_name }}</RouterLink></span></div>
+    <div class="user-info"><img v-if="user_picture === null || user_picture === 'null'" class="circle-thumbnail" src="../pictures/profile.png"><img v-else class="circle-thumbnail" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${user_picture}`'><RouterLink to="/profile"><span class="names fs-5">{{ user_firstname}}</span><span class="names fs-5">{{ user_last_name }}</span></RouterLink></div>
     </div>
     <div class="all-forms-div">
         <div class="block-div">
@@ -280,43 +283,42 @@ var style = {
                 <span @click="selectFile" for="picture" class="fs-70 cursor-pointer">&plus;</span>
                 <p>Add Media</p>
             </label>
-            <input v-on:change="addPictures" id="picture" type="file" name="file" />
+            <input accept="image/*,  video/*" v-on:change="addPictures" id="picture" type="file" name="file" />
             
         </form>
         <form class="for-pictures-video">
             <label>
-                <span @click="openTextDialogue" class="fs-2 cursor-pointer">Text Story..</span> 
+                <span @click="openTextDialogue" class="fs-2 cursor-pointer">Text Story</span> 
             </label>
         </form>
         
     </div>
     <div id="story_img_preview" class="story_preview_holder">
-    <div  class="story-img-preview ">
+    <div  class="story-img-preview " style="position:relative;">
         <span @click="hidePreview" style="color: white; margin-top:50px; font-size: 75px; cursor: pointer; font-weight: bold;" class="fs-1">&times;</span>
-        <button @click="postUserStory" style="font-weight: bold;" type="submit" class="m-2 btn btn-success btn-md">Add Story</button>
        <img v-if="user_pictures.story_img_url !=''" style="border-radius: 5px; cursor: pointer;" width="300px" height="100vh" alt="preview-story" :src="user_pictures.story_img_url" class="img-responsive">
         <video id="video" style="width:300px; border-radius:5px; height:300px;" autoplay controls  v-else>
             
         </video>
         <ProgressBar :progress="user_pictures.progress"/>
+       <div class="d-flex" style="position:fixed; justify-content:flex-end; bottom:0px;"><button @click="postUserStory" style="font-weight: bold;" type="submit" class="m-2 btn btn-primary btn-md">Add Story</button></div> 
     </div>
     </div>
     <div id="story_text_preview" class="story_preview_holder">
-    <div class="m-2 colors-btn"> 
-        <h3 style=" font-size: 25px;" class="text-white text-center">Colors</h3>
-    <div class="text-white p-4 d-flex justify-content-center align-items-center btn-group font-weight-bold">
+    <div  class="story-img-preview">
+        <textarea @input="insertLineBreak" rows="10" cols="50" style="text-align:left; white-space:pre-wrap; padding-top:80px;" v-model="user_text_type" id="text" :class="user_text.text_area_class">
+
+        </textarea>
+        <div class="colors-btn p-2"> 
+        <span @click="hideText" style="color: white; margin-right:auto;  font-size: 80px; cursor: pointer; font-weight: bold;" class="cursor-pointer fs-1">&times;</span>
+        <span style="margin-right:auto; margin-top:0px;" class="text-white fs-5 cursor-pointer font-bold" @click="createImage(user_text.text_area_class)">Create Text Story.</span>
+    <div class="text-white d-flex justify-content-center align-items-center btn-group font-weight-bold">
             <button @click="textColor('user_text_purple')" class="btn-md purple"></button>
             <button @click="textColor('user_text_maroon')" class="btn-md maroon"></button>
             <button @click="textColor('user_text_green')" class="btn-md green"></button>
             <button @click="textColor('user_text_story')" class="btn-md magenta"></button>
         </div>
     </div>
-    <div  class="story-img-preview">
-        <span @click="hideText" style="color: white; margin-top:50px; font-size: 75px; cursor: pointer; font-weight: bold;" class=" fs-1">&times;</span>
-        <span style="margin-top:0px;" class="text-white cursor-pointer font-bold" @click="createImage(user_text.text_area_class)">Create Text Story.</span>
-        <textarea rows="10" cols="50" style="text-align:left; white-space:pre-wrap;" v-model="user_text_type" id="text" :class="user_text.text_area_class">
-
-        </textarea>
     </div>
     </div>
     </div>
@@ -375,14 +377,14 @@ var style = {
     position: fixed;
     display: none;
     left: 0px;
-    z-index: 2;
+    z-index: -1;
     padding:0px;
 }
 .user-info{
     display: flex;
 }
 .circle-thumbnail{
-    border-radius: 50%;
+    border-radius: 50px;
     width: 50px;
     height: 50px;
     margin-right: auto;
@@ -478,9 +480,15 @@ var style = {
     height: 20px;
 }
 .colors-btn{
-    position: absolute; 
+    position:fixed; 
+    display:flex;
+    z-index:1;
+    justify-content:flex-start;
+    background-color:rgba(0, 0, 0, 0.672);
+    left:0px;
+    width:100%;
     right: 0px; 
-    top: 0px;
+    bottom:0px;
 }
 .story-img-preview{
     width:100%;
@@ -543,14 +551,14 @@ var style = {
     height: 100vh;
     position: fixed;
     left: 0px;
-    z-index: 2;
-    display:none;
+    z-index: -1;
+    display:block;
 }
 .user-info{
     display: flex;
 }
 .circle-thumbnail{
-    border-radius: 50%;
+    border-radius: 50px;
     width: 50px;
     height: 50px;
     margin-right: auto;
@@ -710,14 +718,14 @@ var style = {
     height: 100vh;
     position: fixed;
     left: 0px;
-    z-index: 2;
+    z-index: -1;
     display: block;
 }
 .user-info{
     display: flex;
 }
 .circle-thumbnail{
-    border-radius: 50%;
+    border-radius: 50px;
     width: 50px;
     height: 50px;
     margin-right: auto;
@@ -826,10 +834,8 @@ var style = {
     height: 50px;
 }
 .colors-btn{
-    position: absolute; 
- 
-    right:0px;
-    top: 100px;
+    position: fixed; 
+    z-index:1;
 }
 ::placeholder{
     color: white;

@@ -25,7 +25,8 @@ function gotoMerchant(e){
         }else{
         let url_data=JSON.stringify(response.data.url);
         let new_url=JSON.parse(url_data);
-        window.location.href=new_url.url;
+        window.location.href=response.data.url;
+        //window.location.href=new_url.url;
         }
     }).
     catch(err=>{
@@ -41,7 +42,7 @@ function gotoMerchant(e){
     <SideNav style="display: none;" />
     <div  class="container payment-container d-flex justify-content-center align-items-center">
         <img style="width:50%; margin-top:50px; object-fit:contain; height:inherit; margin-bottom:0px;" src="../pictures/payment.jpg" />
-        <h4 class="fs-4 p-2">In other to use Channels  you are required to make a one time subscription fee of 500 Naira </h4>
+        <h4 class="fs-4 p-2">In other to use Channels  you are required to make a one time subscription fee of 2,200 Naira </h4>
         <h4 class="fs-4 p-2">Via bank transfer to the account number on the merchant site or using your Debit ATM card.</h4>
         <p class="d-flex justify-content-center align-items-center">Our payment is secured by Paystack and for transparency we do not store your bank details, however if you would like to contact our support channel for clear explanations you can reach out via: <span @click="toSupport" class="pointer text-success">support</span></p>
         <form @submit="gotoMerchant">

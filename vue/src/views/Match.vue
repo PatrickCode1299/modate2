@@ -34,7 +34,7 @@ function setUserMatch(email){
     document.getElementById(email).setAttribute("disabled",true);
     axiosClient.post("/choice",{
         user:user_mail,
-        choice:email
+        choice:atob(email)
     }).then(response=>{
         alert(response.data.success);
     }).catch(e=>{
@@ -55,10 +55,10 @@ function setUserMatch(email){
 <h2 v-if="hold_user_suggestion.interest.length > 0" class="text-center font-bold fs-5">You might like</h2>
 <div  class="story-and-post" >
     <div v-for="i in hold_user_suggestion.interest" class="d-flex p-2 religion-suggestions justify-content-center align-items-center">
-        <div style="position:relative;" class="card p-4 card-default shadow-sm user-suggestion-card">
+        <div style="position:relative;" class="card p-2 card-default shadow-sm user-suggestion-card">
         <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
         <img v-else class="img-circle avatar"  :src='`http://localhost:8000/storage/${i.profile_picture}`' />
-        <h6 class="fs-6">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <h6>{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
         <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
         </div>
     </div>
@@ -66,21 +66,21 @@ function setUserMatch(email){
     <h2 v-if="hold_user_suggestion.religion.length > 0" class="text-center font-bold fs-5">People with similar religion</h2>
 <div  class="story-and-post" >
     <div  v-for="i in hold_user_suggestion.religion" class="d-flex p-2 religion-suggestions justify-content-center align-items-center">
-        <div style="position:relative;" class="card p-4 card-default shadow-sm user-suggestion-card">
+        <div style="position:relative;" class="card p-2 card-default shadow-sm user-suggestion-card">
         <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
         <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
-        <h6 class="fs-6">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <h6>{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
         <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
         </div>
     </div>
     </div>
-    <h2 v-if="hold_user_suggestion.school.length > 0" class="text-center font-bold fs-5">You attended same school with them</h2>
+    <h2 v-if="hold_user_suggestion.school.length > 0" class="text-center font-bold fs-5">People with similar school</h2>
 <div  class="story-and-post" >
     <div v-for="i in hold_user_suggestion.school" class="d-flex p-2 religion-suggestions justify-content-center align-items-center">
-        <div style="position:relative;" class="card p-4 card-default shadow-sm user-suggestion-card">
+        <div style="position:relative;" class="card p-2 card-default shadow-sm user-suggestion-card">
         <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
         <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
-        <h6 class="fs-6">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <h6>{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
         <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
         </div>
     </div>
@@ -88,183 +88,225 @@ function setUserMatch(email){
 </div>
 </template>
 <style scoped>
-@media screen and (min-width:320px) {
-    .story-and-post{
+/* For mobile devices */
+@media screen and (max-width: 599px) {
+  .story-and-post {
     display: flex;
-    flex-direction:row;
-    flex-wrap:wrap;
-    justify-content:space-between;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     cursor: pointer;
-    width: 100%;
-    
+  }
+  .religion-suggestions {
+  margin-top: 0px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
+  grid-gap: 10px; 
 }
-.user-match{
-    flex: 1;
-    height: 400px;
-
-}
-.user-match-img{
-    width:200px;
+  .user-suggestion-card {
+    width: 100%; /* Take full width */
+    margin:0; /* Add margin between items */
+    display: flex;
     height:200px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size:12px;
+    position:relative;
+    padding-left:10px;
+    padding-right:10px;
+    text-align:center;
+  }
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
     object-fit: cover;
-    object-position: center;
-}
-.user-match-info{
-    flex: 1;
-    height: 400px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    position: relative;
-}
-.next-cancel{
+  }
+
+  .follow-suggestion-btn {
+    bottom: 0px;
+    width: 100%;
+    border-radius: 20px;
+    margin-top: 20px;
     position:absolute;
-    margin-top:40px;
-    top:20px;
-    justify-content: space-around;
-}
-.next-cancel > button{
-    margin-right: 20px;
-    width: 80px;
-    border-radius:20px;
-}
-.match-error{
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 15vh;
-    font-weight: bold;
-}
-.search-bar{
-    margin-top:60px; 
-    margin-bottom:20px;
-}
-.religion-suggestions{
-    margin-top:0px;
-    width:200px;
-    flex:1;
-}
-.avatar{
-    width:100px;
-    height:100px;
-    border-radius:50px;
-    object-fit:cover;
-}
-.follow-suggestion-btn{
     bottom:0px;
-    width:100%;
-    border-radius:20px;
-    margin-top:20px;
-}
-.spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 8px solid #f3f3f3; /* Light grey */
-  border-top: 8px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 2s linear infinite;
+  }
+
+  .search-bar {
+    margin-top: 60px;
+    margin-bottom: 20px;
+  }
+
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* For tablets */
+@media screen and (min-width: 600px) and (max-width: 899px) {
+    .religion-suggestions {
+  margin-top: 0px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
+  grid-gap: 10px; 
 }
-}
-@media screen and (min-width:620px) {
-    .story-and-post{
+  .story-and-post {
     display: flex;
-    flex-direction:row;
-    flex-wrap:wrap;
-    justify-content:space-between;
+    flex-wrap: wrap;
+    justify-content: center;
     cursor: pointer;
     width: 100%;
-    margin:0px auto;
-}
-.search-bar{
-    margin-top:200px; 
-    margin-bottom:20px;
-}
-.follow-suggestion-btn{
-    bottom:0px;
-    width:100%;
-    border-radius:20px;
-    margin-top:20px;
-}
-.spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 8px solid #f3f3f3; /* Light grey */
-  border-top: 8px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 2s linear infinite;
-}
+  }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-}
-@media screen and (min-width:700px) {
-    .story-and-post{
+  .user-suggestion-card {
+    width: 100%; /* Take full width */
+    margin: 0; /* Add margin between items */
     display: flex;
-    flex-direction:row;
-    flex-wrap:wrap;
-    cursor: pointer;
-    width: 80%;
-    
-    
-}
-.search-bar{
-    margin-top:100px; 
-    margin-bottom:0px;
-}
-.avatar{
-    width:100px;
-    height:100px;
-    border-radius:50px;
-    object-fit:cover;
-}
-.user-suggestion-card{
-   width:200px;
-   display:flex;
-   flex-direction:column;
-   justify-content:center;
-   align-items:center;
-   margin:10px;
-}
-.follow-suggestion-btn{
-    bottom:0px;
-    width:100%;
-    border-radius:20px;
-    margin-top:20px;
-}
-.spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 8px solid #f3f3f3; /* Light grey */
-  border-top: 8px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 2s linear infinite;
+    height:200px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size:12px;
+    position:relative;
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    object-fit: cover;
+  }
+
+  .follow-suggestion-btn {
+    bottom: 0px;
+    width: 100%;
+    border-radius: 20px;
+    margin-top: 20px;
+    position:absolute;
+  }
+
+  .search-bar {
+    margin-top: 80px;
+    margin-bottom: 20px;
+  }
+
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* For desktops */
+@media screen and (min-width: 900px) {
+  .story-and-post {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center the grid */
+    width: 80%; /* Set a smaller width for desktop */
+    margin: 0 auto;
+  }
+  .religion-suggestions {
+  margin-top: 0px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
+  grid-gap: 10px; 
 }
+  .user-suggestion-card {
+    width: 100%; /* Take full width */
+    margin: 10px 0; /* Add margin between items */
+    display: flex;
+    height:200px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size:12px;
+    position:relative;
+    padding-left:20px;
+    padding-right:20px;
+  }
+
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    object-fit: cover;
+  }
+
+  .follow-suggestion-btn {
+    bottom: 0px;
+    width: 100%;
+    border-radius: 20px;
+    margin-top:20px;
+    position:absolute;
+  }
+
+  .search-bar {
+    margin-top: 100px;
+    margin-bottom: 0px;
+  }
+
+  .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 }
 
 </style>

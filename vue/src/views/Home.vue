@@ -17,7 +17,10 @@ const route=useRoute();
 const SideNav=defineAsyncComponent({
     loader: () => import("../component/SideNav.vue")
 });
-const StoriesandPost=defineAsyncComponent({
+const ScrollingVideoComponent=defineAsyncComponent({
+    loader: () => import("../component/ScrollingVideoComponent.vue")
+});
+const StoriesandPostComponent=defineAsyncComponent({
     loader: () => import("../component/StoriesandPost.vue")
 });
 const ChannelPostComponent=defineAsyncComponent({
@@ -26,6 +29,7 @@ const ChannelPostComponent=defineAsyncComponent({
 const SharedPostComponent=defineAsyncComponent({
     loader: () => import("../component/SharedPostComponent.vue")
 });
+
 let user_mail;
 const router=useRouter();
 
@@ -40,6 +44,14 @@ function deleteOldStories(){
 let info=reactive({
     info_value:"",
 });
+function updateUserLastActivity(){
+    user_mail=localStorage.getItem('USER_MAIL');
+    axiosClient.post("/updateLastActivity",{email:user_mail}).then((response=>{
+        console.log(response.data.reply);
+})).catch((error =>{
+    console.log(error);
+}));
+}
 function checkIfUserHasCompleteProfile(){
     user_mail=store.state.user.data;
     axiosClient.post("/profile",{email:user_mail}).then((response=>{
@@ -55,12 +67,12 @@ function checkIfUserHasCompleteProfile(){
 }
 document.title='Home';
 deleteOldStories();
-console.log(route.params.cat);
+updateUserLastActivity();
 </script>
 <template>
     {{ checkIfUserHasCompleteProfile() }}
-    <HomeTopHeader class="shadow-lg" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
-    <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
+    <HomeTopHeader class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
+    <Header class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
     <div v-if="info.info_value==='true'" style="margin-top: 100px;" class=" incomplete d-flex justify-content-center">
         <h2 class="fs-5 font-bold m-4">Click on profile icon above and complete your profile to be visible</h2>
@@ -68,7 +80,8 @@ console.log(route.params.cat);
     <div v-else  class="story-and-post">
     <ChannelPostComponent v-if="route.params.cat=='channelposts'" />
     <SharedPostComponent v-else-if="route.params.cat=='sharedposts'" />
-    <StoriesandPost v-else />
+    <StoriesandPostComponent v-else-if="route.params.cat=='stories'" />
+    <ScrollingVideoComponent v-else />
     </div>
 </template>
 <style scoped>
@@ -76,7 +89,7 @@ console.log(route.params.cat);
     .story-and-post{
     display: flex;
     justify-content: flex-start;
-    width:97%;
+    width:100%;
     cursor: pointer;
    
 }

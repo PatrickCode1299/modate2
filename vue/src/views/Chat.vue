@@ -7,8 +7,8 @@ import moment from 'moment'
 import Pusher from 'pusher-js';
 import LoadJsVideoComponent from "../component/LoadJsVideoComponent.vue";
 import VideoPlayerComponent from "../component/VideoPlayerComponent.vue";
+import ChatSkeletonLoader from "../component/ChatSkeletonLoader.vue";
 import ProgressBar from "../component/ProgressBar.vue";
-import Echo from 'laravel-echo';
 import { useRouter, useRoute } from "vue-router";
 const user_mail=localStorage.getItem('USER_MAIL');
 const authToken=localStorage.getItem('TOKEN');
@@ -18,8 +18,10 @@ let message_id=route.params.uid;
 let formData=new FormData();
 formData.append("unique_id",message_id);
 let chat_info=reactive({
+isLoadingChat:true,
 name:"",
 avatar:"",
+last_activity:"",
 sender_email:"",
 reciever_email:"",
 sender_message:[],
@@ -38,23 +40,27 @@ onMounted(()=>{
     axiosClient.post("/findConvo",formData).then(response=>{
     if(response.data.sender!=user_mail){
         chat_info.sender_email=user_mail;
-        chat_info.reciever_email=response.data.sender;
+        chat_info.reciever_email=btoa(response.data.sender);
         let formData=new FormData();
         formData.append('user',response.data.sender);
         axiosClient.post("/findRecieverInfo",formData).then(res=>{
         chat_info.name=res.data.reply.first_name + res.data.reply.last_name;
         chat_info.avatar=res.data.reply.profile_picture;
+        chat_info.last_activity=res.data.reply.updated_at;
+        chat_info.isLoadingChat=false;
         }).catch(err=>{
             console.log(err);
         });
     }else{
         chat_info.sender_email=response.data.sender;
-        chat_info.reciever_email=response.data.reciever;
+        chat_info.reciever_email=btoa(response.data.reciever);
         let formData=new FormData();
         formData.append('user',response.data.reciever);
         axiosClient.post("/findRecieverInfo",formData).then(res=>{
         chat_info.name=res.data.reply.first_name + "\t"+  res.data.reply.last_name;
         chat_info.avatar=res.data.reply.profile_picture;
+        chat_info.last_activity=res.data.reply.updated_at;
+        chat_info.isLoadingChat=false;
         }).catch(err=>{
             console.log(err);
         });
@@ -77,6 +83,7 @@ info.isBlocked=response.data.reply;
 }).catch(error=>{
 console.log(error);
 });
+
 }).catch(error=>{
     console.log(error);
 })
@@ -172,7 +179,11 @@ function chat_document(e){
         reader.readAsDataURL(doc);
         break;
         case 'pdf':
-        console.log("Pdf File");
+        reader=new FileReader();
+        reader.onload=() =>{
+        message_data.doc_uri=reader.result;
+        };
+        reader.readAsDataURL(doc);
         break;
         default:
         console.log("No file added");
@@ -189,7 +200,7 @@ function sendMessage(e){
     formData.append("conversation",user_message.value);
     formData.append("unique_id",message_id);
     formData.append("sender",user_mail);
-    formData.append("reciever",chat_info.reciever_email);
+    formData.append("reciever",atob(chat_info.reciever_email));
     axiosClient.post("/sendMessage",formData).then(response=>{
         user_message.value='';
        // conversation.message_chat.push({convo: response.data.reply.conversation, file:'', sender:response.data.reply.sender, reciever:response.data.reply.reciever, date:response.data.reply.created_at});
@@ -204,7 +215,7 @@ function sendMessage(e){
     formData.append("doc",file.value);
     formData.append("unique_id",message_id);
     formData.append("sender",user_mail);
-    formData.append("reciever",chat_info.reciever_email);
+    formData.append("reciever",atob(chat_info.reciever_email));
     axiosClient.post("/sendMessage",formData, {onUploadProgress:(event)=>{
             conversation.uploadProgress = Math.round((event.loaded * 100) / event.total);
         }}).then(response=>{
@@ -263,16 +274,19 @@ channel.bind('send_message', function(data) {
 }
     check_new_message();
 });
-
+document.title="Chat";
 
 
 </script>
 <template>
    <Header class="shadow-sm" style="background-color:white; display:none; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
-    <div id="container" class="container  edit-container">
-     <div class="reciever-details-header">
+   <div style="display:block;" v-if="chat_info.isLoadingChat===true">
+   <ChatSkeletonLoader  />
+   </div>
+    <div v-else id="container" class="container  edit-container">
+     <div class="reciever-details-header shadow-sm p-2">
         <img  v-if="chat_info.avatar === null" style="object-fit: cover; margin-right:auto;" src="../pictures/profile.png"  class="reciever-img"/>
-        <img v-else style="object-fit: cover; margin-right:auto;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${chat_info.avatar}`'  class="reciever-img"/><span  class="fs-6 cursor-pointer"><RouterLink :to='`/user/${chat_info.reciever_email}`'>{{chat_info.name}}</RouterLink><small class="user-last-activity">Active 4hrs ago..</small></span>
+        <img v-else style="object-fit: cover; margin-right:auto;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${chat_info.avatar}`'  class="reciever-img"/><span  class="fs-6 cursor-pointer"><RouterLink :to='`/user/${chat_info.reciever_email}`'>{{chat_info.name}}</RouterLink><small class="user-last-activity">Last Seen: {{moment(chat_info.last_activity).fromNow()}}</small></span>
      </div>
     <div class="conversation p-4" style="margin-bottom:200px;">
         <div v-for="x in conversation.message_chat">
@@ -287,9 +301,11 @@ channel.bind('send_message', function(data) {
         <span @click="hide_file_preview" class="cancel cursor-pointer m-2 fs-2 font-bold" style="color:white;">&times;</span>
         <div  style=" padding:0px; margin-top:0px;" class="d-flex  justify-content-center align-items-center">
         <img v-if="message_data.file_ext ==='jpg' || message_data.file_ext ==='png' || message_data.file_ext ==='gif' || message_data.file_ext ==='jfif'"  class="doc-img" :src="message_data.doc_uri" />
+        <div style="color:white; display:flex; flex-direction:column; cursor: pointer; justify-content:center;  align-items:center; font-size:45px;" v-else-if="message_data.file_ext ==='pdf'"><i class="fa fa-file"></i><h4>Pdf File Added</h4></div>
         <LoadJsVideoComponent class="doc-video" v-else-if="message_data.file_ext==='mp4'" style="width:100%;" :video_info="{
                             source:message_data.doc_uri
                         }"/>
+       
         <audio  class="doc-video" controls autoplay v-else-if="message_data.file_ext==='mp3' || message_data.file_ext==='wav' ">
             <source :src="message_data.doc_uri" />
         </audio>
@@ -313,13 +329,13 @@ channel.bind('send_message', function(data) {
         </div>
         </div>  
     </div>
-    <div >
+    <div>
         <form v-if="info.isBlocked !='true'" class="message-box-holder"  @submit="sendMessage">
-        <input style="display: none;" v-on:change="chat_document" id="file" class="m-2 form-control md" type="file" name="coverPhoto" />
-        <textarea  v-model="user_message" placeholder="Type your message..." class="message-box"></textarea>
+        <input accept="audio/*, image/*, application/pdf, video/*" style="display: none;" v-on:change="chat_document" id="file" class="m-2 form-control md" type="file" name="coverPhoto" />
+        <textarea  v-model="user_message" placeholder="Type your message..." class="message-box shadow-lg"></textarea>
         <div class="send-message-box">
         <button  id="send_msg" disabled class="btn btn-success btn-lg send-msg-btn"><i class="fa fa-paper-plane"></i></button>
-        <span @click="showFile"  class="btn btn-sm btn-default show-file"><i class="fa fa-image fs-2"></i></span>
+        <span @click="showFile"  class="btn btn-sm btn-default fs-2 font-bold show-file"><i class="fa-light fa-paperclip"></i></span>
         </div>
         </form>
         <h2 v-else class="text-center font-bold fs-5">You can no longer send messages to this user</h2>
@@ -363,7 +379,7 @@ position: relative;
 padding: 0px;
 width:100%;
 left:0px;
-background-color:rgb(255, 236, 236);
+background-color:white;
 z-index:1;
 display:flex;
 flex-direction:row;
@@ -382,7 +398,7 @@ position:fixed;
     font-weight: bold;
 }
 .message-recieved{
-    background-color: rgb(255, 212, 255);
+    background-color: rgb(212, 255, 216,0.711);
     color: black;
     font-size: 13px;
     width:auto;
@@ -419,9 +435,8 @@ position:fixed;
 .message-box{
     width: 100%;
     resize: none;
-    margin-top: 100px;
     border-radius: 50px;
-    background-color: rgb(251, 234, 243);
+    background-color: rgb(250, 250, 250);
     border:none;
     
 }
@@ -433,6 +448,7 @@ position:fixed;
     margin-bottom:0px;
     box-sizing:border-box; 
     z-index:2;
+    background-color:white;
 }
 .send-message-box{
 position: relative;
@@ -476,6 +492,7 @@ z-index: 0;
     margin-top: 0px;
     display:block;
     font-weight:400;
+    color:grey;
 }
 .chat-image{
     width:100%; 
@@ -515,7 +532,7 @@ position: relative;
 padding: 0px;
 width:100%;
 left:0px;
-background-color:rgb(255, 236, 236);
+background-color:white;
 z-index:1;
 display:flex;
 flex-direction:row;
@@ -535,7 +552,7 @@ position:fixed;
     font-weight: bold;
 }
 .message-recieved{
-    background-color: rgb(255, 212, 255);
+    background-color: rgb(212, 255, 216,0.711);
     color: black;
     font-size: 13px;
     width:200px;
@@ -569,7 +586,7 @@ position:fixed;
     resize: none;
     margin-top: 0px;
     border-radius: 50px;
-    background-color: rgb(255, 236, 246);
+    background-color: rgb(250, 250, 250);
     border:none;
     
 }
@@ -642,7 +659,7 @@ width:50%;
 left:20px;
 right:20px;
 margin:0px auto;
-background-color:rgb(255, 236, 236);
+background-color:white;
 z-index:1;
 display:flex;
 flex-direction:row;
@@ -664,9 +681,8 @@ position:fixed;
 .message-box{
     width: 50%;
     resize: none;
-    margin-top: 100px;
     border-radius: 50px;
-    background-color: rgb(255, 236, 246);
+    background-color: rgb(250, 250, 250);
     border:none;
 }
 .message-box-holder{
@@ -674,9 +690,10 @@ position:fixed;
     flex-direction:column;
     justify-content:center;
     align-items:center;
+    background-color:white;
 }
 .message-recieved{
-    background-color: rgb(255, 212, 255);
+    background-color: rgb(212, 255, 216,0.711);
     color: black;
     font-size: 13px;
     width:200px;

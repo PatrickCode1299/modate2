@@ -45,14 +45,14 @@ function createChannel(e){
     
     e.preventDefault();
     var formData=new FormData();
-    formData.append('channel_owner',user_mail);
-    formData.append('channel_name',channel_name.value.split(" ").join(""));
-    formData.append('channel_bio',channel_bio.value);
-    formData.append('channel_category',channel_category.value);
-   axiosClient.post("/createChannel",formData).then(response=>{
+    formData.append('community_owner',user_mail);
+    formData.append('community_name',channel_name.value.split(" ").join(""));
+    formData.append('community_bio',channel_bio.value);
+    formData.append('community_category',channel_category.value);
+   axiosClient.post("/createCommunity",formData).then(response=>{
         message.success=response.data.reply;
         router.push({
-            name:"Channel"
+            name:"Community"
         });
        
    }).catch(e=>{
@@ -100,35 +100,38 @@ onUpdated(()=>{
             <div class="d-flex"><button  style="margin-left: auto; margin-top: 10px;"  class="btn btn-success btn-sm" @click="cancelError">Close</button></div>
         </div>
         <form @submit="createChannel">
-            <h2 class="text-danger fs-6 m-4 text-center">Please Fill All Details Correctly and Crosscheck Before Submitting. This is your only chance...</h2>
+            <h2 class="text-danger fs-6 m-4 text-center">Please Fill All Details Correctly and Confirm.</h2>
             <div class="form-group m-2">
-                <label class="green-text-bold" for="firstname">Channel Name</label>
-                <input v-model="channel_name" type="text" placeholder="Your Channel Name example: Pew-Die-Pie" class="form-control rounded" required>
+                <label class="green-text-bold" for="firstname">Community Name</label>
+                <input v-model="channel_name" type="text" placeholder="Your Community Name example: Hexarex_Sport" class="form-control rounded" required>
             </div>
             <div class="form-group m-2">
-                <label class="green-text-bold"  for="Last Name">Channel Category</label>
+                <label class="green-text-bold"  for="Last Name">Community Category</label>
                 <select class="form-control" v-model="channel_category" name="category">
                     <option value="Photography">Photography</option>
                     <option value="Artist">Artist (Drawing, Cartoonist)</option>
                     <option value="Video Editor">Video Editor</option>
+                    <option value="Gaming">Game Creator</option>
                     <option value="Graphics Design">Graphics Design</option>
-                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Software Engineer">Software Engineering</option>
                     <option value="Relationship">Relationship Coach</option>
                     <option value="Life Coach">Life Coach</option>
                     <option value="Therapist">Therapist</option>
                     <option value="Medical">Wellness and Lifestyle.</option>
                     <option value="Sport Betting">Sport Betting</option>
+                    <option value="Fashion">Fashion and Lifestyle</option>
+                    <option value="Blog">Blogging</option>
                     <option value="Content Creator">Content Creator</option>
                     <option value="Government Organization">Government Organization</option>
                 </select>
             </div>
             <div class="form-group m-2">
-                <label class="green-text-bold"  for="Last Name">Channel Bio</label>
-                <input style="height: 100px;" v-model="channel_bio" type="text" placeholder="Example: I dedicate this channel to showcase my religious beliefs and i hope it doesn't affect you." class="form-control rounded" required>
+                <label class="green-text-bold"  for="Last Name">Community Bio</label>
+                <input style="height: 100px;" v-model="channel_bio" type="text" placeholder="Example: I dedicate this community to showcase my religious beliefs and i hope it doesn't affect you." class="form-control rounded" required>
             </div>
           
           
-           <div class="d-flex submit"><button id="create_channel" class="btn submit-btn btn-md btn-success">Create Channel</button></div> 
+           <div class="d-flex submit"><button id="create_channel" class="btn submit-btn btn-md btn-success">Setup Community</button></div> 
         </form>
     </div>
 </template>
@@ -137,7 +140,7 @@ onUpdated(()=>{
     .edit-container{
     width: 100%;
     background-color: rgb(253, 253, 253);
-    height: auto;
+    height: 100vh;
     border-radius: 10px;
 }
 .green-text-bold{
@@ -164,7 +167,7 @@ onUpdated(()=>{
     width: 50%;
     margin:0px auto;
     background-color: rgb(253, 253, 253);
-    height: auto;
+    height: 100vh;
     border-radius: 10px;
 }
 .green-text-bold{
@@ -191,7 +194,7 @@ onUpdated(()=>{
     width: 50%;
     margin:0px auto;
     background-color: rgb(253, 253, 253);
-    height: auto;
+    height: 100vh;
     border-radius: 10px;
 }
 .green-text-bold{

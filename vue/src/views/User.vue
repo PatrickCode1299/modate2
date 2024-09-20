@@ -3,6 +3,8 @@ import Header from "../component/Header.vue";
 import SideNav from "../component/SideNav.vue";
 import OldLikeShareComment from "../component/OldLikeShareComment.vue";
 import BlockReportUserComponent from "../component/BlockReportUserComponent.vue";
+import ProfileSkeletonLoader from "../component/ProfileSkeletonLoader.vue";
+import PostSkeletonLoader from "../component/PostSkeletonLoader.vue";
 import store from "../store";
 import { ref,reactive,onMounted } from "vue";
 import axiosClient from "../axios";
@@ -11,15 +13,17 @@ import { nanoid } from 'nanoid'
 import moment from 'moment'
 const route=useRoute();
 const router=useRouter();
-const user_mail=route.params.info;
+const user_mail=atob(route.params.info);
+const user_id=route.params.info;
 const current_user=localStorage.getItem('USER_MAIL');
 let info=reactive({
-    info_value:"false",
+    info_value:true,
     coverbgVal:"false",
     bgUrl:"",
     cover_text:"",
     isBlocked:"",
-    isUserFollowed:""
+    isUserFollowed:"",
+    isFollowPending:""
 });
 onMounted(()=>{
 let formData=new FormData();
@@ -37,6 +41,8 @@ formData.append("current_user",current_user);
 formData.append("user_to_follow",user_mail);
 axiosClient.post("/isUserFollowed",formData).then(response=>{
 info.isUserFollowed=response.data.reply;
+info.isFollowPending=response.data.isPending;
+console.log(info.isFollowPending);
 }).catch(error=>{
 console.log(error);
 });
@@ -48,6 +54,7 @@ let personal_info=reactive({
         u_phone_number:"",
         u_profile_pic:"",
         u_followers_count:"",
+        u_isPrivate:""
      });
 
 let coverbgVal=false;
@@ -56,13 +63,12 @@ var cover_photo;
 
 axiosClient.post("/profile",{email:user_mail}).then((response=>{
   
-       info.info_value="false";
+       info.info_value=false;
      
        
             info.coverbgVal="true";
             cover_bg=response.data.coverPhoto;
             if(cover_bg === null){
-                info.bgUrl="linear-gradient(to right, orange,magenta)";
             }else{
                 cover_photo=`https://res.cloudinary.com/fishfollowers/image/upload/${cover_bg}`;
             
@@ -84,8 +90,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
         personal_info.u_last_name=response.data.last_name;
         personal_info.u_location=response.data.location;
         personal_info.u_profile_pic=response.data.profile_picture;
-     
-      
+        personal_info.u_isPrivate=response.data.isPrivate;
         
         
      
@@ -118,7 +123,7 @@ thoughts:"",
 replies:""
 });
 function gotoChat(){
-    let $reciever=route.params.info;
+    let $reciever=atob(route.params.info);
     let $sender=localStorage.getItem('USER_MAIL');
     let $unique_id = nanoid();
     let formData=new FormData();
@@ -183,7 +188,18 @@ function followUser(){
         choice:user_mail
     }).then(response=>{
         info.isUserFollowed='true';
-        alert(response.data.success);
+        document.getElementById("follow-btn").setAttribute("disabled","true");
+    }).catch(e=>{
+        let error="You already tried following this user, we have notified them";
+        alert(error);
+    });
+}
+function requestToFollowUser(){
+    axiosClient.post("/request",{
+        current_user:current_user,
+        choice:user_mail
+    }).then(response=>{
+        info.isFollowPending="true";
     }).catch(e=>{
         let error="You already tried following this user, we have notified them";
         alert(error);
@@ -195,7 +211,6 @@ function unfollowUser(){
         choice:user_mail
     }).then(response=>{
         info.isUserFollowed='false';
-        alert(response.data.success);
     }).catch(e=>{
         let error="You already  unfollowed this user";
         alert(error);
@@ -212,19 +227,33 @@ function url_to_link(text) {
       });
       }
 }
+function formatNumber(num) {
+  if (num >= 1e9) {
+    return (num / 1e9).toFixed(1) + 'B'; // Billions
+  } else if (num >= 1e6) {
+    return (num / 1e6).toFixed(1) + 'M'; // Millions
+  } else if (num >= 1e3) {
+    return (num / 1e3).toFixed(1) + 'K'; // Thousands
+  } else {
+    return num.toString(); // Less than 1000
+  }
+}
 </script>
 <template>
      <Header class="shadow-sm" style="background-color:white; position:fixed; padding-bottom:10px;  width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" v-if="store.state.user.token != null" />
-    <div v-if="info.isBlocked === 'true'" class="isBlocked"  > 
-        <h2  class="m-4 text-center">You are Blocked from Seeing <span style="font-weight:bold;">{{ personal_info.u_first_name}} {{ personal_info.u_last_name }}</span> Posts, we recommend you give up on reaching this user..</h2>
+    <ProfileSkeletonLoader v-if="info.info_value" />
+    <div v-else-if="info.isBlocked === 'true'" class="isBlocked"  > 
+        <h2  class="m-4 text-center">You are Blocked from Seeing <span style="font-weight:bold;">{{ personal_info.u_first_name}} {{ personal_info.u_last_name }}</span> Posts,  this user has prevent you from reaching them.</h2>
     </div>
    <div style="position: relative;" v-else class="container user-profile">
     <div :style="{backgroundImage:info.bgUrl}" class="images p-4">
         <span style="word-wrap: break-word;" class="fs-5">{{ info.cover_text }}</span>
         <div v-if="store.state.user.token != null" style="position:absolute; z-index:1; top:150px; right:20px;" class="d-flex justify-content-flex-start">
-            <button style="margin-right:10px; color:black;"  @click="gotoChat" class="btn btn-default btn-sm "><i style="border-radius:5px;" class="fs-3 fa-light fa-envelope"></i></button>
-            <button v-if="info.isUserFollowed === 'false' && user_mail!=current_user" @click="followUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-success  font-bold">Follow</button>
+            <button style="margin-right:10px; color:black;"  @click="gotoChat" class="btn btn-default btn-sm "><i style="border-radius:5px;" class="fs-4 fa-light fa-envelope"></i></button>
+            <button id="follow-btn" v-if="info.isUserFollowed === 'false' && user_mail!=current_user && personal_info.u_isPrivate != 'true' && info.isFollowPending==''" @click="followUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-success  font-bold">Follow</button>
+            <button id="follow-btn" v-else-if="info.isUserFollowed === 'false' && user_mail!=current_user && personal_info.u_isPrivate == 'true' && info.isFollowPending==''" @click="requestToFollowUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-primary  font-bold">Request</button>
+            <button v-else-if="info.isUserFollowed === 'false' && user_mail!=current_user && personal_info.u_isPrivate == 'true' && info.isFollowPending=='true'" @click="requestToFollowUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px; background-color:grey; border:grey; color:white;"  class="btn edit-btn btn-sm btn-default  font-bold">Pending</button>
             <button   v-else v-if="user_mail !=current_user" @click="unfollowUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-danger font-bold">Unfollow</button>
 
         </div>
@@ -237,29 +266,33 @@ function url_to_link(text) {
     </div>
     <div class="user-info-card">
         <div class="bg-white shadow-sm user-info-card ">
-            <div class="all-user-info p-2">
-                <div class="heading p-2">
+            <div class="all-user-info">
+                <div class="heading">
                 
                 </div>
                 <div    class="complete-profile">
-                <ul class="d-flex" style="margin-top:60px; cursor: pointer;">
+                <ul class="d-flex" style="margin-top:75px; cursor: pointer;">
                     <li class=" m-2"><span class="title m-2"><i class="fa-light fa-location-dot"></i></span><span>{{personal_info.u_location}}</span></li>
-                    <li class="m-2"><span class="title m-2"><i class="fa-solid fa-user"></i></span><span class="font-bold">{{personal_info.u_followers_count.toString()}} </span>Followers</li>
+                    <li class="m-2"><span class="title m-2"><i class="fa-solid fa-user"></i></span><RouterLink :to="`/followers/${user_id}`"><span class="font-bold text-black">{{formatNumber(personal_info.u_followers_count)}} </span>Followers</RouterLink></li>
                 </ul>
                 </div>
             </div>
-        <div style="border-radius: 5px;" class="user-activity shadow-sm card">
+        <div v-if="personal_info.u_isPrivate != 'true' || info.isUserFollowed == 'true' " style="border-radius: 5px;" class="user-activity shadow-sm card">
         <ul class="activity-link">
             <li @click="hideReplies" id="active_menu" class="list-unstyled thought-link">Thoughts</li>
             <li @click="showReplies" id="reply_menu" class="list-unstyled">Replies</li>
-            <li class="list-unstyled"><RouterLink :to="`/channel/${user_mail}`">Channel</RouterLink></li>
+            <li class="list-unstyled"><RouterLink :to="`/channel/${user_id}`">Channel</RouterLink></li>
         </ul>
         <div class="spinner" v-if="profile_post.thoughts === ''"></div>
         <div v-else  class="all-activity-info-div">
             <div id="thoughts" class='thoughts'>
-            <div style="border:none;" class="card p-2 card-default m-2" v-for="x in profile_post.thoughts">
+            <div style="border:none;" class="card  card-default m-2" v-for="x in profile_post.thoughts">
             <div  style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
-        <span class="d-flex" style="margin-right: auto; "><img v-if="x.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(x.name)}}</span></span><BlockReportUserComponent style="cursor: pointer;" :post_owner="x.email" :post_id="x.postid" />
+        <span class="d-flex" style="margin-right: auto; "><img v-if="x.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(x.name)}} 
+            <ul class='inline-flex' style="display:block;">
+            <li class='list-unstyled' style="font-size:12px; color:gray;">{{moment(x.created_at).fromNow()}}</li>
+            </ul>
+</span></span><BlockReportUserComponent style="cursor: pointer;" :post_owner="x.email" :post_id="x.postid" />
             </div>
    <p v-html="url_to_link(x.caption)" style="white-space:pre-wrap;" class='p-2 fs-6'></p>
    <OldLikeShareComment :post_content="{
@@ -272,16 +305,16 @@ function url_to_link(text) {
                     post_comments_count:x.comments,
                     post_shares_count:x.shares
                   }" :post_owner="x.email"    :post_id="x.postid" /> 
-    <ul class='inline-flex'>
-       <li class='list-unstyled'>{{moment(x.created_at).fromNow()}}</li>
-    </ul>
     </div>
     </div>
     <div id="replies" class='replies'>
-        <div v-if="profile_post.replies === ''"><img style="margin:0px auto;" width="100px" height="100px" src="../landing/loading-loader.gif"></div>
-        <div v-else v-for="i in profile_post.replies"  style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default'>
+        <PostSkeletonLoader v-if="profile_post.replies === ''" />
+        <div v-else v-for="i in profile_post.replies"  style='border: none; border-radius: 5px;' class='m-2 card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" class="img-circle small-thumbnail" loading="lazy" src="../pictures/profile.png" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}</span></span><BlockReportUserComponent style="cursor:pointer;" post_owner="i.email" :post_id="i.postid" />
+                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" class="img-circle small-thumbnail" loading="lazy" src="../pictures/profile.png" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}  
+                    <ul class='inline-flex' style="display:block;">
+                    <li style="font-size: 12px; color:gray; display:block;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
+                    </ul></span></span><BlockReportUserComponent style="cursor:pointer;" :post_owner="i.email" :post_id="i.postid" />
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;"   class='p-2 fs-6' v-html="checkIfFriendPostIsLong(url_to_link(i.quote))"></p></RouterLink>
@@ -315,13 +348,14 @@ function url_to_link(text) {
                     post_comments_count:i.comments,
                     post_shares_count:i.shares
                   }" :post_owner="i.email_of_user_who_shared" :post_id="i.postid" />
-                    <ul class='inline-flex'>
-                    <li style="font-size: 12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
-                    </ul>
+                  
          
     </div>
     </div>
     </div>
+   </div>
+   <div v-else class="d-flex justify-content-center bg-white shadow-sm p-4 align-items-center">
+    <h1 class="fs-6 font-bold"><i class="fa-light fs-4 fa-lock"></i> Only Users who follow can see their contents..</h1>
    </div>
    </div>
 </div>
@@ -359,6 +393,8 @@ function url_to_link(text) {
     width: 100px;
     object-position: center center;
     object-fit: cover;
+    background-color:white;
+    border:3px solid rgb(254, 213, 238);
 }
 .bold{
     font-weight: bold;
