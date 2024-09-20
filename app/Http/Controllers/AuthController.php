@@ -1,13 +1,13 @@
 <?php
 namespace App\Http\Controllers;
 date_default_timezone_set('Africa/Lagos');
-
-use App\Mail\Signup;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\user_match_choice;
 use App\Models\Notifications;
 use App\Models\Channel;
+use App\Models\Community;
+use App\Models\CommunityPost;
 use App\Models\ChannelPost;
 use App\Models\User_Post;
 use App\Models\Messages;
@@ -18,26 +18,22 @@ use App\Models\Comment_Reply;
 use App\Models\Shared_Post;
 use App\Models\Blocked_List;
 use App\Models\Bookmark;
+use App\Models\Follow_Request;
+use App\Models\CommunityFollower;
 use Pusher\Pusher;
-use App\Events\VideoStream;
-use Illuminate\Support\Facades\Log;
-//use Illuminate\Notifications\Notification;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File; 
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Redis;
-use Psy\Readline\Userland;
 use App\Notifications\WelcomeNotification;
-use App\Events\MessageSent;
 use DateTime;
 use App\Services\UserServices;
 use App\Services\ConverSationServices;
+use App\Services\UserActivityServices;
 use App\Services\CloudinaryServices;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
+
 header('Access-Control-Allow-Origin','*');
 header('Access-Control-Allow-Methods','GET,POST,PUT,PATCH,DELETE,OPTIONS');
 header('Access-Control-Allow-Headers','Content-Type, Authorization');
@@ -46,12 +42,14 @@ class AuthController extends Controller
   protected $userService;
   protected $ConverSation;
   protected $cloudinaryService;
+  protected $userActivityService;
 
-  public function __construct(UserServices $userService, ConverSationServices $ConverSation, CloudinaryServices $cloudinaryService)
+  public function __construct(UserServices $userService, ConverSationServices $ConverSation, CloudinaryServices $cloudinaryService, UserActivityServices $userActivityService)
   {
       $this->userService = $userService;
       $this->ConverSation=$ConverSation;
       $this->cloudinaryService = $cloudinaryService;
+      $this->userActivityService= $userActivityService;
   }
     public function Signup(Request $request){
         $data=$request->validate([
@@ -126,51 +124,13 @@ class AuthController extends Controller
     }
     public function checkIfUserHasPaid(Request $request){
      $user_mail = $request->input('data');
-     $find_user_payment_status=DB::table('users')->where(['email' => $user_mail])->get();
-     foreach($find_user_payment_status as $status){
-      $get_if_user_has_paid=$status->isPaid;
-      if($get_if_user_has_paid == "false"){
-        return response([
-          'user_status' => 'false'
-        ]);
-      }else{
-        return response([
-          'user_status' => 'true'
-        ]);
-      }
+     $check_user_payment_status=$this->userService->checkIfUserHasPaid($user_mail);
+     return $check_user_payment_status;
      }
-     
-   
-    
-    }
     public function checkIfUserHasCompleteProfile(Request $request) {
       $email=$request->input('email');
-      $query_db=DB::table('users')->where(['email'=> $email])->get();
-      foreach($query_db as $user_data){
-        $first_name=$user_data->first_name;
-        $last_name=$user_data->last_name;
-        $location=$user_data->location;
-        $phone_number=$user_data->phone_number;
-
-        if(empty($first_name)||empty($last_name)||empty($location)||empty($phone_number)){
-          return response([
-            "info" => "false"
-          ]);
-        }else{
-          return response([
-            'first_name'=> $user_data->first_name,
-            'last_name'=> $user_data->last_name,
-            'location' => $user_data->location,
-            'phone_number' => $user_data->phone_number,
-            'profile_picture' => $user_data->profile_picture,
-            'coverPhoto' =>$user_data->coverPhoto,
-            'coverText' =>$user_data->coverText,
-          ]);
-        }
-       
-
-      }
-      
+     $check_complete_profile= $this->userService->checkCompleteProfile($email);
+     return $check_complete_profile;
     }
     public function updateUserPicture(Request $request){
      $request->validate([
@@ -216,13 +176,8 @@ class AuthController extends Controller
      public function updateCoverText(Request $request){
       $email=$request->input('email');
       $cover_text=$request->input('cover_text');
-      User::where('email',$email)->update([
-        'coverText'  =>$cover_text,
-  
-      ]);
-      return response([
-        "reply"=>$cover_text
-      ]);
+      $update_cover_text=$this->userService->updateCoverText($email,$cover_text);
+      return $update_cover_text;
      }
     public function updateUserProfile(Request $request){
     $first_name=$request->input('data.firstname');
@@ -267,117 +222,15 @@ class AuthController extends Controller
     
     public function findUserMatch(Request $request){
       $email=$request->input('data');
-      $find_user_choice=user_match_choice::where('user','=',$email)->get();
-      $store_user_choice=array();
-      foreach($find_user_choice as $user_choice){
-       array_push($store_user_choice,$user_choice->choice);
-      }
-      $find_blocked_users=Blocked_List::where(['user_who_block'=>$email])->get()->unique('user_getting_blocked');
-      $store_all_blocked_friends=array();
-      foreach($find_blocked_users as $blocked_users){
-      array_push($store_all_blocked_friends,$blocked_users->user_getting_blocked);
-      }
-      $find_user_info=User::where('email', '=', $email)->first();
-      $user_location=$find_user_info['location'];
-
-      $user_orientation=ucfirst($find_user_info['orientation']);
-      switch($user_orientation){
-        case 'Male':
-          $find_user_match=User::inRandomOrder()->
-           where('email', '!=', $email)
-          ->whereNotIn('email',$store_user_choice)
-          ->whereNotIn('email',$store_all_blocked_friends)
-          ->where('location',$user_location)
-          ->where('orientation','Female')
-          ->latest('id')
-          ->first();
-          return response([
-            "reply" => $find_user_match
-          ]);
-    
-        break;
-        case 'Female':
-          $find_user_match=User::inRandomOrder()->
-           where('email', '!=', $email)
-          ->whereNotIn('email',$store_user_choice)
-          ->whereNotIn('email',$store_all_blocked_friends)
-          ->where('location',$user_location)
-          ->where('orientation','Male')
-          ->latest('id')
-         ->first();
-        return response([
-          "reply" => $find_user_match
-        ]);
-        break;
-        case 'Gay':
-          $find_user_match=User::inRandomOrder()->
-           where('email', '!=', $email)
-          ->whereNotIn('email',$store_user_choice)
-          ->where('location',$user_location)
-          ->where('orientation','Gay')
-          ->first();
-        return response([
-          "reply" => $find_user_match
-        ]);
-        break;
-        case 'Bisexual':
-          $find_user_match=User::inRandomOrder()->
-           where('email', '!=', $email)
-          ->whereNotIn('email',$store_user_choice)
-          ->where('location',$user_location)
-          ->where('orientation','Male')
-          ->orwhere('orientation','Female')
-          ->first();
-        return response([
-          "reply" => $find_user_match
-        ]);
-          break;
-          case 'Lesbian':
-            $find_user_match=User::inRandomOrder()->
-             where('email', '!=', $email)
-            ->whereNotIn('email',$store_user_choice)
-            ->where('location',$user_location)
-            ->where('orientation','Female')
-            ->orwhere('orientation','Lesbian')
-            ->first();
-          return response([
-            "reply" => $find_user_match
-          ]);
-            break;
-          case 'Non Binary':
-            $find_user_match=User::inRandomOrder()->
-             where('email', '!=', $email)
-            ->whereNotIn('email',$store_user_choice)
-            ->where('location',$user_location)
-            ->where('orientation','Non Binary')
-            ->first();
-          return response([
-            "reply" => $find_user_match
-          ]);
-        break;
-        default:
-        return response([
-          "reply" => "User match not found"
-        ]);
-      }
-      
-     
+      $find_user_match= $this->userService->findUserMatch($email);
+      return $find_user_match;
     }
    
     public function setUserMatch(Request $request){
       $user=$request->input('user');
-      $find_user_details=User::where('email',$user)->first();
-      $sender=$find_user_details['first_name'];
-    
       $choice=$request->input('choice');
-      user_match_choice::create([
-        "user"=>$user,
-        "choice"=>$choice
-      ]);
-      $this->userService->notifyUser($user,$choice,"$sender is following in you..","match");
-      return response([
-        "success" => "You tried matching with\t".$choice."\twe have notified them"
-      ]);
+      $set_user_match=$this->userService->setUserMatch($user,$choice);
+      return $set_user_match;
     }
     public function unMatchUser(Request $request){
       $user=$request->input('user');
@@ -393,64 +246,22 @@ class AuthController extends Controller
     }
     public function createUserPost(Request $request){
       $email=$request->input('email');
-      $get_poster_info=User::where('email',$email)->first();
-      $avatar=$get_poster_info['profile_picture'];
-      $name=$get_poster_info['first_name']."\t".$get_poster_info['last_name'];
       $user_caption=$request->input('user_caption');
       $tagged_users=$request->input('tagged_users');
-      $post_id=rand(10,1000000000) . date('d');
-      if($tagged_users === null){
-        User_Post::create([
-          "name"=>$name,
-          "avatar"=>$avatar,
-          "caption"=>$user_caption,
-          "email"=>$email,
-          "postid"=>$post_id
-        ]);
-      }else{
-        foreach($tagged_users as $users){
-          $this->userService->notifyUser($email,$users,"$name tagged you in this: $user_caption",$post_id);
-        }
-        User_Post::create([
-          "name"=>$name,
-          "avatar"=>$avatar,
-          "caption"=>$user_caption,
-          "email"=>$email,
-          "postid"=>$post_id
-        ]);
-      }
-      
-      return response([
-        "reply"=>"Post added successfully",
-        "tagged_users"=>$tagged_users
-      ]);
+     $create_user_post= $this->userActivityService->createUserPost($email,$user_caption,$tagged_users);
+     return $create_user_post;
     }
     
     public function fetchUserPost(Request $request){
       $email=$request->input('email');
-      $find_current_user_mutual=user_match_choice::where('user',$email)->get();
-      $hold_user_mutual_friends=array();
-      foreach($find_current_user_mutual as $user_match){
-       $owner_friend=$user_match->choice;
-       array_push($hold_user_mutual_friends,$owner_friend);
-      }
-      $find_all_post=User_Post::where('email',$email)->
-                      orwhereIn('email',$hold_user_mutual_friends)->latest('created_at')
-                      ->first();
-
-      return response([
-        "reply" => $find_all_post
-      ]);
+     $fetch_user_post= $this->userActivityService->fetchUserPost($email);
+     return $fetch_user_post;
     }
     
     public function fetchNewPost(Request $request){
       $email=$request->input('email');
-      $find_all_post=User_Post::where('email',$email)->
-                      latest('id')
-                      ->first();
-      return response([
-        "reply" => $find_all_post
-      ]);
+      $fetch_new_post=$this->userActivityService->fetchNewPost($email);
+      return $fetch_new_post;
     }
     public function uploadStory(Request $request){
       $request->validate([
@@ -459,46 +270,43 @@ class AuthController extends Controller
       ]); 
       $email=$request->input('email');
       $file=$request->file('story_post');
+      ini_set('max_execution_time', 500);
       $this->cloudinaryService->uploadStory($file,$email);
     }
     public function uploadTextStory(Request $request){
       $user_text=$request->input('story_post');
       $user_bg_color=$request->input('bgColor');
       $email=$request->input('email');
-      $story_day=date('Y-m-d');
-      Story::create([
-        "user_email"=>$email,
-        "user_image"=>"",
-        "user_text"=>$user_text,
-        "background"=>$user_bg_color,
-        "user_video"=>"",
-        "date_posted"=>$story_day
-      ]);
-      return response([
-        "reply"=>"Success"
-      ]);
+     $upload_text_story=$this->userActivityService->uploadTextStory($user_text,$user_bg_color,$email);
+     return $upload_text_story;
     }
     public function findUserStory(Request $request){
       $user_email=$request->input('email');
-      $reply=Story::where('user_email',$user_email)->latest('id')->get();
-      $hold_all_replies=array();
-      foreach($reply as $story_post){
-        array_push($hold_all_replies,["file"=>$story_post->user_image,"text"=>$story_post->user_text,"color"=>$story_post->background,"isVideoFile"=>$story_post->user_video]);
-      }
-      
-      return response([
-        "reply"=>$hold_all_replies,
-        
-      ]);
+      $find_user_story=$this->userActivityService->findUserStory($user_email);
+      return $find_user_story;
     }
     public function Delete_All_Old_User_Stories(){
-      $current_time_in_24hrs_format=date('Y-m-d');
-      $fetch_all_old_story_files=Story::where('date_posted','<',$current_time_in_24hrs_format)->get();
+      $file_date=date('Y-m-d');
+      $current_time_in_24hrs_format=date('Y-m-d H:i:s');
+      $time_24hrs_ago = date('Y-m-d H:i:s', strtotime('-24 hours', strtotime($current_time_in_24hrs_format)));
+      Story::where('created_at','<',$time_24hrs_ago)->delete();
+      $fetch_all_old_story_files=Story::where('date_posted','<',$file_date)->where('user_image','!=','')->get();
+      $all_files_array=array();
       foreach($fetch_all_old_story_files as $old_story_files){
-        $old_story="storage/".$old_story_files->user_image;
-        File::delete(public_path($old_story));
+       // $old_story="storage/".$old_story_files->user_image;
+       //$old_story=$old_story_files->user_image;
+      $result= Cloudinary::destroy($old_story_files->user_image);
+       if (isset($result['result']) && $result['result'] == 'ok') {
+        // Deletion as a normal file was successful
+        return response()->json(['message' => 'Image deleted successfully.'], 200);
+    } else {
+        // If deletion as a normal file fails, attempt to delete as a video
+        $videoResult = Cloudinary::destroy($old_story_files->user_image, [
+            'resource_type' => 'video'
+        ]);
+     //  array_push($all_files_array,$old_story_files->user_image);
       }
-      Story::where('date_posted','<',$current_time_in_24hrs_format)->delete();
+    }
       return response([
         "reply"=>"Deletion Successfully Completed"
       ]);
@@ -568,45 +376,22 @@ class AuthController extends Controller
         array_push($post_shares_collection,$shares_count);
       }
         array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-        "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
+        "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
       return response([
         "reply" => $store_all_post
       ]);
     }
-    public function fetchRandomPost(Request $request){
+    public function fetchNewChannelPost(Request $request){
       $user=$request->input('email');
       $fetch_user_friends=user_match_choice::where('user',$user)->get();
       $hold_all_user_friends=array();
+      $store_all_channel_post=array();
       foreach($fetch_user_friends as $get_friend){
         array_push($hold_all_user_friends,$get_friend->choice);
       }
-      $get_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption', 'user__posts.postid', 'user__posts.isReply', 'user__posts.created_at','users.profile_picture','user__posts.email')->inRandomOrder()->orderBy('user__posts.created_at','ASC','DESC')->take(10)->get();
-      $get_channel_post=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->whereIn('channel_posts.email',$hold_all_user_friends)->select('channel_posts.name','channel_posts.caption','channel_posts.postid', 'channel_posts.isReply', 'channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.created_at','users.profile_picture','channel_posts.email','channel_posts.id','users.first_name','users.last_name')->inRandomOrder()->orderBy('channel_posts.created_at','ASC','DESC')->take(10)->get();
-      $store_all_post=array();
-      $store_all_channel_post=array();
-      foreach($get_post as $new_post){
-      $post_id=$new_post->postid;
-      $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-      $post_like_collection=array();
-      foreach($no_of_likes as $post_like){
-        array_push($post_like_collection,$post_like);
-      }
-      $post_comments_collection=array();
-      $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-      foreach($no_of_comments as $post_comment){
-        array_push($post_comments_collection,$post_comment);
-      }
-      $post_shares_collection=array();
-      $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-      foreach($no_of_shares as $shares_count){
-        array_push($post_shares_collection,$shares_count);
-      }
-        array_push($store_all_post,["name"=>$new_post->name,  "caption"=>$new_post->caption,"date"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "avatar"=>$new_post->profile_picture, 
-        "email"=>$new_post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
-      ]);
-      }
+      $get_channel_post=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->whereIn('channel_posts.email',$hold_all_user_friends)->select('channel_posts.name','channel_posts.caption','channel_posts.postid', 'channel_posts.isReply', 'channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.created_at','users.profile_picture','channel_posts.email','channel_posts.id','users.first_name','users.last_name')->inRandomOrder()->orderBy('channel_posts.created_at','ASC','DESC')->take(30)->get();
       foreach($get_channel_post as $new_post){
         $post_id=$new_post->postid;
         $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
@@ -625,20 +410,87 @@ class AuthController extends Controller
           array_push($post_shares_collection,$shares_count);
         }
           array_push($store_all_channel_post,["name"=>$new_post->name, "first_name"=>$new_post->first_name, "last_name"=>$new_post->last_name,  "caption"=>$new_post->caption,"date"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "avatar"=>$new_post->profile_picture, 
-          "email"=>$new_post->email,"img_1"=>$new_post->post_img1,"img_2"=>$new_post->post_img2,"img_3"=>$new_post->post_img3,"img_4"=>$new_post->post_img4,"video"=>$new_post->video,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection),"shares"=>count($post_shares_collection)
+          "email"=>base64_encode($new_post->email),"img_1"=>$new_post->post_img1,"img_2"=>$new_post->post_img2,"img_3"=>$new_post->post_img3,"img_4"=>$new_post->post_img4,"video"=>$new_post->video,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection),"shares"=>count($post_shares_collection)
         ]);
-        }
-   
+        return response([
+          "channel_reply"=> $store_all_channel_post
+        ]);
+    }
+  }
+    public function fetchRandomPost(Request $request){
+      $user=$request->input('email');
+      $fetch_user_friends=user_match_choice::where('user',$user)->get();
+      $hold_all_user_friends=array();
+      foreach($fetch_user_friends as $get_friend){
+        array_push($hold_all_user_friends,$get_friend->choice);
+      }
+      $get_post=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->whereIn('user__posts.email',$hold_all_user_friends)->select('user__posts.name','user__posts.caption', 'user__posts.postid', 'user__posts.isReply', 'user__posts.created_at','users.profile_picture','user__posts.email')->inRandomOrder()->orderBy('user__posts.created_at','ASC','DESC')->take(10)->get();
+      $store_all_post=array();
+      foreach($get_post as $new_post){
+      $post_id=$new_post->postid;
+      $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
+      $post_like_collection=array();
+      foreach($no_of_likes as $post_like){
+        array_push($post_like_collection,$post_like);
+      }
+      $post_comments_collection=array();
+      $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
+      foreach($no_of_comments as $post_comment){
+        array_push($post_comments_collection,$post_comment);
+      }
+      $post_shares_collection=array();
+      $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
+      foreach($no_of_shares as $shares_count){
+        array_push($post_shares_collection,$shares_count);
+      }
+        array_push($store_all_post,["name"=>$new_post->name,  "caption"=>$new_post->caption,"date"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "avatar"=>$new_post->profile_picture, 
+        "email"=>base64_encode($new_post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
+      ]);
+      }
       return response([
         "reply" => $store_all_post,
-        "channel_reply"=> $store_all_channel_post
-        
       ]);
+    }
+    public function fetchNewSharedPost(Request $request){
+      $user=$request->input('email');
+      $fetch_user_friends=user_match_choice::where('user',$user)->get();
+      $hold_all_user_friends=array();
+      foreach($fetch_user_friends as $get_friend){
+        array_push($hold_all_user_friends,$get_friend->choice);
+      }
+      $get_post=DB::table('shared__posts')->join('users','shared__posts.email_of_user_who_shared','=','users.email')
+      ->whereIn('shared__posts.email_of_user_who_shared',$hold_all_user_friends)->select('shared__posts.name','shared__posts.caption','shared__posts.created_at','shared__posts.post_img1','shared__posts.post_img2','shared__posts.post_img3','shared__posts.post_img4','shared__posts.video','shared__posts.quote','shared__posts.postid','shared__posts.prev_id','shared__posts.isReply', 'shared__posts.name_of_user_who_shared','shared__posts.email','shared__posts.email_of_user_who_shared','users.profile_picture')->inRandomOrder()->orderBy('shared__posts.created_at','ASC','DESC')->take(10)->get();
+      $store_all_post=array();
+      foreach($get_post as $new_post){
+      $post_id=$new_post->postid;
+      $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
+      $post_like_collection=array();
+      foreach($no_of_likes as $post_like){
+        array_push($post_like_collection,$post_like);
+      }
+      $post_comments_collection=array();
+      $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
+      foreach($no_of_comments as $post_comment){
+        array_push($post_comments_collection,$post_comment);
+      }
+      $post_shares_collection=array();
+      $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
+      foreach($no_of_shares as $shares_count){
+        array_push($post_shares_collection,$shares_count);
+      }
+      $get_prev_owner_picture=DB::table('users')->select('profile_picture')->where('email',$new_post->email_of_user_who_shared)->first();
+        array_push($store_all_post,["name"=>$new_post->name,  "caption"=>$new_post->caption,"created_at"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "profile_picture"=>$new_post->profile_picture, 
+        "email"=>base64_encode($new_post->email), "email_of_user_who_shared"=>base64_encode($new_post->email_of_user_who_shared),"name_of_user_who_shared"=>$new_post->name_of_user_who_shared,"prev_id"=>$new_post->prev_id,"post_img1"=>$new_post->post_img1, "post_img2"=>$new_post->post_img2, "post_img3"=>$new_post->post_img3, "post_img4"=>$new_post->post_img4, "quote"=>$new_post->quote, "video"=>$new_post->video, "avatar_of_original_poster"=>$get_prev_owner_picture->profile_picture,   "likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
+      ]);
+      }
+      return response([
+        "reply" => $store_all_post,
+      ]);
+    }
+     
 
       
-    
-
-    }
+   
     public function createChannel(Request $request){
       
       if(is_numeric($request->input('channel_name')) || is_numeric($request->input('channel_bio'))){
@@ -660,6 +512,31 @@ class AuthController extends Controller
           'channel_owner'     =>$email,
           'channel_bio'       =>$channel_bio,
           'channel_category'  =>$channel_category
+        ]);
+        return response([
+          "reply" => "Successfull",
+        ]);
+      }
+      
+    }
+    public function createCommunity(Request $request){
+      if(is_numeric($request->input('community_name')) || is_numeric($request->input('community_bio'))){
+        $numeric_error="Please input a name within A-Z";
+        return response([
+          "number_error" => $numeric_error
+        ]);
+      }else{
+        $email=$request->input('community_owner');
+        $community_name=$request->validate([
+          'community_name' => 'unique:communities'
+        ]);
+        $community_bio=$request->input('community_bio');
+        $community_category=$request->input('community_category');
+        Community::create([
+          'community_name'      =>$community_name['community_name'],
+          'community_owner'     =>$email,
+          'community_bio'       =>$community_bio,
+          'community_category'  =>$community_category
         ]);
         return response([
           "reply" => "Successfull",
@@ -855,68 +732,182 @@ class AuthController extends Controller
       }
       
     }
-   
-    public function findChannelPost(Request $request){
+    public function createCommunityPost(Request $request){
       $email=$request->input('email');
       $name=$request->input('name');
       $avatar=$request->input('avatar');
       $caption=$request->input('caption');
-      $channel_post=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->where('channel_posts.email',$email)->select('channel_posts.name','channel_posts.caption','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.created_at','users.profile_picture','channel_posts.email','channel_posts.id', 'channel_posts.postid', 'channel_posts.isReply')->latest('channel_posts.id')->take(10)->get();
-      $store_all_post=array();
-      foreach($channel_post as $post){
-      $post_id=$post->postid;
-      $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-      $post_like_collection=array();
-      foreach($no_of_likes as $post_like){
-        array_push($post_like_collection,$post_like);
-      }
-      $post_comments_collection=array();
-      $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-      foreach($no_of_comments as $post_comment){
-        array_push($post_comments_collection,$post_comment);
-      }
-      $post_shares_collection=array();
-      $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-      foreach($no_of_shares as $shares_count){
-        array_push($post_shares_collection,$shares_count);
-      }
-        array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-        "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
+      $image_1=$request->file('image1');
+      $image_2=$request->file('image2');
+      $image_3=$request->file('image3');
+      $image_4=$request->file('image4');
+      $post_id=rand(10,100000000) . date('d');
+      if(empty($request->file('image1')) && empty($request->file('image2')) && empty($request->file('image3')) && empty($request->file('image4'))){
+        $create_post=CommunityPost::create([
+          "email" => $email,
+          "name"  => $name,
+          "avatar" => $avatar,
+          "caption" => $caption,
+          "postid"  => $post_id
+  
+        ]);
+        return response([
+          "reply"=>$create_post
+        ]);
+      }else if(!empty($request->file('image1')) && empty($request->file('image2')) && empty($request->file('image3')) && empty($request->file('image4'))){
+       // $image_path=$request->file('image1')->store('users_posts','public');
+       $filePath=$request->file('image1');
+        $upload=  Cloudinary::upload($filePath->getRealPath(), [
+          'folder' => 'users_posts', // Optional: specify a folder
       ]);
-      }
-      return response([
-        "reply"=>$store_all_post
-      ]);
-    }
-    public function deleteChannelPost(Request $request){
-      $email=$request->input('email');
-      $post_id=$request->input('post_id');
-      $caption=$request->input('caption');
-      $channel_post= DB::table('channel_posts')->where("id",$post_id)->first();
-      $image_1=$request->input('image1');
-      $image_2=$request->input('image2');
-      $image_3=$request->input('image3');
-      $image_4=$request->input('image4');
-      $video=$request->input('video');
-      $publicId=[$channel_post->post_img1, $channel_post->post_img2, $channel_post->post_img3, $channel_post->post_img4];
-      $publicIds = array_filter($publicId);
-      $this->delete($publicIds);
-    $deleteSuccess= DB::table('channel_posts')->where("id",$post_id)->delete();
-   /*  File::delete(public_path("storage/".$image_1));
-     File::delete(public_path("storage/".$image_2));
-     File::delete(public_path("storage/".$image_3));
-     File::delete(public_path("storage/".$image_4));
-     File::delete(public_path("storage/".$video)); **/
-      return response([
-       "reply"=>$deleteSuccess
-      ]);
-    }
-    public function delete(array $publicId)
-    {
-        foreach($publicId as $id){
-         Cloudinary::destroy($id);
+      $pictureId=$upload->getPublicId();
+        $create_post=CommunityPost::create([
+          "email" => $email,
+          "name"  => $name,
+          "avatar" => $avatar,
+          "caption" => $caption,
+          "post_img1" => $pictureId,
+          "postid"  => $post_id
+         
+  
+        ]);
+        return response([
+          "reply"=>$create_post
+        ]);
+      }else if(!empty($request->file('image1')) && !empty($request->file('image2')) && empty($request->file('image3')) && empty($request->file('image4'))){
+       // $image_path=$request->file('image1')->store('users_posts','public');
+       // $image_path2=$request->file('image2')->store('users_posts','public');
+       $publicIds = [
+        'post_img1' => null,
+        'post_img2' => null, 
+        ];
+
+    // List of file input names
+    $fileInputs = ['image1', 'image2'];
+
+    // Iterate through each file input and upload if present
+    foreach ($fileInputs as $index => $fileInput) {
+        if ($request->hasFile($fileInput)) {
+            $filePath = $request->file($fileInput);
+            $upload = Cloudinary::upload($filePath->getRealPath(), [
+                'folder' => 'users_posts',
+            ]);
+            // Store the public ID in the corresponding key in the publicIds array
+            $publicIds['post_img' . ($index + 1)] = $upload->getPublicId();
         }
-        
+    }
+      $create_post=CommunityPost::create([
+        "email" => $email,
+        "name"  => $name,
+        "avatar" => $avatar,
+        "caption" => $caption,
+        "post_img1" => $publicIds['post_img1'],
+        "post_img2" => $publicIds['post_img2'],
+        "postid"  => $post_id
+
+
+      ]);
+        return response([
+          "reply"=>$create_post
+        ]);
+      }else if(!empty($request->file('image1')) && !empty($request->file('image2')) && !empty($request->file('image3')) && empty($request->file('image4'))){
+        /*$image_path=$request->file('image1')->store('users_posts','public');
+        $image_path2=$request->file('image2')->store('users_posts','public');
+        $image_path3=$request->file('image3')->store('users_posts','public');**/
+        $publicIds = [
+          'post_img1' => null,
+          'post_img2' => null,
+          'post_img3' => null,
+          
+      ];
+
+      // List of file input names
+      $fileInputs = ['image1', 'image2', 'image3'];
+
+      // Iterate through each file input and upload if present
+      foreach ($fileInputs as $index => $fileInput) {
+          if ($request->hasFile($fileInput)) {
+              $filePath = $request->file($fileInput);
+              $upload = Cloudinary::upload($filePath->getRealPath(), [
+                  'folder' => 'users_posts',
+              ]);
+              // Store the public ID in the corresponding key in the publicIds array
+              $publicIds['post_img' . ($index + 1)] = $upload->getPublicId();
+          }
+      }
+        $create_post=CommunityPost::create([
+          "email" => $email,
+          "name"  => $name,
+          "avatar" => $avatar,
+          "caption" => $caption,
+          "post_img1" => $publicIds['post_img1'],
+          "post_img2" => $publicIds['post_img2'],
+          "post_img3" => $publicIds['post_img3'],
+          "postid"  => $post_id
+
+  
+        ]);
+        return response([
+          "reply"=>$create_post
+        ]);
+      }else if(!empty($request->file('image1')) && !empty($request->file('image2')) && !empty($request->file('image3')) && !empty($request->file('image4'))){
+      /*  $image_path=$request->file('image1')->store('users_posts','public');
+        $image_path2=$request->file('image2')->store('users_posts','public');
+        $image_path3=$request->file('image3')->store('users_posts','public');
+        $image_path4=$request->file('image4')->store('users_posts','public'); **/
+        $publicIds = [
+          'post_img1' => null,
+          'post_img2' => null,
+          'post_img3' => null,
+          'post_img4' => null,
+      ];
+
+      // List of file input names
+      $fileInputs = ['image1', 'image2', 'image3', 'image4'];
+
+      // Iterate through each file input and upload if present
+      foreach ($fileInputs as $index => $fileInput) {
+          if ($request->hasFile($fileInput)) {
+              $filePath = $request->file($fileInput);
+              $upload = Cloudinary::upload($filePath->getRealPath(), [
+                  'folder' => 'users_posts',
+              ]);
+              // Store the public ID in the corresponding key in the publicIds array
+              $publicIds['post_img' . ($index + 1)] = $upload->getPublicId();
+          }
+      }
+
+      // Other variables
+      $email = $request->input('email');
+      $name = $request->input('name');
+      $avatar = $request->input('avatar');
+      $caption = $request->input('caption');
+      $post_id = $request->input('postid');
+
+      // Create the post in the database
+      $create_post = CommunityPost::create([
+          "email" => $email,
+          "name"  => $name,
+          "avatar" => $avatar,
+          "caption" => $caption,
+          "post_img1" => $publicIds['post_img1'],
+          "post_img2" => $publicIds['post_img2'],
+          "post_img3" => $publicIds['post_img3'],
+          "post_img4" => $publicIds['post_img4'],
+          "postid"  => $post_id
+      ]);
+
+        return response([
+          "reply"=>$create_post
+        ]);
+      }
+      
+    }
+   
+    public function findChannelPost(Request $request){
+      $email=$request->input('email');
+      $find_channel_post=$this->userActivityService->findChannelPost($email);
+      return $find_channel_post;
     }
     public function deleteUserPost(Request $request){
       $postid=$request->input('postid');
@@ -926,59 +917,122 @@ class AuthController extends Controller
           "reply"=>$user_post
         ]);
       }else{
-        $user_post= DB::table('shared__posts')->where("postid",$postid)->delete();
+        $post_id=$request->input('postid');
+        $channel_post= DB::table('channel_posts')->where("postid",$post_id)->first();
+        if($channel_post){
+          if($channel_post->video !=''){
+            $public_id=$channel_post->video;
+            $result = Cloudinary::destroy($public_id, [
+              'resource_type' => 'video'
+          ]);
+          }else{
+            $publicId=[$channel_post->post_img1, $channel_post->post_img2, $channel_post->post_img3, $channel_post->post_img4,$channel_post->video];
+            $publicIds = array_filter($publicId);
+            $this->delete($publicIds);
+          }
+        $deleteSuccess= DB::table('channel_posts')->where("postid",$post_id)->delete();
         return response([
-          "reply"=>$user_post
+          "reply"=>$deleteSuccess
         ]);
+        }else{
+          $postid=$request->input('postid');
+          $user_post= DB::table('shared__posts')->where("postid",$postid)->delete();
+          return response([
+            "reply"=>$user_post
+          ]);
+        }
       }
-     
     }
+    public function deleteCommunityPost(Request $request){
+      $post_id=$request->input('postid');
+      $community_post= DB::table('community_posts')->where("postid",$post_id)->first();
+      if($community_post){
+        if($community_post->video !=''){
+          $public_id=$community_post->video;
+          $result = Cloudinary::destroy($public_id, [
+            'resource_type' => 'video'
+        ]);
+        }else{
+          $publicId=[$community_post->post_img1, $community_post->post_img2, $community_post->post_img3, $community_post->post_img4,$community_post->video];
+          $publicIds = array_filter($publicId);
+          $this->delete($publicIds);
+        }
+      $deleteSuccess= DB::table('community_posts')->where("postid",$post_id)->delete();
+      return response([
+        "reply"=>$deleteSuccess
+      ]);
+    }
+  }
+  public function removeMember(Request $request){
+    $evicted_member=$request->input('evicted_member');
+    $community_name=$request->input('community_name');
+    $remove_member=DB::table('community_followers')->where(["community_member"=>$evicted_member,"community_name"=>$community_name])->delete();
+    return response([
+      "reply"=>"success"
+    ]);
+  }
+  public function joinCommunity(Request $request){
+    $community_member=$request->input('current_user');
+    $community_name=$request->input('community_name');
+    $new_community_member=CommunityFollower::create([
+      "community_member"=>$community_member,
+      "community_name" => $community_name
+    ]);
+    return response([
+      "reply"=>"Success"
+    ]);
+  }
     public function fetchRandomChannelPost(Request $request){
       $user=$request->input('email');
-      $get_post=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->where('channel_posts.email',$user)->select('channel_posts.name','channel_posts.caption','channel_posts.created_at','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','users.profile_picture','channel_posts.email','channel_posts.id')->inRandomOrder()->orderBy('channel_posts.id','ASC')->first();
-      $store_all_post=array(["name"=>$get_post->name, "caption"=>$get_post->caption, "post_img1"=>$get_post->post_img1, "post_img2"=>$get_post->post_img2, "post_img3"=>$get_post->post_img3,"post_img4"=>$get_post->post_img4,"video"=>$get_post->video, "date"=>$get_post->created_at,"avatar"=>$get_post->profile_picture, 
-        "email"=>$get_post->email,"id"=>$get_post->id
-        ]);
-   
-      return response([
-        "reply" => $store_all_post
-      ]);
+      $date=$request->input('recent_date');
+      $find_older_channel_post=$this->userActivityService->fetchOlderChannelPost($user,$date);
+      return $find_older_channel_post;
+    }
+    public function fetchAllChannelsVideo(Request $request){
+      $current_user=$request->input('email');
+     $find_channel_videos=$this->userActivityService->findChannelVideos($current_user);
+     return $find_channel_videos;
     }
     public function fetchAllChannelsPost(Request $request){
       $current_user=$request->input('email');
-     $find_user_choice= user_match_choice::where('user',$current_user)->get();
-     $keep_all_persons_who_user_follow=array();
-     foreach($find_user_choice as $person_who_user_follows){
-      array_push($keep_all_persons_who_user_follow, $person_who_user_follows->choice);
-     }
-     $find_all_channels_of_who_user_follows_post=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->join('channels','channel_posts.email','=','channels.channel_owner')
-     ->whereIn('channel_posts.email',$keep_all_persons_who_user_follow)->select('channel_posts.name','channel_posts.caption','channel_posts.created_at','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.postid', 'channel_posts.isReply', 'users.profile_picture','users.first_name','users.last_name','channels.channel_bio',   'channel_posts.email','channel_posts.id')->inRandomOrder()->take(10)->latest()->get();
-     $store_all_post=array();
-     foreach($find_all_channels_of_who_user_follows_post as $post){
-      $post_id=$post->postid;
-    $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-    $post_like_collection=array();
-    foreach($no_of_likes as $post_like){
-      array_push($post_like_collection,$post_like);
+     $fetch_all_channel_posts=$this->userActivityService->fetchAllChannelsPost($current_user);
+     return $fetch_all_channel_posts;
     }
-    $post_comments_collection=array();
-    $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-    foreach($no_of_comments as $post_comment){
-      array_push($post_comments_collection,$post_comment);
+    public function fetchCommunitiesPost(Request $request){
+      $current_user=$request->input('email');
+      $fetch_all_community_posts=$this->userActivityService->fetchAllCommunityPost($current_user);
+      return $fetch_all_community_posts;
     }
-    $post_shares_collection=array();
-    $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-    foreach($no_of_shares as $shares_count){
-      array_push($post_shares_collection,$shares_count);
+    public function fetchCommunityPosts(Request $request){
+      $key_type=$request->input('key');
+      $community_name=$request->input('community_name');
+      $fetch_all_community_posts=$this->userActivityService->fetchCommunityPosts($key_type,$community_name);
+      return $fetch_all_community_posts;
     }
-      array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name,"channel_bio"=>$post->channel_bio,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-      "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
-    ]);
+    public function fetchRandomTopCommunityPost(Request $request){
+      $last_top_post_date=$request->input('last_top_post_date');
+      $fetch_all_community_posts=$this->userActivityService->fetchRandomTopCommunityPost($last_top_post_date);
+      return $fetch_all_community_posts;
     }
-      return response([
-        "reply" => $store_all_post
-      ]);
-
+    public function fetchLatestCommunityPosts(Request $request){
+      $community_name=$request->input('community_name');
+      $fetch_latest_community_post=$this->userActivityService->fetchLatestCommunityPosts($community_name);
+      return $fetch_latest_community_post;
+    }
+    public function fetchRandomLatestCommunityPosts(Request $request){
+      $community_name=$request->input('last_top_post_date');
+      $fetch_latest_community_post=$this->userActivityService->fetchRandomLatestCommunityPosts($community_name);
+      return $fetch_latest_community_post;
+    }
+    public function findCommunityDetails(Request $request){
+      $community_id=$request->input('community_name');
+      $find_community_details=$this->userActivityService->findCommunityDetails($community_id);
+      return $find_community_details;
+    }
+    public function findCommunitiesOwnedByUser(Request $request){
+      $user_mail=$request->input('user_mail');
+      $find_all_communities_owned_by_user=$this->userService->findUserCommunity($user_mail);
+      return $find_all_communities_owned_by_user;
     }
     public function checkIfUserLiked(Request $request){
       $current_user=$request->input('email');
@@ -1054,7 +1108,7 @@ class AuthController extends Controller
       $check_post_table=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->select('user__posts.name','user__posts.caption','users.profile_picture','user__posts.email','user__posts.created_at','user__posts.postid','user__posts.isReply')->where('user__posts.postid',$post_id)->first();
       if($check_post_table){
         $show_all_post_info=array("name"=>$check_post_table->name,
-        "caption"=>$check_post_table->caption, "avatar"=>$check_post_table->profile_picture,"user_email"=>$check_post_table->email, "post_date"=>$check_post_table->created_at, "prev_id"=>$check_post_table->postid, "isReply"=>$check_post_table->isReply,   "img_1"=>null,"img_2"=>null,"img_3"=>null,"img_4"=>null,"video"=>null);
+        "caption"=>$check_post_table->caption, "avatar"=>$check_post_table->profile_picture,"user_email"=>base64_encode($check_post_table->email), "post_date"=>$check_post_table->created_at, "prev_id"=>$check_post_table->postid, "isReply"=>$check_post_table->isReply,   "img_1"=>null,"img_2"=>null,"img_3"=>null,"img_4"=>null,"video"=>null);
         $check_no_of_users_who_comment=DB::select("SELECT count(comment) AS total_comments FROM comments WHERE post_id='$post_id'");
         $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='$post_id'");  
         $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='$post_id'");    
@@ -1071,7 +1125,7 @@ class AuthController extends Controller
         $check_channels_table=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->select('channel_posts.name','channel_posts.caption','users.profile_picture','channel_posts.email','channel_posts.created_at','channel_posts.postid', 'channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.isReply')->where('channel_posts.postid',$post_id)->first();
         if($check_channels_table){
           $show_all_post_info=array("name"=>$check_channels_table->name,
-          "caption"=>$check_channels_table->caption, "avatar"=>$check_channels_table->profile_picture, "user_email"=>$check_channels_table->email, "post_date"=>$check_channels_table->created_at, "prev_id"=>$check_channels_table->postid,
+          "caption"=>$check_channels_table->caption, "avatar"=>$check_channels_table->profile_picture, "user_email"=>base64_encode($check_channels_table->email), "post_date"=>$check_channels_table->created_at, "prev_id"=>$check_channels_table->postid,
           "img_1"=>$check_channels_table->post_img1, "img_2"=>$check_channels_table->post_img2, "img_3"=>$check_channels_table->post_img3, "img_4"=>$check_channels_table->post_img4,"video"=>$check_channels_table->video, "isReply"=>$check_channels_table->isReply
         );
         $check_no_of_users_who_comment=DB::select("SELECT count(comment) AS total_comments FROM comments WHERE post_id='$post_id'");
@@ -1090,8 +1144,8 @@ class AuthController extends Controller
           if($check_shared_posts_table){
             $get_sharer_picture=DB::table('users')->select('profile_picture')->where('email',$check_shared_posts_table->email_of_user_who_shared)->first();
             $show_all_post_info=array("name"=>$check_shared_posts_table->name,
-            "caption"=>$check_shared_posts_table->caption, "avatar"=>$check_shared_posts_table->profile_picture, "user_email"=>$check_shared_posts_table->email, "post_date"=>$check_shared_posts_table->created_at,
-            "img_1"=>$check_shared_posts_table->post_img1, "img_2"=>$check_shared_posts_table->post_img2, "img_3"=>$check_shared_posts_table->post_img3, "img_4"=>$check_shared_posts_table->post_img4,"video"=>$check_shared_posts_table->video,"sharer_name"=>$check_shared_posts_table->name_of_user_who_shared,"sharer_email"=>$check_shared_posts_table->email_of_user_who_shared,
+            "caption"=>$check_shared_posts_table->caption, "avatar"=>$check_shared_posts_table->profile_picture, "user_email"=>base64_encode($check_shared_posts_table->email), "post_date"=>$check_shared_posts_table->created_at,
+            "img_1"=>$check_shared_posts_table->post_img1, "img_2"=>$check_shared_posts_table->post_img2, "img_3"=>$check_shared_posts_table->post_img3, "img_4"=>$check_shared_posts_table->post_img4,"video"=>$check_shared_posts_table->video,"sharer_name"=>$check_shared_posts_table->name_of_user_who_shared,"sharer_email"=>base64_encode($check_shared_posts_table->email_of_user_who_shared),
             "sharer_quote"=>$check_shared_posts_table->quote,"sharer_avatar"=>$get_sharer_picture->profile_picture,"postid"=>$check_shared_posts_table->postid,"prev_id"=>$check_shared_posts_table->prev_id, "isReply"=>$check_shared_posts_table->isReply
           );
           $check_no_of_users_who_comment=DB::select("SELECT count(comment) AS total_comments FROM comments WHERE post_id='$post_id'");
@@ -1117,22 +1171,32 @@ class AuthController extends Controller
     }
     public function findSharedStatus(Request $request){
       $post_id=$request->input('post_id');
-      $check_shared_posts_table=DB::table('shared__posts')->join('users','shared__posts.email','=','users.email')->select('shared__posts.name','shared__posts.caption','users.profile_picture','shared__posts.email','shared__posts.created_at','shared__posts.post_img1','shared__posts.post_img2','shared__posts.post_img3','shared__posts.post_img4','shared__posts.video','shared__posts.name_of_user_who_shared','shared__posts.email_of_user_who_shared','shared__posts.quote','shared__posts.postid','shared__posts.prev_id')->where('shared__posts.prev_id',$post_id)->get();
+      $check_shared_posts_table=DB::table('shared__posts')->join('users','shared__posts.email_of_user_who_shared','=','users.email')->select('shared__posts.name','shared__posts.caption','users.profile_picture','shared__posts.email','shared__posts.created_at','shared__posts.post_img1','shared__posts.post_img2','shared__posts.post_img3','shared__posts.post_img4','shared__posts.video','shared__posts.name_of_user_who_shared','shared__posts.email_of_user_who_shared','shared__posts.quote','shared__posts.postid','shared__posts.prev_id','shared__posts.isReply')->where('shared__posts.prev_id',$post_id)->get();
       $all_quote_posts=array();
       foreach($check_shared_posts_table as $shared_posts){
-      $check_no_of_users_who_comment=DB::select("SELECT count(comment) AS total_comments FROM comments WHERE post_id='".$shared_posts->postid."'");
-      $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='".$shared_posts->postid."'");  
-      $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='".$shared_posts->postid."'");    
-      $check_no_of_users_who_bookmarked=DB::select("SELECT count(user_who_bookmark) AS total_bookmarks FROM bookmarks WHERE bookmarked_post_id='".$shared_posts->postid."'");
-      array_push($all_quote_posts,["name"=>$shared_posts->name, "caption"=>$shared_posts->caption, "profile_picture"=>$shared_posts->profile_picture, "email"=>$shared_posts->email, "created_at"=>$shared_posts->created_at, "post_img1"=>$shared_posts->post_img1, "post_img2"=>$shared_posts->post_img2, "post_img3"=>$shared_posts->post_img3, "post_img4"=>$shared_posts->post_img4, "video"=>$shared_posts->video, "name_of_user_who_shared"=>$shared_posts->name_of_user_who_shared, "email_of_user_who_shared"=>$shared_posts->email_of_user_who_shared, "quote"=>$shared_posts->quote,"postid"=>$shared_posts->postid, "prev_id"=>$shared_posts->prev_id]);
+        $post_id=$shared_posts->postid;
+        $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
+        $post_like_collection=array();
+        foreach($no_of_likes as $post_like){
+          array_push($post_like_collection,$post_like);
+        }
+        $post_comments_collection=array();
+        $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
+        foreach($no_of_comments as $post_comment){
+          array_push($post_comments_collection,$post_comment);
+        }
+        $post_shares_collection=array();
+        $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
+        foreach($no_of_shares as $shares_count){
+          array_push($post_shares_collection,$shares_count);
+        }
+        $email_of_original_poster=$shared_posts->email;
+        $find_avatar_of_original_poster=DB::table('users')->where('email',$email_of_original_poster)->select('profile_picture')->first();
+      array_push($all_quote_posts,["name"=>$shared_posts->name, "caption"=>$shared_posts->caption, "profile_picture"=>$shared_posts->profile_picture, "email"=>base64_encode($shared_posts->email), "created_at"=>$shared_posts->created_at, "post_img1"=>$shared_posts->post_img1, "post_img2"=>$shared_posts->post_img2, "post_img3"=>$shared_posts->post_img3, "post_img4"=>$shared_posts->post_img4, "video"=>$shared_posts->video, "name_of_user_who_shared"=>$shared_posts->name_of_user_who_shared, "email_of_user_who_shared"=>base64_encode($shared_posts->email_of_user_who_shared), "quote"=>$shared_posts->quote,"postid"=>$shared_posts->postid, "prev_id"=>$shared_posts->prev_id,"isReply"=>$shared_posts->isReply, "avatar_of_original_poster"=>$find_avatar_of_original_poster->profile_picture,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)]);
 
       }
       return response([
         "reply"=>$all_quote_posts,
-        "total_comment"=>$check_no_of_users_who_comment,
-        "total_likes"=>$check_no_of_users_who_liked,
-        "total_shares"=>$check_no_of_users_who_shared,
-        "total_bookmarks"=>$check_no_of_users_who_bookmarked
       ]);
       
       }
@@ -1156,7 +1220,20 @@ class AuthController extends Controller
         "post_owner"=>$post_owner,
         "user_who_comment_name"=>$user_who_comment_name
       ];
-      return $this->ConverSation->createUserComment($data);
+    $this->ConverSation->createUserComment($data);
+    $find_user_who_comment_info=User::where('email',$user_who_comment)->first();
+    $all_info=array(
+      "comment"=>$comment,
+      "post_id"=>$post_id,
+      "user_who_comment"=>$user_who_comment,
+      "avatar"=>$find_user_who_comment_info['profile_picture'],
+      "first_name"=>$find_user_who_comment_info['first_name'],
+      "last_name"=>$find_user_who_comment_info['last_name'],
+      "comment_date"=>$current_date
+    );
+    return response([
+      "reply"=>$all_info,
+    ]);
     }
     public function findAllComments(Request $request){
       $post_id=$request->input("post_id");
@@ -1166,7 +1243,7 @@ class AuthController extends Controller
         $each_comment_unique_id=$comments->comment_id;
         $find_comment_reply_count=DB::select("SELECT count(comment_reply) AS total_reply FROM comment__replies WHERE initial_comment_id='$each_comment_unique_id'");
         foreach($find_comment_reply_count as $get_reply_count){
-          array_push($hold_each_comment_reply_count,["first_name"=>$comments->first_name, "profile_picture"=>$comments->profile_picture,"created_at"=>$comments->created_at,"comment"=>$comments->comment,"user_who_comment"=>$comments->user_who_comment, "post_id"=>$comments->post_id, "comment_id"=>$comments->comment_id,"reply_count"=>$get_reply_count->total_reply]);
+          array_push($hold_each_comment_reply_count,["first_name"=>$comments->first_name, "profile_picture"=>$comments->profile_picture,"created_at"=>$comments->created_at,"comment"=>$comments->comment,"user_who_comment"=>base64_encode($comments->user_who_comment), "post_id"=>$comments->post_id, "comment_id"=>$comments->comment_id,"reply_count"=>$get_reply_count->total_reply]);
         }
       }
       return response([
@@ -1198,12 +1275,17 @@ class AuthController extends Controller
       $current_user=$request->input('email');
       $find_all_user_notifications=DB::table('notifications')->join('users','notifications.from','=','users.email')->where('notifications.owner',$current_user)->
       select('notifications.created_at','notifications.owner','notifications.from','notifications.info','notifications.source','notifications.owner_has_read','users.profile_picture')->orderBy('notifications.id','DESC')->take(20)->get();
+      $store_all_notifications=array();
+      foreach($find_all_user_notifications as $notifications){
+        array_push($store_all_notifications, ["created_at"=>$notifications->created_at,"owner"=>$notifications->owner,"from"=>base64_encode($notifications->from),"info"=>$notifications->info,"source"=>$notifications->source,"owner_has_read"=>$notifications->owner_has_read,
+        "profile_picture"=>$notifications->profile_picture]);
+      }
       Notifications::where('owner',$current_user)->update([
         'owner_has_read'  =>"true",
   
       ]);
       return response([
-        "reply" => $find_all_user_notifications
+        "reply" => $store_all_notifications
       ]);
     }
     public function findNotifyCount(Request $request){
@@ -1271,10 +1353,19 @@ class AuthController extends Controller
         $sender=$request->input('sender');
         $reciever=$request->input('reciever');
         $isRead="false";
-        $send_message=Messages::create([
+        $network_msg=[
           "unique_id"=>$unique_id,
           "conversation"=>$conversation,
           "file"=>$upload->getPublicId(),
+          "file_status"=>'video',
+          "sender"=>$sender,
+          "reciever"=>$reciever,
+          "isRead"=>$isRead
+        ];
+        $send_message=Messages::create([
+          "unique_id"=>$unique_id,
+          "conversation"=>encrypt($conversation),
+          "file"=>encrypt($upload->getPublicId()),
           "file_status"=>'video',
           "sender"=>$sender,
           "reciever"=>$reciever,
@@ -1290,11 +1381,11 @@ class AuthController extends Controller
           ]
       );
 
-      $data = [$send_message];
+      $data = [$network_msg];
 
       $pusher->trigger('chat', 'send_message', $data);
         return response([
-          "reply"=> $send_message
+          "reply"=>$network_msg
         ]);
     }elseif (in_array($file_ext,$img_files_array)) {
       $unique_id=$request->input('unique_id');
@@ -1302,10 +1393,19 @@ class AuthController extends Controller
       $sender=$request->input('sender');
       $reciever=$request->input('reciever');
       $isRead="false";
-      $send_message=Messages::create([
+      $network_msg=[
         "unique_id"=>$unique_id,
         "conversation"=>$conversation,
         "file"=>$upload->getPublicId(),
+        "file_status"=>'image',
+        "sender"=>$sender,
+        "reciever"=>$reciever,
+        "isRead"=>$isRead
+      ];
+      $send_message=Messages::create([
+        "unique_id"=>$unique_id,
+        "conversation"=>encrypt($conversation),
+        "file"=>encrypt($upload->getPublicId()),
         "file_status"=>'image',
         "sender"=>$sender,
         "reciever"=>$reciever,
@@ -1321,11 +1421,11 @@ class AuthController extends Controller
         ]
     );
 
-    $data = [$send_message];
+    $data = [$network_msg];
 
     $pusher->trigger('chat', 'send_message', $data);
       return response([
-        "reply"=> $send_message
+        "reply"=>$network_msg
       ]);
     }elseif (in_array($file_ext,$doc_files_array)) {
       $unique_id=$request->input('unique_id');
@@ -1333,10 +1433,19 @@ class AuthController extends Controller
       $sender=$request->input('sender');
       $reciever=$request->input('reciever');
       $isRead="false";
-      $send_message=Messages::create([
+      $network_msg=[
         "unique_id"=>$unique_id,
         "conversation"=>$conversation,
         "file"=>$upload->getPublicId(),
+        "file_status"=>'document',
+        "sender"=>$sender,
+        "reciever"=>$reciever,
+        "isRead"=>$isRead
+      ];
+      $send_message=Messages::create([
+        "unique_id"=>$unique_id,
+        "conversation"=>encrypt($conversation),
+        "file"=>encrypt($upload->getPublicId()),
         "file_status"=>'document',
         "sender"=>$sender,
         "reciever"=>$reciever,
@@ -1352,11 +1461,11 @@ class AuthController extends Controller
         ]
     );
 
-    $data = [$send_message];
+    $data = [$network_msg];
 
     $pusher->trigger('chat', 'send_message', $data);
       return response([
-        "reply"=> $send_message
+        "reply"=>$network_msg
       ]);
     }elseif (in_array($file_ext,$audio_files_array)) {
       $unique_id=$request->input('unique_id');
@@ -1364,10 +1473,19 @@ class AuthController extends Controller
       $sender=$request->input('sender');
       $reciever=$request->input('reciever');
       $isRead="false";
-      $send_message=Messages::create([
+      $network_msg=[
         "unique_id"=>$unique_id,
         "conversation"=>$conversation,
         "file"=>$upload->getPublicId(),
+        "file_status"=>'audio',
+        "sender"=>$sender,
+        "reciever"=>$reciever,
+        "isRead"=>$isRead
+      ];
+      $send_message=Messages::create([
+        "unique_id"=>$unique_id,
+        "conversation"=>encrypt($conversation),
+        "file"=>encrypt($upload->getPublicId()),
         "file_status"=>'audio',
         "sender"=>$sender,
         "reciever"=>$reciever,
@@ -1383,11 +1501,11 @@ class AuthController extends Controller
         ]
     );
 
-    $data = [$send_message];
+    $data = [$network_msg];
 
     $pusher->trigger('chat', 'send_message', $data);
       return response([
-        "reply"=> $send_message
+        "reply"=>$network_msg
       ]);
     }
         
@@ -1397,9 +1515,18 @@ class AuthController extends Controller
         $sender=$request->input('sender');
         $reciever=$request->input('reciever');
         $isRead="false";
-        $send_message=Messages::create([
+        $network_msg=[
           "unique_id"=>$unique_id,
           "conversation"=>$conversation,
+          "file"=>"",
+          "file_status"=>'',
+          "sender"=>$sender,
+          "reciever"=>$reciever,
+          "isRead"=>$isRead
+        ];
+        $send_message=Messages::create([
+          "unique_id"=>$unique_id,
+          "conversation"=>encrypt($conversation),
           "file"=>'',
           "file_status"=>'',
           "sender"=>$sender,
@@ -1416,11 +1543,11 @@ class AuthController extends Controller
           ]
       );
 
-      $data = [$send_message];
+      $data = [$network_msg];
 
       $pusher->trigger('chat', 'send_message', $data);
         return response([
-          "reply"=> $send_message
+          "reply"=>$network_msg
         ]);
       }
     
@@ -1434,7 +1561,21 @@ class AuthController extends Controller
       $sender=$message_info['sender'];
       $reciever=$message_info['reciever'];
       foreach($find_all_message as $users_conversation){
-        array_push($all_messages,$users_conversation);
+        if(empty($users_conversation->file)&&empty($users_conversation->conversation)){
+          array_push($all_messages,["created_at"=>$users_conversation->created_at,"sender"=>$users_conversation->sender,
+        "reciever"=>$users_conversation->reciever,"unique_id"=>$users_conversation->unique_id,"conversation"=>$users_conversation->conversation,"file"=>"","file_status"=>$users_conversation->file_status,"isRead"=>$users_conversation->isRead]);
+        }elseif(empty($users_conversation->file)&& $users_conversation->conversation !=''){
+          array_push($all_messages,["created_at"=>$users_conversation->created_at,"sender"=>$users_conversation->sender,
+        "reciever"=>$users_conversation->reciever,"unique_id"=>$users_conversation->unique_id,"conversation"=>decrypt($users_conversation->conversation),"file"=>"","file_status"=>$users_conversation->file_status,"isRead"=>$users_conversation->isRead]);
+        }elseif($users_conversation->file !='' && $users_conversation->conversation ==''){
+          array_push($all_messages,["created_at"=>$users_conversation->created_at,"sender"=>$users_conversation->sender,
+        "reciever"=>$users_conversation->reciever,"unique_id"=>$users_conversation->unique_id,"conversation"=>decrypt($users_conversation->conversation),"file"=>"","file_status"=>$users_conversation->file_status,"isRead"=>$users_conversation->isRead]);
+        }
+        else{
+        array_push($all_messages,["created_at"=>$users_conversation->created_at,"sender"=>$users_conversation->sender,
+        "reciever"=>$users_conversation->reciever,"unique_id"=>$users_conversation->unique_id,"conversation"=>decrypt($users_conversation->conversation),"file"=>decrypt($users_conversation->file),"file_status"=>$users_conversation->file_status,"isRead"=>$users_conversation->isRead]);
+        }
+        
       }
    
       return response([
@@ -1446,15 +1587,20 @@ class AuthController extends Controller
     }
     public function findAllMessages(Request $request){
       $current_user=$request->input('email');
+      $hold_all_message_gotten=array();
       $find_all_user_message=DB::table('messages')->join('users','users.email','=','messages.sender')->where('messages.reciever',$current_user)->where('messages.conversation','!=','')->
       select('messages.created_at','messages.sender','messages.unique_id','messages.isRead', 'messages.conversation','messages.file','users.profile_picture','users.first_name','users.last_name')->orderBy('messages.id','desc')->get()->unique('sender');
+      foreach($find_all_user_message as $message){
+        array_push($hold_all_message_gotten,["created_at"=>$message->created_at,"sender"=>$message->sender,"unique_id"=>$message->unique_id,"isRead"=>$message->isRead,"conversation"=>decrypt($message->conversation),"file"=>$message->file,"profile_picture"=>$message->profile_picture,
+        "first_name"=>$message->first_name,"last_name"=>$message->last_name]);
+      }
       return response([
-        "reply"=>$find_all_user_message
+        "reply"=>$hold_all_message_gotten
       ]);
     }
     public function findRecieverInfo(Request $request){
       $msg_reciever=$request->input('user');
-      $find_reciever_info=DB::table('users')->where('email',$msg_reciever)->select('first_name','last_name','profile_picture')->first();
+      $find_reciever_info=DB::table('users')->where('email',$msg_reciever)->select('first_name','last_name','profile_picture','updated_at')->first();
       return response([
       "reply"=>$find_reciever_info
       ]);
@@ -1478,6 +1624,33 @@ class AuthController extends Controller
       "reply"=> count($notify_count_array)
      ]);
     }
+    public function createCommunityPostVideo(Request $request){
+      $email=$request->input('email');
+      $name=$request->input('name');
+      $caption=$request->input('caption');
+      $avatar=$request->input('avatar');
+      $post_id=rand(10,1000000) . date('d');
+      $request->validate([
+        'video' => 'required|file|mimes:mp4,mov,3gp,MP4,MOV,gif|max:512000'
+
+      ]); 
+    //  $file=$request->file('video')->store('users_posts','public');
+    ini_set('max_execution_time', 500);
+    $filePath=$request->file('video');
+    $upload = Cloudinary::uploadFile($filePath->getRealPath(), [
+      'folder' => 'users_posts',
+  ]);
+      $create_post=CommunityPost::create([
+        "email" => $email,
+        "name"  => $name,
+        "avatar" => $avatar,
+        "caption" => $caption,
+        "postid"  => $post_id,
+        "video"   => $upload->getPublicId()
+
+      ]);
+
+    }
     public function createUserChannelVideo(Request $request){
       $email=$request->input('email');
       $name=$request->input('name');
@@ -1489,6 +1662,7 @@ class AuthController extends Controller
 
       ]); 
     //  $file=$request->file('video')->store('users_posts','public');
+    ini_set('max_execution_time', 500);
     $filePath=$request->file('video');
     $upload = Cloudinary::uploadFile($filePath->getRealPath(), [
       'folder' => 'users_posts',
@@ -1549,7 +1723,7 @@ class AuthController extends Controller
             $user_has_reply=$other_reply_count->total_reply;
           }
           array_push($hold_all_replies,["created_at"=>$comment_replies->created_at,"comment_reply"=>$comment_replies->comment_reply,"comment_file"=>$comment_replies->comment_file,"initial_comment_id"=>$comment_replies->initial_comment_id,
-          "reply_id"=>$comment_replies->reply_id, "user_being_replied"=>$comment_replies->user_being_replied,"user_who_replied"=>$comment_replies->user_who_replied,"profile_picture"=>$comment_replies->profile_picture,"first_name"=>$comment_replies->first_name,
+          "reply_id"=>$comment_replies->reply_id, "user_being_replied"=>$comment_replies->user_being_replied,"user_who_replied"=>base64_encode($comment_replies->user_who_replied),"profile_picture"=>$comment_replies->profile_picture,"first_name"=>$comment_replies->first_name,
           "other_reply_count"=>$user_has_reply
         ]);
        }
@@ -1562,7 +1736,7 @@ class AuthController extends Controller
     }
     public function findAllChannelPhotos(Request $request){
       $email=$request->input('email');
-      $find_all_photos=DB::table("channel_posts")->where("email",$email)->where("post_img1", '!=', '')->select('post_img1','postid','post_img2','post_img3','post_img4')->take(10)->get();
+      $find_all_photos=DB::table("channel_posts")->where("email",$email)->where("post_img1", '!=', '')->select('post_img1','postid','post_img2','post_img3','post_img4')->latest()->take(10)->get();
       $all_channel_photos=array();
       foreach($find_all_photos as $photos){
         array_push($all_channel_photos, $photos);
@@ -1573,7 +1747,7 @@ class AuthController extends Controller
     }
     public function findAllChannelVideos(Request $request){
       $email=$request->input('email');
-      $find_all_photos=DB::table("channel_posts")->where("email",$email)->where("video", '!=', '')->select('video','postid')->take(10)->get();
+      $find_all_photos=DB::table("channel_posts")->where("email",$email)->where("video", '!=', '')->select('video','postid')->latest()->take(10)->get();
       $all_channel_photos=array();
       foreach($find_all_photos as $photos){
         array_push($all_channel_photos, $photos);
@@ -1587,12 +1761,6 @@ class AuthController extends Controller
       $email_of_previous_post_owner=$request->input('email');
       $new_post_owner_email=$request->input('email_of_user_who_shared');
       $prev_id=$request->input('prev_id');
-      $check_if_user_has_shared_post_before=Shared_Post::where(['prev_id'=>$prev_id,'email_of_user_who_shared'=>$new_post_owner_email])->first();
-      if($check_if_user_has_shared_post_before){
-      return response([
-        "reply"=>"false"
-      ]);
-      }else{
       $caption=$request->input('caption');
       $post_img1=$request->input('post_img1');
       $post_img2=$request->input('post_img2');
@@ -1603,6 +1771,12 @@ class AuthController extends Controller
       $quote=$request->input('quote');
       $first_name_of_new_post_owner=$request->input('firstname');
       $last_name_of_new_post_owner=$request->input('lastname');
+      $check_if_user_has_shared_post_before=Shared_Post::where(['prev_id'=>$prev_id,'email_of_user_who_shared'=>$new_post_owner_email])->first();
+      if($check_if_user_has_shared_post_before){
+      return response([
+        "reply"=>"false"
+      ]);
+      }else{
       $name_of_new_post_owner=$first_name_of_new_post_owner."\t".$last_name_of_new_post_owner;
       $tagged_users=$request->input('tagged_users');
       if($post_img1=='undefined' || $post_img2=='undefined' || $post_img3=='undefined' || $post_img4=='undefined' || $video=='undefined'){
@@ -1623,6 +1797,7 @@ class AuthController extends Controller
           "email_of_user_who_shared"=>$new_post_owner_email
         ];
         $new_shared_post=$this->ConverSation->sharePost($data);
+        if($new_post_owner_email != $email_of_previous_post_owner)
         $this->userService->notifyUser($new_post_owner_email,$email_of_previous_post_owner,"$name_of_new_post_owner Said $quote",$postid);
         if($tagged_users!=''){
           foreach($tagged_users as $user){
@@ -1663,6 +1838,7 @@ class AuthController extends Controller
 
       ];
       $new_shared_post=$this->ConverSation->sharePost($data);
+      if($new_post_owner_email != $email_of_previous_post_owner)
         $this->userService->notifyUser($new_post_owner_email,$email_of_previous_post_owner,"$name_of_new_post_owner Said: $quote",$postid);
         if($tagged_users!=''){
           foreach($tagged_users as $user){
@@ -1684,41 +1860,8 @@ class AuthController extends Controller
 
     public function fetchAllSharedPost(Request $request){
       $current_user=$request->input('email');
-     $find_user_choice= user_match_choice::where('user',$current_user)->get();
-     $keep_all_persons_who_user_follow=array();
-     foreach($find_user_choice as $person_who_user_follows){
-      array_push($keep_all_persons_who_user_follow, $person_who_user_follows->choice);
-     }
-     $store_all_post=array();
-     $find_all_shared_posts_from_who_user_follows=DB::table('shared__posts')->join('users','shared__posts.email_of_user_who_shared','=','users.email')
-     ->whereIn('shared__posts.email_of_user_who_shared',$keep_all_persons_who_user_follow)->select('shared__posts.name','shared__posts.caption','shared__posts.created_at','shared__posts.post_img1','shared__posts.post_img2','shared__posts.post_img3','shared__posts.post_img4','shared__posts.video','shared__posts.quote','shared__posts.postid','shared__posts.prev_id','shared__posts.isReply', 'shared__posts.name_of_user_who_shared','shared__posts.email','shared__posts.email_of_user_who_shared','users.profile_picture')->inRandomOrder()->take(10)->latest('shared__posts.id')->get();
-     foreach($find_all_shared_posts_from_who_user_follows as $post){
-      $post_id=$post->postid;
-      $email_of_original_poster=$post->email;
-    $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-    $post_like_collection=array();
-    foreach($no_of_likes as $post_like){
-      array_push($post_like_collection,$post_like);
-    }
-    $post_comments_collection=array();
-    $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-    foreach($no_of_comments as $post_comment){
-      array_push($post_comments_collection,$post_comment);
-    }
-    $post_shares_collection=array();
-    $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-    foreach($no_of_shares as $shares_count){
-      array_push($post_shares_collection,$shares_count);
-    }
-    $find_avatar_of_original_poster=DB::table('users')->where('email',$email_of_original_poster)->select('profile_picture')->first();
-    array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>$post->email_of_user_who_shared,"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-    "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection), "avatar_of_original_poster"=>$find_avatar_of_original_poster->profile_picture
-  ]);
-    }
-      return response([
-        "reply" => $store_all_post
-      ]);
-
+      $find_all_shared_post=$this->userActivityService->fetchAllSharedPostsForCurrentUser($current_user);
+      return $find_all_shared_post;
     }
     
     public function findUserPost(Request $request){
@@ -1744,7 +1887,7 @@ class AuthController extends Controller
         array_push($post_shares_collection,$shares_count);
       }
         array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-        "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
+        "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
       return response([
@@ -1792,120 +1935,52 @@ class AuthController extends Controller
     public function check_if_current_user_has_being_followed(Request $request){
       $current_user=$request->input('current_user');
       $user_to_follow=$request->input('user_to_follow');
-      $check_if_current_user_has_being_followed=user_match_choice::where(['user'=>$current_user,'choice'=>$user_to_follow])->first();
+      $check_if_current_user_has_being_followed=user_match_choice::where(['user'=>$current_user,'choice'=>$user_to_follow,'isPending'=>'false'])->first();
+      if($check_if_current_user_has_being_followed){
+        return response([
+          "reply"=>"true",
+          "isPending"=>""
+        ]);
+      }else{
+        $check_if_current_user_has_not_being_followed=user_match_choice::where(['user'=>$current_user,'choice'=>$user_to_follow,'isPending'=>'true'])->first();
+        if($check_if_current_user_has_not_being_followed){
+          return response([
+            "reply"=>"false",
+            "isPending"=>"true"
+          ]);
+        }else{
+          return response([
+            "reply"=>"false",
+            "isPending"=>""
+          ]);
+        }
+       
+      }
+    }
+    public function check_if_private_account_is_followed(Request $request){
+      $current_user=$request->input('current_user');
+      $user_to_follow=$request->input('user_to_follow');
+      $check_if_current_user_has_being_followed=Follow_Request::where(['user_who_is_followed'=>$user_to_follow,'user_who_wants_to_follow'=>$current_user])->first();
       if($check_if_current_user_has_being_followed){
         return response([
           "reply"=>"true"
         ]);
       }else{
         return response([
-          "reply"=>"false"
+          "reply"=>""
         ]);
       }
     }
     public function bookmarkPost(Request $request){
       $user=$request->input('email');
       $post_id=$request->input('post_id');
-      $check_if_user_already_bookmarked_post=DB::table('bookmarks')->where(["user_who_bookmark"=>$user,"bookmarked_post_id"=>$post_id])->first();
-      if($check_if_user_already_bookmarked_post){
-        Bookmark::where(["user_who_bookmark"=>$user, "bookmarked_post_id"=>$post_id])->delete();
-        return response([
-          "reply"=>"duplicate"
-        ]);
-      }else{
-        Bookmark::create([
-          "user_who_bookmark"=>$user,
-          "bookmarked_post_id"=>$post_id
-        ]);
-        return response([
-          "reply"=>"success"
-        ]);
-      }
-     
-      
+      $bookmark_user_post=$this->userActivityService->bookmarkUserPost($user,$post_id);
+      return $bookmark_user_post;
     }
     public function findAllBookMarkedPosts(Request $request){
       $current_user=$request->input('email');
-      $check_all_bookmarked_posts_by_user=Bookmark::where(['user_who_bookmark'=>$current_user])->get();
-      $hold_all_bookmarked_posts_id=array();
-      foreach($check_all_bookmarked_posts_by_user as $bookmark_posts){
-        array_push($hold_all_bookmarked_posts_id, $bookmark_posts->bookmarked_post_id);
-      }
-      $show_all_bookmarked_posts=DB::table('user__posts')->join('users','user__posts.email','=','users.email')->select('user__posts.created_at','user__posts.name','user__posts.caption','user__posts.email','user__posts.postid', 'user__posts.isReply', 'users.profile_picture')->whereIn('user__posts.postid',$hold_all_bookmarked_posts_id)->latest()->get();
-      $show_all_bookmarked_channel_posts=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->select('channel_posts.created_at','channel_posts.name','channel_posts.caption','channel_posts.email','channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.postid','channel_posts.isReply', 'users.first_name','users.last_name', 'users.profile_picture')->whereIn('channel_posts.postid',$hold_all_bookmarked_posts_id)->latest()->get();
-      $show_all_bookmarked_shared_posts=DB::table('shared__posts')->join('users','shared__posts.email','=','users.email')->select('shared__posts.created_at','shared__posts.name','shared__posts.avatar','shared__posts.caption','shared__posts.email','shared__posts.post_img1','shared__posts.post_img2','shared__posts.post_img3','shared__posts.post_img4','shared__posts.video','shared__posts.quote','shared__posts.postid','shared__posts.prev_id','shared__posts.isReply', 'shared__posts.name_of_user_who_shared','shared__posts.email_of_user_who_shared','users.profile_picture')->whereIn('shared__posts.postid',$hold_all_bookmarked_posts_id)->latest()->get();
-      $store_all_bookmarked_posts=array();
-      foreach($show_all_bookmarked_posts as $post){
-        $post_id=$post->postid;
-      $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-      $post_like_collection=array();
-      foreach($no_of_likes as $post_like){
-        array_push($post_like_collection,$post_like);
-      }
-      $post_comments_collection=array();
-      $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-      foreach($no_of_comments as $post_comment){
-        array_push($post_comments_collection,$post_comment);
-      }
-      $post_shares_collection=array();
-      $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-      foreach($no_of_shares as $shares_count){
-        array_push($post_shares_collection,$shares_count);
-      }
-        array_push($store_all_bookmarked_posts,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-        "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
-      ]);
-      }
-      $store_all_bookmarked_channels_post=array();
-      foreach($show_all_bookmarked_channel_posts as $post){
-       $post_id=$post->postid;
-     $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-     $post_like_collection=array();
-     foreach($no_of_likes as $post_like){
-       array_push($post_like_collection,$post_like);
-     }
-     $post_comments_collection=array();
-     $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-     foreach($no_of_comments as $post_comment){
-       array_push($post_comments_collection,$post_comment);
-     }
-     $post_shares_collection=array();
-     $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-     foreach($no_of_shares as $shares_count){
-       array_push($post_shares_collection,$shares_count);
-     }
-       array_push($store_all_bookmarked_channels_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-       "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
-     ]);
-     }
-     $store_all_bookmarked_shared_posts=array();
-     foreach($show_all_bookmarked_shared_posts as $post){
-      $post_id=$post->postid;
-    $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-    $post_like_collection=array();
-    foreach($no_of_likes as $post_like){
-      array_push($post_like_collection,$post_like);
-    }
-    $post_comments_collection=array();
-    $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-    foreach($no_of_comments as $post_comment){
-      array_push($post_comments_collection,$post_comment);
-    }
-    $post_shares_collection=array();
-    $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-    foreach($no_of_shares as $shares_count){
-      array_push($post_shares_collection,$shares_count);
-    }
-    array_push($store_all_bookmarked_shared_posts,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>$post->email_of_user_who_shared,"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-    "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
-  ]);
-    }
-      return response([
-        "user_post_reply"=>$store_all_bookmarked_posts,
-        "channel_post_reply"=>$store_all_bookmarked_channels_post,
-        "shared_post_reply"=>$store_all_bookmarked_shared_posts
-
-      ]);
+      $find_all_bookmarked_post=$this->userActivityService->findAllBookmarkedPost($current_user);
+      return $find_all_bookmarked_post;
     }
     public function Search(Request $request){
       $search_info=$request->input('search_info');
@@ -1915,7 +1990,7 @@ class AuthController extends Controller
         $find_users=DB::select("SELECT first_name,last_name,email,profile_picture FROM users WHERE first_name REGEXP '(?=.*($search_info))' ORDER BY id asc");
         $keep_results=array();
         foreach($find_users as $get_user_search){
-         array_push($keep_results,$get_user_search);
+         array_push($keep_results,["first_name"=>$get_user_search->first_name,"last_name"=>$get_user_search->last_name,"profile_picture"=>$get_user_search->profile_picture,"email"=>base64_encode($get_user_search->email)]);
         }
         return response([
           "reply"=>$keep_results
@@ -1924,139 +1999,72 @@ class AuthController extends Controller
     }
     public function findAllUserReply(Request $request){
       $email=$request->input('user_email');
-      $find_all_shared_posts=DB::table('shared__posts')->join('users','shared__posts.email_of_user_who_shared','=','users.email')->where('shared__posts.email_of_user_who_shared',$email)->select('shared__posts.id','shared__posts.created_at','shared__posts.name','shared__posts.caption','shared__posts.email','shared__posts.post_img1','shared__posts.post_img2','shared__posts.post_img3','shared__posts.post_img4','shared__posts.video','shared__posts.quote','shared__posts.postid','shared__posts.prev_id','shared__posts.isReply','shared__posts.email_of_user_who_shared','shared__posts.name_of_user_who_shared','users.profile_picture')->latest()->take(10)->get();
-      $store_all_post=array();
-      foreach($find_all_shared_posts as $post){
-        $post_id=$post->postid;
-        $email_of_original_poster=$post->email;
-      $no_of_likes=PostLike::where(['post_id'=>$post_id])->get();
-      $post_like_collection=array();
-      foreach($no_of_likes as $post_like){
-        array_push($post_like_collection,$post_like);
-      }
-      $post_comments_collection=array();
-      $no_of_comments=Comment::where(['post_id'=>$post_id])->get();
-      foreach($no_of_comments as $post_comment){
-        array_push($post_comments_collection,$post_comment);
-      }
-      $post_shares_collection=array();
-      $no_of_shares=Shared_Post::where(['prev_id'=>$post_id])->get();
-      foreach($no_of_shares as $shares_count){
-        array_push($post_shares_collection,$shares_count);
-      }
-      $find_avatar_of_original_poster=DB::table('users')->where('email',$email_of_original_poster)->select('profile_picture')->first();
-      array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>$post->email_of_user_who_shared,"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
-      "email"=>$post->email,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection),"avatar_of_original_poster"=>$find_avatar_of_original_poster->profile_picture
-    ]);
-      }
-      return response([
-        "reply"=>$store_all_post
-      ]);
-
+      $find_user_reply=$this->userActivityService->findUserReply($email);
+      return $find_user_reply;
     }
     public function disableUserComment(Request $request){
       $postid=$request->input('postid');
-      $disable_comment=User_Post::where('postid',$postid)->update(['isReply'=>'false']);
-      if($disable_comment){
-        return response([
-          "reply"=>$disable_comment
-        ]);
-      }
-      else{
-        $disable_comment=ChannelPost::where('postid',$postid)->update(['isReply'=>'false']);
-        if($disable_comment){
-          return response([
-            "reply"=>$disable_comment
-          ]);
-        }else{
-          $disable_comment=Shared_Post::where('postid',$postid)->update(['isReply'=>'false']);
-          return response([
-            "reply"=>$disable_comment
-          ]);
-        }
-      }
-      
+      $disable_users_from_commenting=$this->userActivityService->disableUserComment($postid);
+      return $disable_users_from_commenting;
       
     }
     public function find_user_followers(Request $request){
       $email=$request->input('email');
-      $find_no_of_user_followers=DB::table('user_match_choices')->where('choice',$email)->get();
-      $user_followers=array();
-      foreach($find_no_of_user_followers as $followers){
-        array_push($user_followers,$followers->choice);
-      }
-      return response([
-        "followers"=>count($user_followers)
-      ]);
+      $find_user_followers_count=$this->userActivityService->findUserFollowersCount($email);
+      return $find_user_followers_count;
     }
     public function suggestUsers(Request $request){
       $email=$request->input('email');
-      $get_user_interest=DB::table('users')->select('location','school','orientation','birthday','religion','interest')->where('email',$email)->first();
-      $user_interest=$get_user_interest->interest;
-      $user_orientation=$get_user_interest->orientation;
-      $user_religion=$get_user_interest->religion;
-      $user_school=$get_user_interest->school;
-      $store_all_members_who_user_is_following=array();
-      $check_if_users_have_been_followed_before=user_match_choice::where('user',$email)->get();
-      foreach($check_if_users_have_been_followed_before as $following){
-        array_push($store_all_members_who_user_is_following,$following->choice);
-      }
-      $store_all_members_with_similar_interest=array();
-      $store_all_members_with_similar_religion=array();
-      $find_users_with_similar_interest=DB::table('users')->select('first_name','last_name','profile_picture','email')->where(['interest'=>$user_interest])->whereNotIn('email',$store_all_members_who_user_is_following)->where('email', '!=', $email)->where('interest', '!=', '')->latest()->take(12)->get();
-      foreach($find_users_with_similar_interest as $user_with_similar_interest){
-        array_push($store_all_members_with_similar_interest,$user_with_similar_interest->email);
-      }
-      $find_users_with_similar_religion=DB::table('users')->select('first_name','last_name','profile_picture','email')->where(['religion'=>$user_religion])->whereNotIn('email',$store_all_members_who_user_is_following)->whereNotIn('email',$store_all_members_with_similar_interest)->where('email', '!=', $email)->where('religion', '!=', '')->latest()->take(12)->get();
-      foreach($find_users_with_similar_religion as $user_with_similar_religion){
-        array_push($store_all_members_with_similar_religion,$user_with_similar_religion->email);
-      }
-      $find_users_with_similar_college=DB::table('users')->select('first_name','last_name','profile_picture','email')->where(['school'=>$user_school])->whereNotIn('email',$store_all_members_who_user_is_following)->whereNotIn('email',$store_all_members_with_similar_religion)->where('email', '!=', $email)->where('school', '!=', '')->latest()->take(12)->get();
-      
-      return response([
-        "user_with_similar_interest"=>$find_users_with_similar_interest,
-        "user_with_similar_religion"=>$find_users_with_similar_religion,
-        "user_with_similar_school"=>$find_users_with_similar_college,
-        "user_interest"=>$user_interest,
-        "user_religion"=>$user_religion,
-        "user_orientation"=>$user_orientation
-      ]);
-      
-    }
-    public function generateLink(Request $request){
-        $uniqueId = Str::random(8);
-        return response()->json(['link' => url('/live/' . $uniqueId)]);
-    }
-    public function broadcastVideo(Request $request)
-    {
-        $pusher = new Pusher(
-            env('PUSHER_APP_KEY'),
-            env('PUSHER_APP_SECRET'),
-            env('PUSHER_APP_ID'),
-            [
-                'cluster' => env('PUSHER_APP_CLUSTER'),
-                'useTLS' => true,
-            ]
-        );
-
-        $data = $request->input('streamData');
-        $streamId = $request->input('streamId');
-        $isLastChunk = $request->input('chunk', false);
-
-        try {
-            $pusher->trigger('live-stream.' . $streamId, 'video-chunk', [
-                'streamData' => $data,
-                'isLastChunk' => $isLastChunk,
-            ]);
-
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            Log::error('Error broadcasting video: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
-        }
+      $suggest_people_to_user=$this->userService->suggestUsers($email);
+      return $suggest_people_to_user;
     }
     public function findComment(Request $request){
       $comment_id=$request->input('comment_id');
      return $this->ConverSation->findComment($comment_id);
     }
+    public function delete(array $publicId)
+    {
+        foreach($publicId as $id){
+         Cloudinary::destroy($id);
+        }
+        
+    }
+    public function customiseProfile(Request $request){
+      $option=$request->input('option');
+      $email=$request->input('email');
+      $customise_user_profile=$this->userActivityService->customiseUserProfile($option,$email);
+      return $customise_user_profile;
+    }
+    public function setPendingMatch(Request $request){
+      $current_user=$request->input('current_user');
+      $user_who_is_to_be_followed=$request->input('choice');
+      $send_follow_request=$this->userActivityService->setFollowRequest($current_user,$user_who_is_to_be_followed);
+    }
+    public function findRelatedPost(Request $request){
+      $key=$request->input('data');
+      $find_hashtag_post=$this->userActivityService->findRelatedPost($key);
+      return $find_hashtag_post;
+  }
+  public function findUserFollowers(Request $request){
+    $email=$request->input('email');
+    $find_user_followers=user_match_choice::join('users','user_match_choices.user','=','users.email')->where("user_match_choices.choice",$email)->take(10)->orderBy("user_match_choices.id","DESC")->get();
+    $all_user_followers=array();
+    foreach($find_user_followers as $followers){
+      array_push($all_user_followers,["first_name"=>$followers->first_name,"last_name"=>$followers->last_name,"profile_picture"=>$followers->profile_picture,"cover_text"=>$followers->coverText,"follower"=>base64_encode($followers->user)]);
+    }
+    return response([
+      "reply"=>$all_user_followers
+    ]);
+  }
+  public function updateUserLastActivity(Request $request){
+    $email=$request->input('email');
+    $current_date=date('Y-m-d H:i:s');
+    $update_last_activity=User::where('email',$email)->update([
+      'updated_at'  =>$current_date,
+
+    ]);
+    return response([
+      "reply"=>$update_last_activity
+    ]);
+  }
 }
