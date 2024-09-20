@@ -14,6 +14,7 @@ import CreateStories from "../views/CreateStories.vue";
 import User from "../views/User.vue";
 import Channel from "../views/Channels.vue";
 import LaunchChannel from "../views/LaunchChannel.vue";
+import LaunchCommunity from "../views/LaunchCommunity.vue";
 import Status from "../views/Status.vue";
 import Notifications from "../views/Notifications.vue";
 import ShowMessage from "../views/ShowMessage.vue";
@@ -24,8 +25,17 @@ import Find from "../views/Find.vue";
 import CreateLiveVideo from "../views/CreateLiveVideo.vue";
 import WatchLiveStream from "../views/WatchLiveStream.vue";
 import CommentDiscuss from "../views/CommentDiscuss.vue";
+import Preference from "../views/Preference.vue";
+import Related from "../views/Related.vue";
 import ChannelPostComponent from "../component/ChannelPostComponent.vue";
 import SharedPostComponent from "../component/SharedPostComponent.vue";
+import QuotePostsComponent from "../component/QuotePostsComponent.vue";
+import StoriesandPost from "../component/StoriesandPost.vue";
+import UserFollowers from "../views/UserFollowers.vue";
+import Community from "../views/Community.vue";
+import ShowUserCommunities from "../views/ShowUserCommunities.vue";
+import ShowCommunity from "../views/ShowCommunity.vue";
+import FetchCommunityPostComponent from "../component/FetchCommunityPostComponent.vue";
 import store from '../store/index.js';
 
 const routes=[
@@ -52,6 +62,11 @@ const routes=[
                 path:"/home/:cat",
                 component:SharedPostComponent
             },
+            {
+                name:"StoriesandPost",
+                path:"/home/:cat",
+                component:StoriesandPost
+            }
         ]
     },
     {
@@ -154,9 +169,45 @@ const routes=[
        
     },
     {
+        path:"/community",
+        name:"Community",
+        component:Community,
+        meta:{requiresAuth:true},
+        children:[
+            {
+                path:"/community/:uid",
+                component:ShowUserCommunities
+            },
+            
+            
+        ]
+    },
+    {
+        path: "/showcommunity/:c_id",
+        component: ShowCommunity,
+        children: [
+            {
+                path: ":id",
+                component: FetchCommunityPostComponent
+            },
+            {
+                path: ":id",
+                component: FetchCommunityPostComponent
+            },
+            {
+                path: ":id",
+                component: FetchCommunityPostComponent
+            }
+        ]
+    },
+    {
         path:"/status/:postid",
         name:"Status",
         component:Status,
+    },
+    {
+        path:"/status/quotes/:postid",
+        component:QuotePostsComponent
     },
     {
         path:"/comment/:comment_id",
@@ -178,6 +229,12 @@ const routes=[
         
     },
     {
+        path:"/create_community",
+        name:"community_create",
+        meta:{requiresAuth:true},
+        component:LaunchCommunity,    
+    },
+    {
         path:"/bookmarks",
         name:"bookmark",
         meta:{requiresAuth:true},
@@ -185,10 +242,28 @@ const routes=[
         
     },
     {
+        path:"/preference",
+        name:"preference",
+        meta:{requiresAuth:true},
+        component:Preference,
+        
+    },
+    {
         path:"/:pathMatch(.*)*",
         name:"NotFound",
         component:NotFound
-    }
+    },
+    {
+        path:"/related/:tag",
+        name:"Related",
+        component:Related
+    },
+    {
+        path:"/followers/:uid",
+        name:"UserFollowers",
+        component:UserFollowers,
+        meta:{requiresAuth:true}
+    },
 ]
 const router=createRouter({
 history:createWebHistory(import.meta.env.BASE_URL),
