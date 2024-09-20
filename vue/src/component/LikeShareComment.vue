@@ -13,6 +13,7 @@ let user_post_id=defineProps(['post_id','post_content','post_owner']);
 let post_id=user_post_id.post_id;
 let post_content=user_post_id.post_content;
 let comment_status=user_post_id.post_content.post_is_comment_status;
+let isSound=localStorage.getItem('ISSOUND');
 let current_user=localStorage.getItem('USER_MAIL');
 let user_pic=localStorage.getItem('PICTURE');
 let post_info=reactive({
@@ -57,14 +58,18 @@ function updateLike(){
       if(response.data.reply==='false'){
         axiosClient.post("/DeleteLike",formData).then(response=>{
             like_state.count -=1;
-            document.getElementById("unlike").play();
+            if(isSound != 'true'){
+                document.getElementById("unlike").play();
+            }
             document.getElementById(post_id).style.color="black";
         }).catch(err=>{
             console.log(err)
         });
       }else{
         like_state.count +=1;
+        if(isSound != 'true'){
         document.getElementById("like").play();
+        }
         document.getElementById(post_id).style.color="red";
       }
     }).catch(e=>{
@@ -87,7 +92,7 @@ function sharePost(e){
    let post_owner=post_content.post_owner_name;
    let postid=Math.random(10,100000) * 1000;
    let prev_id=post_id;
-   let post_owner_email=post_content.post_owner_email;  
+   let post_owner_email=atob(post_content.post_owner_email);  
    let current_user_first_name=localStorage.getItem('FIRSTNAME');
    let current_user_last_name=localStorage.getItem('LASTNAME');
    let current_user_email=localStorage.getItem('USER_MAIL');
@@ -122,7 +127,7 @@ function sharePost(e){
    let post_owner=post_content.post_owner_name;
    let postid=Math.random(10,100000) * 1000;
    let prev_id=post_id;
-   let post_owner_email=post_content.post_owner_email;  
+   let post_owner_email=atob(post_content.post_owner_email);  
    let current_user_first_name=localStorage.getItem('FIRSTNAME');
    let current_user_last_name=localStorage.getItem('LASTNAME');
    let current_user_email=localStorage.getItem('USER_MAIL');
@@ -203,7 +208,7 @@ let str = quote.value;
 let pattern = /\B@[a-z0-9_-]+/gi;
 let user_match=str.match(pattern);
 if(user_match === null)
-console.log(null);
+return;
 else{
     user_match.forEach(x => {
     taglist.tagged_users=x;
@@ -260,9 +265,9 @@ function hideTagBox(postid){
         <div class="user-opinion-div" style="position:relative;">
        <img v-if="user_pic === null || user_pic === 'null'" src="../pictures/profile.png" style="width:40px; height:40px; border-radius:50px; object-fit:cover;" /> <img v-else  style="width:40px; height:40px; border-radius:50px; object-fit:cover;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${user_pic}`' />
         <textarea v-model="quote" placeholder="Add your thought.." style="resize: none;  border:none;"></textarea>
-        <div :id="'quote_tag_box'+post_id" class="card tag_users_box card-default cursor-pointer p-2" style="position: absolute; top:50px; z-index:1; left:10px; overflow-x: none;  overflow-y: scroll; overflow:scroll; height:400px; border-radius:5px; width:auto;">
+        <div :id="'quote_tag_box'+post_id" class="card tag_users_box card-default cursor-pointer p-2" style="position: absolute; top:50px; z-index:1; left:10px; overflow-x: none;  overflow-y: scroll;  height:200px; border-radius:5px; width:auto;">
         <div style="display:block;"><span @click="hideTagBox(post_id)" class="m-2"><i class="fa fa-arrow-left"></i></span></div>
-            <li @click="setTaggedUser(u.email,u.first_name,u.last_name)" class="list-unstyled m-4" v-for="u in taglist.tagged_users_result"><img v-if="u.profile_picture === null || u.profile_picture === 'null'" loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  src="../pictures/profile.png"  ><img v-else loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  :src="`https://res.cloudinary.com/fishfollowers/image/upload/${u.profile_picture}`"   ><span class="m-2">{{ u.first_name + '\t' + u.last_name }}</span></li>
+            <li @click="setTaggedUser(u.email,u.first_name,u.last_name)" class="list-unstyled m-4" v-for="u in taglist.tagged_users_result"><img v-if="u.profile_picture === null || u.profile_picture === 'null'" loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  src="../pictures/profile.png"  ><img v-else loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  :src="`http://localhost:8000/storage/${u.profile_picture}`"   ><span class="m-2">{{ u.first_name + '\t' + u.last_name }}</span></li>
     </div>
         </div>
         <div class="previous-post card" style="height: auto; margin-top: 0px;">
@@ -292,11 +297,11 @@ function hideTagBox(postid){
                         <li @click="bookMark(post_id)" :id="'bookmark'+post_id" class="m-2 list-unstyled"><i class="fa-regular fa-newspaper"></i></li>
                         
 </ul>
-<audio style="display: none;"  id="like">
+<audio v-if="isSound != 'true'" style="display: none;"  id="like">
     <source type="audio/wav" src="../notifications/like bell.wav" />
     
 </audio>
-<audio style="display: none;"  id="unlike">
+<audio v-if="isSound != 'true'" style="display: none;"  id="unlike">
     <source type="audio/wav" src="../notifications/unlike bell.wav" />
     
 </audio>

@@ -10,24 +10,12 @@ import {ref} from "vue";
 import { watch } from 'vue';
 import { reactive } from 'vue';
 let user_post_id=defineProps(['post_data']);
-function findAllQuote(postid){
-    console.log(postid);
-    let formData=new FormData();
-    formData.append("post_id",postid);
-    axiosClient.post("/findSharedStatus", formData).
-    then(response=>{
-        console.log(response.data.reply);
-    }).catch(error=>{
-        console.log(error);
-    });
-    console.log(postid);
-}
 </script>
 <template>
 <ul class="inline-flex">
                         <li  class="m-2 list-unstyled"><i class="fa fa-regular fa-heart"></i><span>{{user_post_id.post_data.likes_count  }}</span><!--<span v-if="like_state.count < 2">{{ like_state.count }} Like</span><span v-else>{{ like_state.count }} Likes</span>--></li>
                         <li  class="m-2 list-unstyled"><i style="margin-right: 2px;" class="fa fa-regular fa-comment"></i><span>{{user_post_id.post_data.comment_count }}</span></li>
-                        <li @click="findAllQuote(user_post_id.post_data.status_id)"  class="m-2 list-unstyled"><i class="far  fa-edit"></i><span>{{user_post_id.post_data.shares_count  }}</span></li>
+                        <li v-if="user_post_id.post_data.shares_count  > 0"   class="m-2 list-unstyled"><RouterLink :to='`/status/quotes/${user_post_id.post_data.status_id}`'><i class="far  fa-edit"></i><span>{{user_post_id.post_data.shares_count  }}</span></RouterLink></li>
                         <li   class="m-2 list-unstyled"><i class="fa-regular fa-newspaper"></i><span>{{user_post_id.post_data.bookmark_count  }}</span></li>
                         
   </ul>

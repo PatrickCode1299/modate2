@@ -13,7 +13,8 @@ import axiosClient from '../axios';
 let channel_text=ref('');
 let user_mail;
 const user_picture=localStorage.getItem('PICTURE');
-const {channel_name}=defineProps(['channel_name']);
+const channel_name=defineProps(['community_name']);
+
 let channel_picture=reactive({
     first_image:"",
     first_image_url:"",
@@ -34,7 +35,7 @@ function createPost(e){
     user_mail=localStorage.getItem('USER_MAIL');
     let formData=new FormData();
     formData.append('email',user_mail);
-    formData.append('name',channel_name);
+    formData.append('name',channel_name.community_name);
     formData.append('caption',channel_text.value);
     formData.append('avatar',user_picture);
     formData.append('image1',channel_picture.first_image);
@@ -42,7 +43,7 @@ function createPost(e){
     formData.append('image3',channel_picture.third_image);
     formData.append('image4',channel_picture.fourth_image);
 
-    axiosClient.post("/createUserChannelPost",formData).then((response=>{
+    axiosClient.post("/createCommunityPost",formData).then((response=>{
     location.reload();
     channel_text.value="";
 })).catch((error =>{
@@ -139,12 +140,12 @@ function uploadVideo(e){
     user_mail=localStorage.getItem('USER_MAIL');
     let formData=new FormData();
     formData.append('email',user_mail);
-    formData.append('name',channel_name);
+    formData.append('name',channel_name.community_name);
     formData.append('caption',video_text.value);
     formData.append('avatar',user_picture);
     formData.append('video',channel_video.video);
     document.getElementById("create-video-btn").setAttribute("disabled","true");
-    axiosClient.post("/createUserChannelVideo",formData,{onUploadProgress:(event)=>{
+    axiosClient.post("/createCommunityPostVideo",formData,{onUploadProgress:(event)=>{
             channel_video.progress = Math.round((event.loaded * 100) / event.total);
         }}).then((response=>{
     location.reload();
@@ -160,7 +161,7 @@ function uploadVideo(e){
 
 <form @submit="createPost" class="create_content_form">
     <div class="form-group">
-        <textarea v-model="channel_text"  placeholder="Say something..." class="form-control create_text"></textarea>
+        <textarea v-model="channel_text"  placeholder="Write something on the community....." class="form-control create_text"></textarea>
         <div class="d-flex channel_img_post" style="overflow-x: hidden; margin-bottom: 5px;">
             <img v-if="channel_picture.first_image != '' " :src="channel_picture.first_image_url"  />
             <img v-if="channel_picture.second_image != '' " :src="channel_picture.second_image_url"  />

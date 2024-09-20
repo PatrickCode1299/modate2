@@ -1,7 +1,7 @@
 <template>
     <div v-if="progress > 0" class="progress-bar">
-      <div v-if="progress < 100" class="progress" :style="{ width: progress + '%' }">{{ progress }}%</div>
-      <div v-else class="progress" style="width:100%;">Your file has been uploaded, kindly wait.... while we process</div>
+      <div v-if="progress < 100" class="progress p-2" :style="{ width: progress + '%' }">Your comment is been uploaded, please wait..</div>
+      <div v-else class="progress p-2" style="width:100%;">Your comment has been uploaded</div>
     </div>
   </template>
   
@@ -25,7 +25,7 @@
     position: relative;
   }
   .progress {
-    height: 20px;
+    height: 40px;
     background-color: #4caf50;
     text-align: center;
     color: white;

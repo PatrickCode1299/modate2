@@ -12,7 +12,7 @@ import { reactive } from 'vue';
 const user_mail=localStorage.getItem('USER_MAIL');
 let user_post_id=defineProps(['post_id','post_owner']);
 let post_id=user_post_id.post_id;
-let post_owner=user_post_id.post_owner;
+let post_owner=atob(user_post_id.post_owner);
 function displayBlockReportList(post){
     let post_name="report"+post;
     let find_post=document.getElementById(post_name);
@@ -33,7 +33,6 @@ function blockUser(){
     formData.append("user_who_block",user_mail);
     formData.append("user_getting_blocked",user_getting_blocked);
     axiosClient.post("/blockUser",formData).then(response=>{
-    console.log(response.data.reply);
     }).catch(err=>{
         console.log("Some error occured");
     });
@@ -43,8 +42,8 @@ function blockUser(){
 }
 </script>
 <template>
-    <span style="position: relative;" @click="displayBlockReportList(post_id)" @dblclick="hideBlockReportList(post_id)"><i class="fas fa-ellipsis-h"></i>
-    <ul :id='`report${post_id}`' class="p-2 block-report-list shadow-md list-unstyled">
+    <span v-if="post_owner != user_mail" style="position: relative;" @click="displayBlockReportList(post_id)" @dblclick="hideBlockReportList(post_id)"><i class="fas fa-ellipsis-h"></i>
+    <ul v-if="post_owner !=user_mail" :id='`report${post_id}`' class="p-2 block-report-list shadow-md list-unstyled">
       <li @click="blockUser" class="font-bold">Block User</li>
       <li @click="reportUser" class="font-bold">Report</li>
     </ul>

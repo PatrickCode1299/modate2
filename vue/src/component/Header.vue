@@ -1,6 +1,6 @@
 <template>
     <nav style="height:auto;" class="nav navbar navbar-fixed-top">
-      <div class="container-fluid">
+      <div class="container-fluid" style='padding:0px;'>
         <RouterLink v-if="!store.state.user.token" class="navbar-brand p-2 fs-2" to="/">
           <img src="../landing/hexarex.png" style="height:30px; width:30px;">
         </RouterLink>
@@ -12,9 +12,9 @@
             v-for="(link, index) in links"
             :key="index"
           >
-            <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:red; border-radius: 5px; background-color: whitesmoke; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' : 
+            <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:white; border-radius: 20px; background-color: red; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' : 
             notify_msg_count.count < 1 ? '': notify_msg_count.count }}</small>
-            <small v-if="link.linkname === 'Notifications'" class="fs-6" style="color:red; border-radius: 5px; background-color: whitesmoke; font-weight:bold;">{{ notify_count.count > 10 ? '10+' : notify_count.count < 1 ? '' : notify_count.count }}</small>
+            <small v-if="link.linkname === 'Notifications'" class="fs-6" style="color:white; border-radius: 20px; background-color: red; font-weight:bold;">{{ notify_count.count > 10 ? '10+' : notify_count.count < 1 ? '' : notify_count.count }}</small>
             <i :class="link.itemicon"></i>
           </RouterLink>
         </ul>
@@ -40,8 +40,8 @@
           v-for="(link, index) in links"
           :key="index"
         >
-          <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:red; position:fixed; top:0px; border-radius: 5px; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' : notify_msg_count.count < 1 ? '' : notify_msg_count.count }}</small>
-          <small v-if="link.linkname === 'Notifications'" class="fs-6" style="color:red; position:fixed; top:0px; border-radius: 5px; font-weight:bold;">{{ notify_count.count > 10 ? '10+' : notify_count.count    < 1 ? '' : notify_count.count }}</small>
+          <small v-if="link.linkname === 'Messages'" style="color:white;  position:fixed; top:30px;  font-weight:bold;"><span v-if="notify_msg_count.count > 0" class="p-2" style='display:flex; width:5px; height:5px;  border-radius: 20px; position:absolute; font-size:10px; background-color:red; top:0px; justify-content:center; align-items:center;'>{{ notify_msg_count.count > 10 ? '10+' : notify_msg_count.count < 1 ? '' : notify_msg_count.count }}</span></small>
+          <small v-if="link.linkname === 'Notifications'"  style="color:white;  position:fixed; top:30px;  font-weight:bold;"><span v-if="notify_count.count > 0" class="p-2" style='display:flex; width:5px; height:5px;  border-radius: 20px; position:absolute; font-size:10px; background-color:red; top:0px; justify-content:center; align-items:center;'>{{ notify_count.count > 10 ? '10+' : notify_count.count    < 1 ? '' : notify_count.count }}</span></small>
           <i :class="link.itemicon"></i>
         </RouterLink>
       </div>
@@ -134,12 +134,6 @@
         itemicon: "fa-light fa-tv"
       },
       {
-        linkname: "Bookmarks",
-        location: "/bookmarks",
-        property: "link",
-        itemicon: "fa-light fa-note-sticky"
-      },
-      {
         linkname: "Notifications",
         location: "/notify",
         property: "link",
@@ -147,20 +141,10 @@
         badge: 6
       },
       {
-        linkname: "Sign Out",
-        location: "#",
+        linkname: "Settings",
+        location: "/preference",
         property: "link",
-        itemicon: "fa-light fa-right-from-bracket",
-        function: function logout() {
-          var ask_if_user_wants_to_logout = confirm("Do you want to logout?");
-          if (ask_if_user_wants_to_logout) {
-            store.commit('logout');
-            router.push({ name: 'welcome' });
-          } else {
-            var get_current_route = route.params.name;
-            router.push({ name: get_current_route });
-          }
-        }
+        itemicon: "fa-light fa-gear",
       }
     ];
   } else {
@@ -249,21 +233,18 @@ if(checklink.count == 0){
   <style scoped>
   @media screen and (min-width: 320px) {
     .mobile-nav {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: fixed;
+      display:flex;
+      justify-content:center;
+      align-items:center;
       z-index: 1;
       width: 100%;
-      padding-top:0px;
+
     }
   
     .mobile-nav > .mobile-link {
       margin-right: 20px;
-      margin-top: 2px;
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
-      margin-bottom:10px;
     }
   
     .link {
@@ -357,7 +338,7 @@ if(checklink.count == 0){
   
     .d-none-mobile > a {
       margin-left: 20px;
-      font-size: 22px;
+      font-size: 25px;
     }
   
     .d-none-mobile-login {
@@ -426,7 +407,7 @@ if(checklink.count == 0){
   
     .d-none-mobile > a {
       margin-left: 20px;
-      font-size: 22px;
+      font-size: 25px;
     }
   
     .d-none-mobile-login {

@@ -5,13 +5,13 @@ import { ref } from 'vue';
 import { reactive,onMounted,computed } from 'vue';
 import { defineProps } from 'vue';
 import moment from 'moment'
-import { RouterLink } from 'vue-router';
+import { RouterLink,useRouter } from 'vue-router';
 import LikeShareComment from "./LikeShareComment.vue";
 import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
 import VideoPlayerComponent from './VideoPlayerComponent.vue';
 const latest_post=defineProps(['latest']);
-
+const router=useRouter();
 const user_mail=localStorage.getItem('USER_MAIL');
 var post_date;
 var poster_name;
@@ -148,30 +148,34 @@ onMounted(async()=>{
 });
 onMounted(()=>{
     
-    window.onscroll=function(){
-       if(window.scrollY + window.innerHeight >= document.body.scrollHeight){
-        new_friend_post.loader='true';
-        axiosClient.post('/fetchRandomPost',{email:user_mail}).then(response=>{
-        all_post.new_five_post=response.data.reply;
-        let raw_data=response.data.reply;
-        raw_data.forEach(x => {
-            new_friend_post.fresh_new_post.push(x);
-            
-        });
-   
-        
-        
-        }).then(e=>{
-            new_friend_post.loader='false';
-            console.log(new_friend_post.loader);
-        }).
-        catch(e=>{
-        console.log(e);
-        });
-       }
-    }
+    let isFetching = false; // Flag to prevent multiple requests
 
-Loader.value="false";
+window.onscroll = function() {
+    const threshold = 0.5; // 90% of the page height
+    
+    if (!isFetching && (window.scrollY + window.innerHeight) / document.body.scrollHeight >= threshold) {
+        isFetching = true; // Set the flag to true to indicate a request is in progress
+        new_friend_post.loader = 'true';
+        
+        axiosClient.post('/fetchRandomPost', { email: user_mail })
+            .then(response => {
+                let raw_data = response.data.reply;
+                raw_data.forEach(x => {
+                    new_friend_post.fresh_new_post.push(x);
+                });
+            })
+            .then(() => {
+                new_friend_post.loader = 'false';
+            })
+            .catch(e => {
+                console.log(e);
+            })
+            .finally(() => {
+                isFetching = false; // Reset the flag once the request is complete
+            });
+    }
+};
+Loader.value=true;
 });
 
 function reduceNameLength(name){
@@ -188,7 +192,6 @@ function deleteUserPost(postid){
         let formData=new FormData();
         formData.append("postid",postid);
         axiosClient.post("/deleteUserPost",formData).then(response=>{
-            console.log(response.data.reply);
         }).catch(error=>{
             console.log(error);
         });
@@ -207,6 +210,13 @@ function url_to_link(text) {
       });
       }
 }
+function replaceHashTagWithLink(text) {
+    return (text || '').replace(/#(\w+)/g, function (match, tag) {
+  return `<a style='color:#1DA1F2;' href="/related/${tag}">${match}</a>`;
+});
+}
+
+
 </script>
 <template>
 <div class="stories-and-div-container">
@@ -215,7 +225,7 @@ function url_to_link(text) {
 
     <div v-if="newest_post.name != null" id="user-post" style='border: none; border-radius: 0px;' class='card m-2 p-2 post-container card-default'>
     <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
-        <span style="margin-right: auto; display:flex;"><img loading="lazy" v-if="newest_post.avatar === null" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${newest_post.avatar}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(newest_post.name)}}<ul class='inline-flex'>
+        <span style="margin-right: auto; display:flex;"><img loading="lazy" v-if="newest_post.avatar === 'null'" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${newest_post.avatar}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(newest_post.name)}}<ul class='inline-flex'>
         <li class='list-unstyled ' style='font-size:12px; color:lightslategray;'>{{moment(newest_post.date).fromNow()}}</li>
     </ul></span></span><span @click="deleteUserPost(newest_post.postid)">Delete</span>
     </div>
@@ -250,7 +260,7 @@ function url_to_link(text) {
         <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(x.created_at).fromNow()}}</li>
     </ul></span></span><BlockReportUserComponent :post_owner="x.email" :post_id="x.postid" />
     </div>
-    <RouterLink :to='`/status/${x.postid}`'><p style="white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(x.caption))"  class='p-2 fs-6'></p></RouterLink>
+    <RouterLink :to='`/status/${x.postid}`'><p style="white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(x.caption)))"  class='p-2 fs-6'></p></RouterLink>
    
     <p v-if="friend_post.show_current_key === x.created_at">{{friend_post.expandText }}</p>
     <OldLikeShareComment :post_content="{
@@ -277,7 +287,7 @@ function url_to_link(text) {
         <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(j.date).fromNow()}}</li>
     </ul></span></span><BlockReportUserComponent :post_owner="j.email" :post_id="j.postid" />
     </div>
-    <RouterLink :to='`/status/${j.postid}`'><p style="white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(j.caption))" class='p-2 fs-6'></p></RouterLink>
+    <RouterLink :to='`/status/${j.postid}`'><p style="white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(j.caption)))" class='p-2 fs-6'></p></RouterLink>
 
     
     <LikeShareComment :post_content="{
@@ -294,7 +304,7 @@ function url_to_link(text) {
                     post_likes_count:j.likes,
                     post_comments_count:j.comments,
                     post_shares_count:j.shares
-                  }" :post_owner="j.email"  :post_id="j.postid" :post_like="j.likes" :post_comment="j.comments" />
+                  }" :post_owner="j.email"  :post_id="j.postid"  />
    
    </div>
 </div> 
@@ -384,6 +394,7 @@ border-radius: 5px;
 }
 .card{
     width: 100%;
+    margin-top:10px;
 }
 .flex-img{
     display: flex;

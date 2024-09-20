@@ -5,29 +5,55 @@ import { ref } from 'vue';
 import { reactive,onMounted,computed } from 'vue';
 import { defineProps } from 'vue';
 import moment from 'moment'
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import LikeShareComment from "./LikeShareComment.vue";
+import Header from "./Header.vue";
 import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
 import VideoPlayerComponent from './VideoPlayerComponent.vue';
 const latest_post=defineProps(['latest']);
-
+const route=useRoute();
+let post_id=route.params.postid;
 const user_mail=localStorage.getItem('USER_MAIL');
-let bookmark_post_holder=reactive({
-user_posts:"",
-channel_posts:"",
-shared_posts:"",
-});
-let formData=new FormData();
-formData.append("email",user_mail);
-axiosClient.post("/findAllBookMarkedPosts",formData).then(response=>{
-bookmark_post_holder.user_posts=response.data.user_post_reply;
-bookmark_post_holder.channel_posts=response.data.channel_post_reply;
-bookmark_post_holder.shared_posts=response.data.shared_post_reply;
+var post_date;
+var poster_name;
+var post_avatar;
+var post_caption;
+let store_all_post=reactive({
+    post_date:"",
+    poster_name:"",
+    post_avatar:"",
+    post_caption:"",
+    isLoading:"true",
 
-}).catch(error=>{
-console.log(error);
+
 });
+let newest_post=reactive({
+    date:"",
+    name:"",
+    avatar:"",
+    caption:"",
+    postid:"",
+    isLong:"",
+    isLongBtn:"",
+    textShortener:"",
+    expandLongPost:""
+
+});
+
+function checkIfUserPostIsLong(text){
+    if(text==null){
+        return;
+    }else if(text.length < 128){
+        return newest_post.caption;
+    }
+    else if(text.length > 128){
+        newest_post.isLong="true";
+        newest_post.isLongBtn="true";
+        newest_post.textShortener=newest_post.caption.slice(0,128) + "............";
+        return newest_post.textShortener;
+    }
+}
 let friend_post=reactive({
     post_key:[],
     short_post:[],
@@ -64,17 +90,82 @@ let new_channel_post=reactive({
 function checkIfFriendPostIsLong(text, key){
      if(text==null){
         return;
-    }else if(text.length < 128){
-        friend_post.short_post.push(key);
+    }else if(text.length < 400){
         return text;
     }
-    else if(text.length > 128){
-        let caption_new=text.slice(0,128) + "...........................................";
-        friend_post.post_key.push(key);
-        
+    else if(text.length > 400){
+        let caption_new=text.slice(0,400) + "....See More";
         return caption_new;
     }
 }
+
+
+function expandText(){
+   newest_post.expandLongPost=newest_post.caption.slice(0);
+   newest_post.isLong='false';
+   newest_post.isLongBtn='false';
+
+   //return newest_post.textShortener;
+}
+function reduceText(){
+        newest_post.expandLongPost=newest_post.caption.slice(0,128)+ "...............";
+        newest_post.isLong='true';
+        newest_post.isLongBtn='true';
+}
+
+let all_post=reactive({
+    first_five_post:"",
+    new_five_post:"",
+    first_post_name:"",
+    one_channel_post:"",
+    shared_post:"",
+    every_one_post:"",
+    post_id:["patrick"]
+})
+let keep_all_post=ref('');
+
+store_all_post.post_date=localStorage.getItem('POST_DATE');
+store_all_post.poster_name=localStorage.getItem('POSTER_NAME');
+store_all_post.post_avatar=localStorage.getItem('POST_AVATAR');
+store_all_post.post_caption=localStorage.getItem('POST_CAPTION');
+let isFetching = false; // Flag to prevent multiple API calls
+const buffer = 300; 
+onMounted(async()=>{
+   const response= await axiosClient.post('/findSharedStatus',{post_id:post_id}).catch(e=>{
+        console.log(e);
+    });
+    all_post.shared_post=response.data.reply;
+});
+onMounted(()=>{
+    
+    let isFetching = false; // Flag to prevent multiple requests
+
+window.onscroll = function() {
+    const threshold = 0.5;
+    if (!isFetching && (window.scrollY + window.innerHeight) / document.body.scrollHeight >= threshold) {
+        new_friend_post.loader='true';
+        isFetching = true;
+        axiosClient.post('/findSharedStatus',{post_id:post_id}).then(response=>{
+        let raw_data=response.data.reply;
+        raw_data.forEach(x => {
+            new_friend_post.fresh_new_post.push(x);
+            
+        });
+        
+        
+        }).then(e=>{
+            new_friend_post.loader='false';
+        }).
+        catch(e=>{
+        console.log(e);
+        }).finally(()=>{
+        isFetching = false;
+        });
+       }
+    }
+
+Loader.value="false";
+});
 function showChanneInfo(containerID){
     let channel_info_holder=containerID;
     document.getElementById(channel_info_holder).style.visibility="visible";
@@ -84,11 +175,25 @@ function hideChannelInfo(containerID){
     document.getElementById(channel_info_holder).style.visibility="hidden";
 }
 function reduceNameLength(name){
-    if(name.length > 14){
+    if(name.length > 20){
         let reduced_name=name.slice(0,14) + "..";
         return reduced_name;
     }else{
         return name;
+    }
+}
+function deleteUserPost(postid){
+    let ask_if_user_wants_to_delete_post=confirm("Do you want to delete this Post?");
+    if(ask_if_user_wants_to_delete_post){
+        let formData=new FormData();
+        formData.append("postid",postid);
+        axiosClient.post("/deleteUserPost",formData).then(response=>{
+          
+        }).catch(error=>{
+            console.log(error);
+        });
+    }else{
+        return;
     }
 }
 function url_to_link(text) {
@@ -102,49 +207,28 @@ function url_to_link(text) {
       });
       }
 }
+function replaceHashTagWithLink(text) {
+    return (text || '').replace(/#(\w+)/g, function (match, tag) {
+  return `<a style='color:#1DA1F2;' href="/related/${tag}">${match}</a>`;
+});
+}
+
 </script>
 <template>
-<div class="stories-and-div-container">
-<div class="spinner" style="margin-top:40px;" v-if="bookmark_post_holder.channel_posts ===''">
-    
-</div>
-<div v-else-if="bookmark_post_holder.user_posts==''&&bookmark_post_holder.channel_posts==''&&bookmark_post_holder.shared_posts==''">
-<h4 style="margin-top: 200px;" class="fs-4 font-bold text-center">When you save a post, it would appear here..</h4>
-</div>
-<div v-else class="user-post-holder" style="margin-top:60px;">
-    <div   v-for="x in bookmark_post_holder.user_posts" style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default'>
-    <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex p-2 panel-header'>
-        <span style="margin-right: auto; display:flex;"><RouterLink :to='`/user/${x.email}`'><img v-if="x.profile_picture === null" class="img-circle small-thumbnail" src="../pictures/profile.png" /><img v-else  loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(x.name)}}</span></span><BlockReportUserComponent :post_owner="x.email" :post_id="x.postid" />
-    </div>
-    <p style="white-space:pre-wrap;" v-if="friend_post.current_key_is_enabled != x.created_at" v-html="url_to_link(x.caption)"  class='p-2 fs-6'></p>
-    <OldLikeShareComment :post_content="{
-                    post_caption:x.caption,
-                    post_owner_name:x.name,
-                    post_owner_email:x.email,
-                    post_owner_avatar:x.profile_picture,
-                    post_image_one:null,
-                    post_image_two:null,
-                    post_image_three:null,
-                    post_image_four:null,
-                    post_video:null,
-                    post_is_comment_status:x.isReply,
-                    post_likes_count:x.likes,
-                    post_comments_count:x.comments,
-                    post_shares_count:x.shares
-                  }" :post_owner="x.email"    :post_id="x.postid" />
-    <ul class='inline-flex'>
-        <li style="font-size: 12px;" class='list-unstyled'>{{moment(x.created_at).fromNow()}}</li>
-    </ul>
-   </div> 
-   <div  v-for="i in bookmark_post_holder.shared_posts"  style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default'>
+ <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" /><div class="stories-and-div-container" Ss>
+<div class="user-post-holder" style="margin-top:40px;">
+   <span v-if="Loader==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
+   <div v-if="all_post.shared_post != null" v-for="i in all_post.shared_post"  style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" class="img-circle small-thumbnail" src="../pictures/profile.png" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class="fs-6 m-2">Repost by</span><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}</span></span><BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
+                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}<ul class='inline-flex'>
+                    <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
+                    </ul></span></span><BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
-                    <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="friend_post.current_key_is_enabled != i.created_at"  class='p-2 fs-6'>{{i.quote}}</p>
-                    <div class="card">
-                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2">{{reduceNameLength(i.name)}}</h5></RouterLink>
-                    <p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(i.caption)"></p>
+                   <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
+                    <div class="card" style="margin-left:5px; margin-right:5px;">
+                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
+                    <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <div class="flex-img">
                         <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
                         <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />
@@ -158,9 +242,9 @@ function url_to_link(text) {
                     </div>
                 </div>
                   <OldLikeShareComment :post_content="{
-                    post_caption:i.caption,
-                    post_owner_name:i.name,
-                    post_owner_email:i.email,
+                    post_caption:i.quote,
+                    post_owner_name:i.name_of_user_who_shared,
+                    post_owner_email:i.email_of_user_who_shared,
                     post_owner_avatar:i.profile_picture,
                     post_image_one:i.post_img1,
                     post_image_two:i.post_img2,
@@ -171,20 +255,21 @@ function url_to_link(text) {
                     post_likes_count:i.likes,
                     post_comments_count:i.comments,
                     post_shares_count:i.shares
-                  }" :post_owner="i.email" :post_id="i.postid" />
-                    <ul class='inline-flex'>
-                    <li style="font-size: 12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
-                    </ul>
+                  }" :post_owner="i.email_of_user_who_shared" :post_id="i.postid" />
+                    
          
     </div>
-<div  v-for="i in bookmark_post_holder.channel_posts"  style='border: none; border-radius: 5px;' class='m-2 card p-2 post-container card-default'>
+    <div v-if="all_post.shared_post != null" v-for="i in new_friend_post.fresh_new_post"  style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/channel/${i.email}`'><img v-if="i.profile_picture === null" loading="lazy" class="img-circle small-thumbnail" src="../pictures/profile.png"/><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span @mouseenter="showChanneInfo(i.id)"  @mouseleave="hideChannelInfo(i.id)" class="fs-6 m-2">From Channel</span><span class='m-2'><i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="fa-solid fa-check"></i>{{reduceNameLength(i.name)}}</span></span><BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
+                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}<ul class='inline-flex'>
+                    <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
+                    </ul></span></span><BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
-                    <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="friend_post.current_key_is_enabled != i.created_at" v-html="url_to_link(i.caption)"  class='fs-6'></p>
-   
-                    <p style="word-wrap: break-word;" v-if="friend_post.show_current_key === i.created_at">{{friend_post.expandText }}</p>
+                   <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
+                    <div class="card" style="margin-left:5px; margin-right:5px;">
+                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
+                    <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <div class="flex-img">
                         <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
                         <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />
@@ -196,10 +281,11 @@ function url_to_link(text) {
                             source:i.video
                         }"/>
                     </div>
+                </div>
                   <OldLikeShareComment :post_content="{
-                    post_caption:i.caption,
-                    post_owner_name:i.name,
-                    post_owner_email:i.email,
+                    post_caption:i.quote,
+                    post_owner_name:i.name_of_user_who_shared,
+                    post_owner_email:i.email_of_user_who_shared,
                     post_owner_avatar:i.profile_picture,
                     post_image_one:i.post_img1,
                     post_image_two:i.post_img2,
@@ -210,14 +296,15 @@ function url_to_link(text) {
                     post_likes_count:i.likes,
                     post_comments_count:i.comments,
                     post_shares_count:i.shares
-                  }" :post_owner="i.email" :post_id="i.postid" />
-                    <ul class='inline-flex'>
-                    <li style="font-size: 12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
-                    </ul>
+                  }" :post_owner="i.email_of_user_who_shared" :post_id="i.postid" />
+                    
          
     </div>
 </div>
-</div>
+   
+  
+</div> 
+
 
 </template>
 <style scoped>
@@ -332,7 +419,7 @@ border-radius: 5px;
     object-fit: cover;
     flex: 1;
     flex-basis: 40%;
-    height: 400px;
+    height:100%;
    
     
 }
@@ -353,7 +440,6 @@ border-radius: 5px;
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
 }
 @media screen and (min-width:620px) {
     .user-post-holder{
@@ -465,7 +551,7 @@ border-radius: 5px;
     object-fit: cover;
     flex: 1;
     flex-basis: 40%;
-    height: 400px;
+    height:100%;
    
     
 }
@@ -486,7 +572,6 @@ border-radius: 5px;
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
 }
 @media screen and (min-width:1224px) {
     .user-post-holder{
@@ -600,9 +685,13 @@ border-radius: 5px;
     object-fit: cover;
     flex: 1;
     flex-basis: 40%;
-    height: 400px;
+    height: 100%;
    
     
+}
+.card{
+    padding:0px;
+    margin-top:10px;
 }
 .spinner {
   position: absolute;
@@ -621,6 +710,5 @@ border-radius: 5px;
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
 }
 </style>

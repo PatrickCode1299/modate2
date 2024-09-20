@@ -144,8 +144,12 @@ onMounted(async()=>{
 
 onMounted(()=>{
     
-    window.onscroll=function(){
-       if(window.scrollY + window.innerHeight >= document.body.scrollHeight){
+    let isFetching = false; // Flag to prevent multiple requests
+
+window.onscroll = function() {
+    const threshold = 0.5;
+    if (!isFetching && (window.scrollY + window.innerHeight) / document.body.scrollHeight >= threshold) {
+        isFetching = true;
         new_friend_post.loader='true';
         axiosClient.post('/fetchNewChannelPost',{email:user_mail}).then(response=>{
         all_post.new_five_post=response.data.reply;
@@ -161,6 +165,8 @@ onMounted(()=>{
         }).
         catch(e=>{
         console.log(e);
+        }).finally(()=>{
+        isFetching = false;
         });
        }
     }
@@ -189,7 +195,6 @@ function deleteUserPost(postid){
         let formData=new FormData();
         formData.append("postid",postid);
         axiosClient.post("/deleteUserPost",formData).then(response=>{
-            console.log(response.data.reply);
         }).catch(error=>{
             console.log(error);
         });
@@ -208,6 +213,11 @@ function url_to_link(text) {
       });
       }
 }
+function replaceHashTagWithLink(text) {
+    return (text || '').replace(/#(\w+)/g, function (match, tag) {
+  return `<a style='color:#1DA1F2;' href="/related/${tag}">${match}</a>`;
+});
+}
 </script>
 <template>
 <div class="stories-and-div-container">
@@ -220,7 +230,7 @@ function url_to_link(text) {
         <li class='list-unstyled ' style='font-size:12px; color:lightslategray;'>{{moment(newest_post.date).fromNow()}}</li>
     </ul></span></span><span @click="deleteUserPost(newest_post.postid)">Delete</span>
     </div>
-    <p v-if="newest_post.isLong=='true'"   class='p-2 fs-6'>{{ newest_post.caption }}</p>
+    <p v-if="newest_post.isLong=='true'"   class='p-2 fs-6'>{{ replaceHashTagWithLink(newest_post.caption) }}</p>
     <p v-if="newest_post.isLong==''"  class='p-2 fs-6'>{{ newest_post.caption }}</p>
     <button @click="expandText" v-if="newest_post.isLongBtn == 'true'">Show More</button>
     <p v-if="newest_post.isLong=='false'">{{newest_post.caption}}</p>
@@ -251,7 +261,7 @@ function url_to_link(text) {
                     </ul></span><BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
-                   <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.caption))"  class='p-2 fs-6'></p></RouterLink> 
+                   <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"  class='p-2 fs-6'></p></RouterLink> 
    
                     <div class="flex-img">
                         <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
@@ -260,7 +270,7 @@ function url_to_link(text) {
                         <img v-if="i.post_img4 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img4}`' />
                     </div>
                     <div v-if="i.video != null" class="flex-video">
-                        <VideoPlayerComponent style="width:100%;" :video_info="{
+                        <VideoPlayerComponent style="width:100%; padding:0px;" :video_info="{
                             source:i.video
                         }"/>
                     </div>
@@ -292,7 +302,7 @@ function url_to_link(text) {
                     <li style="font-size: 10px; margin-top:12px; color:lightslategray;" class='list-unstyled'>{{moment(k.date).fromNow()}}</li>
                     </ul></span><BlockReportUserComponent :post_owner="k.email" :post_id="k.postid" />
                    </div>
-                   <RouterLink :to='`/status/${k.postid}`'><p style="white-space:pre-wrap; word-wrap: break-word;" v-html="url_to_link(checkIfFriendPostIsLong(k.caption))"  class='p-2 fs-6'></p></RouterLink>
+                   <RouterLink :to='`/status/${k.postid}`'><p style="white-space:pre-wrap; word-wrap: break-word;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(k.caption)))"  class='p-2 fs-6'></p></RouterLink>
    
                     <div class="flex-img">
                         <img v-if="k.img_1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.img_1}`' />
@@ -322,7 +332,7 @@ function url_to_link(text) {
                     post_comments_count:k.comments,
                     post_shares_count:k.shares
                     
-                  }" :post_owner="k.email"  :post_id="k.postid" :post_like="k.likes" :post_comment="k.comments" />
+                  }" :post_owner="k.email"  :post_id="k.postid"  />
                  
          
     </div>

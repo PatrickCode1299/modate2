@@ -145,12 +145,14 @@ onMounted(async()=>{
 });
 onMounted(()=>{
     
-    window.onscroll=function(){
-       if(window.scrollY + window.innerHeight >= document.body.scrollHeight - buffer && !isFetching){
+    let isFetching = false; // Flag to prevent multiple requests
+
+window.onscroll = function() {
+    const threshold = 0.5;
+    if (!isFetching && (window.scrollY + window.innerHeight) / document.body.scrollHeight >= threshold) {
         new_friend_post.loader='true';
         isFetching = true;
         axiosClient.post('/fetchNewSharedPost',{email:user_mail}).then(response=>{
-        all_post.new_five_post=response.data.reply;
         let raw_data=response.data.reply;
         raw_data.forEach(x => {
             new_friend_post.fresh_new_post.push(x);
@@ -193,7 +195,6 @@ function deleteUserPost(postid){
         let formData=new FormData();
         formData.append("postid",postid);
         axiosClient.post("/deleteUserPost",formData).then(response=>{
-            console.log(response.data.reply);
         }).catch(error=>{
             console.log(error);
         });
@@ -212,6 +213,12 @@ function url_to_link(text) {
       });
       }
 }
+function replaceHashTagWithLink(text) {
+    return (text || '').replace(/#(\w+)/g, function (match, tag) {
+  return `<a style='color:#1DA1F2;' href="/related/${tag}">${match}</a>`;
+});
+}
+
 </script>
 <template>
 <div class="stories-and-div-container">
@@ -220,11 +227,11 @@ function url_to_link(text) {
 
     <div v-if="newest_post.name != null" id="user-post" style='border: none; border-radius: 0px;' class='card m-2 p-2 post-container card-default'>
     <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
-        <span style="margin-right: auto; display:flex;"><img loading="lazy" v-if="newest_post.avatar === null" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${newest_post.avatar}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(newest_post.name)}}<ul class='inline-flex'>
+        <span style="margin-right: auto; display:flex;"><img loading="lazy" v-if="newest_post.avatar === null || newest_post.avatar==='null'" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${newest_post.avatar}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(newest_post.name)}}<ul class='inline-flex'>
         <li class='list-unstyled ' style='font-size:12px; color:lightslategray;'>{{moment(newest_post.date).fromNow()}}</li>
     </ul></span></span><span @click="deleteUserPost(newest_post.postid)">Delete</span>
     </div>
-    <p v-if="newest_post.isLong=='true'"   class='p-2 fs-6'>{{ newest_post.caption }}</p>
+    <p v-if="newest_post.isLong=='true'"   class='p-2 fs-6'>{{ replaceHashTagWithLink(newest_post.caption) }}</p>
     <p v-if="newest_post.isLong==''"  class='p-2 fs-6'>{{ newest_post.caption }}</p>
     <button @click="expandText" v-if="newest_post.isLongBtn == 'true'">Show More</button>
     <p v-if="newest_post.isLong=='false'">{{newest_post.caption}}</p>
@@ -258,7 +265,7 @@ function url_to_link(text) {
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
                     <div class="card" style="margin-left:5px; margin-right:5px;">
                     <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
-                    <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.caption))"></p></RouterLink>
+                    <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <div class="flex-img">
                         <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
                         <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />
@@ -289,7 +296,7 @@ function url_to_link(text) {
                     
          
     </div>
-    <div v-if="all_post.shared_post != null" v-for="i in all_post.new_five_post"  style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
+    <div v-if="all_post.shared_post != null" v-for="i in new_friend_post.fresh_new_post"  style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
                     <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}<ul class='inline-flex'>
                     <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
@@ -299,7 +306,7 @@ function url_to_link(text) {
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
                     <div class="card" style="margin-left:5px; margin-right:5px;">
                     <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
-                    <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.caption))"></p></RouterLink>
+                    <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <div class="flex-img">
                         <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
                         <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />

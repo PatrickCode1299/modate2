@@ -58,7 +58,21 @@ onMounted(() => {
     }
   });
 });
+onMounted(() => {
+  // Create an IntersectionObserver to pause/play the video based on visibility
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+       return ;
+      } else {
+        video.value.pause();
+      }
+    });
+  }, { threshold: 0.5 });
 
+  // Observe the video element
+  observer.observe(video.value);
+});
 function playVideo() {
   if (videoFunctions.isPaused) {
     video.value.play();

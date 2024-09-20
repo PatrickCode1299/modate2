@@ -191,11 +191,7 @@ function showUserStory(){
         loadingISDone.value="true";
         user_story.story_src=user_story.post;
        user_story.number_of_story=user_story.post.length;
-       /*  user_story.story_src=user_story.post[count++];
-        if(count==user_story.post.length){
-            count=0; 
-        } 
-        console.log("Running"); **/
+       
         
         
    
@@ -267,15 +263,17 @@ behavior:"smooth"
 get_All_User_Friend();
 
 function setTaggedUser(email,first_name,last_name){
-    all_tagged_users.info.push(email);
+    let user_to_get_tagged_email=atob(email);
+    all_tagged_users.info.push(user_to_get_tagged_email);
     let user_full_name=first_name +'\t'+ last_name;
+    all_tagged_users.value.pop();
     all_tagged_users.value.push(user_full_name);
     let name_suggestion_from_user=caption.value;
     //let string_pattern='/'+name_suggestion_from_user.substring(1)+'/g';
-   let user_occurence=all_tagged_users.info.filter(x => x==email).length;
+   let user_occurence=all_tagged_users.info.filter(x => x==user_to_get_tagged_email).length;
    if(user_occurence > 1){
    for(let i=0; i<all_tagged_users.info.length; i++){
-    if(all_tagged_users.info[i]==email){
+    if(all_tagged_users.info[i]==user_to_get_tagged_email){
         all_tagged_users.info.splice(i,1);
         
     }
@@ -288,7 +286,7 @@ function setTaggedUser(email,first_name,last_name){
    }
    }
    let current_caption=caption.value;
-   caption.value=current_caption+'\t'+all_tagged_users.value.join(" ");
+   caption.value=current_caption.replace(/@\w+/,"")+all_tagged_users.value.join(" ");
    document.getElementById("tag_box").style.display="none";
     
     
@@ -348,11 +346,11 @@ function createNewPost(){
 <span v-if="hold_picture.isLoadingStoryPic==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
 <div v-else  class="stories-preview">
 <div id="scroll-images"  style="max-width: 100%; position: inherit; height: 200px; scroll-behavior: smooth; padding:0px 0px; overflow:scroll; overflow-x: hidden;  -webkit-overflow-scrolling:touch; overflow-y: hidden;" class="swiper-wrapper">
-   <li class="list-unstyled swiper-slide" style="width:60%; height:190px; position: relative;"><span  @click="createStories" class="m-3 border-50px text-success font-bold fs-1">&plus;</span><label class="text-white font-bold fs-6" style="position: absolute; text-shadow: 2px 2px 2px black; left:10%; top: 80%; bottom: 0px;">Your Story</label>
+   <li class="list-unstyled swiper-slide" style="width:50%; height:190px; position: relative;"><span  @click="createStories" class="m-3 border-50px text-success font-bold fs-1">&plus;</span><label class="text-white font-bold fs-6" style="position: absolute; text-shadow: 2px 2px 2px black; left:10%; top: 80%; bottom: 0px;">Your Story</label>
     <img @click="findmyStory" style="width: 100%; object-fit: cover; height:185px;" src="../pictures/profile.png" v-if="hold_picture.picture === null || hold_picture.picture === 'null'"  loading="lazy" :class="user_story.active"/><img style="width: 100%; object-fit: cover; height:185px;" v-else loading="lazy" @click="findmyStory" :class="user_story.active" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${hold_picture.picture}`" >
     </li> 
     
-    <li class="list-unstyled swiper-slide" style="width:60%; height:190px; position: relative; margin-left:5px;" v-for="i in user_story.user_friends"><img v-if="i.picture === null || i.picture === 'null'" @click="findmyfriendStory(i.email)" style="width:100%; object-fit:cover; height:185px;" src="../pictures/profile.png"  class="m-2 story-preview-img" /><img v-else  style="width: 100%; object-fit: cover; height:185px;"  @click="findmyfriendStory(i.email)" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.picture}`"  class="m-2 story-preview-img" />
+    <li class="list-unstyled swiper-slide" style="width:50%; height:190px; position: relative; margin-left:5px;" v-for="i in user_story.user_friends"><img v-if="i.picture === null || i.picture === 'null'" @click="findmyfriendStory(i.email)" style="width:100%; object-fit:cover; height:185px;" src="../pictures/profile.png"  class="m-2 story-preview-img" /><img v-else  style="width: 100%; object-fit: cover; height:185px;"  @click="findmyfriendStory(i.email)" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.picture}`"  class="m-2 story-preview-img" />
         <span class="text-white" style="font-weight: bold; font-size: 12px; text-shadow: 2px 2px 2px black; position: absolute; bottom:0px; left:40%;">{{i.first_name }}</span>
     </li>
     </div>
@@ -379,7 +377,7 @@ function createNewPost(){
 </div>
 <div id="set-story" class="story-posts-container">
 <div class="story-keeper" style="color: white;">
-    <span @click="hideStory" style="font-size:50px; position:fixed; z-index:1; left:0px; top:0px; color: white; margin-top:0px; font-weight: bold;">&times;</span>
+    <span @click="hideStory" style="font-size:50px; position:fixed; z-index:1; right:0px; top:0px; color: white; margin-top:0px; font-weight: bold;">&times;</span>
 <ul style="top: 0px;" class="story-count-indicator d-flex justify-content-flex-start">
     <li v-for="m in user_story.number_of_story" class="fs-2 " style="font-weight: bold; color:white;">&minus;</li>
 </ul>
@@ -403,7 +401,7 @@ function createNewPost(){
 </div>
 <div id="friend-story" class="story-posts-container">
 <div class="story-keeper" style="color: white;">
-    <span @click="hideFriendStory"  style="text-align:center; font-size:45px; position:fixed; z-index:1; top:0px; left:0px; color: white; font-weight: bold;">&times;</span>
+    <span @click="hideFriendStory"  style="text-align:center; font-size:45px; position:fixed; z-index:1; top:0px; right:0px; color: white; font-weight: bold;">&times;</span>
 <ul style="  top: 0px;" class="story-count-indicator d-flex justify-content-center">
     <li v-for="x in user_story.number_of_story" class="fs-3" style="font-weight: bold; color:white;">&minus;</li>
 </ul>

@@ -13,6 +13,7 @@ let user_post_id=defineProps(['post_id','post_content','post_owner']);
 let post_id=user_post_id.post_id;
 let post_content=user_post_id.post_content;
 let comment_status=user_post_id.post_content.post_is_comment_status;
+let isSound=localStorage.getItem('ISSOUND');
 let current_user=localStorage.getItem('USER_MAIL');
 let user_pic=localStorage.getItem('PICTURE');
 let post_info=reactive({
@@ -57,14 +58,18 @@ function updateLike(){
       if(response.data.reply==='false'){
         axiosClient.post("/DeleteLike",formData).then(response=>{
             like_state.count -=1;
-            document.getElementById("unlike").play();
+            if(isSound != 'true'){
+                document.getElementById("unlike").play();
+            }
             document.getElementById(post_id).style.color="black";
         }).catch(err=>{
             console.log(err)
         });
       }else{
         like_state.count +=1;
+        if(isSound != 'true'){
         document.getElementById("like").play();
+        }
         document.getElementById(post_id).style.color="red";
       }
     }).catch(e=>{
@@ -87,7 +92,7 @@ function sharePost(e){
    let post_owner=post_content.post_owner_name;
    let postid=Math.random(10,100000) * 1000;
    let prev_id=post_id;
-   let post_owner_email=post_content.post_owner_email;  
+   let post_owner_email=atob(post_content.post_owner_email);  
    let current_user_first_name=localStorage.getItem('FIRSTNAME');
    let current_user_last_name=localStorage.getItem('LASTNAME');
    let current_user_email=localStorage.getItem('USER_MAIL');
@@ -122,7 +127,7 @@ function sharePost(e){
    let post_owner=post_content.post_owner_name;
    let postid=Math.random(10,100000) * 1000;
    let prev_id=post_id;
-   let post_owner_email=post_content.post_owner_email;  
+   let post_owner_email=atob(post_content.post_owner_email);  
    let current_user_first_name=localStorage.getItem('FIRSTNAME');
    let current_user_last_name=localStorage.getItem('LASTNAME');
    let current_user_email=localStorage.getItem('USER_MAIL');
@@ -203,7 +208,7 @@ let str = quote.value;
 let pattern = /\B@[a-z0-9_-]+/gi;
 let user_match=str.match(pattern);
 if(user_match === null)
-console.log(null);
+return;
 else{
     user_match.forEach(x => {
     taglist.tagged_users=x;
@@ -286,17 +291,17 @@ function hideTagBox(postid){
     </div>
   <ul class="inline-flex">
                         <li :id="post_id" @click="updateLike" class="m-2 list-unstyled"><i class="fa fa-regular fa-heart"></i><span v-if="like_state.count < 2">{{ like_state.count }} Like</span><span v-else>{{ like_state.count }} Likes</span></li>
-                        <li v-if="comment_status === ''"  class="m-2 list-unstyled"><RouterLink :post_data="post_id" :to='`/status/${post_id}`'><i style="margin-right: 2px;" class="fa fa-regular fa-comment"></i>{{ like_state.commentCount }}</RouterLink></li>
+                        <li v-if="comment_status === '' || comment_status===null"  class="m-2 list-unstyled"><RouterLink :post_data="post_id" :to='`/status/${post_id}`'><i style="margin-right: 2px;" class="fa fa-regular fa-comment"></i>{{ like_state.commentCount }}</RouterLink></li>
                         <li @click="share" class="m-2 list-unstyled"><i class="fa-regular fa-share-from-square"></i></li>
                         <li @click="quotePost('quote'+post_id)" class="m-2 list-unstyled"><i class="far  fa-edit"></i>{{ like_state.quoteCount }}</li>
                         <li @click="bookMark(post_id)" :id="'bookmark'+post_id" class="m-2 list-unstyled"><i class="fa-regular fa-newspaper"></i></li>
                         
 </ul>
-<audio style="display: none;"  id="like">
+<audio v-if="isSound != 'true'" style="display: none;"  id="like">
     <source type="audio/wav" src="../notifications/like bell.wav" />
     
 </audio>
-<audio style="display: none;"  id="unlike">
+<audio v-if="isSound != 'true'" style="display: none;"  id="unlike">
     <source type="audio/wav" src="../notifications/unlike bell.wav" />
     
 </audio>

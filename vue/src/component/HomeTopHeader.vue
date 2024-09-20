@@ -1,6 +1,6 @@
 <template>
     <nav style="height:auto;" class="nav navbar navbar-fixed-top">
-      <div class="container-fluid">
+      <div class="container-fluid" style='padding:0px;'>
         <RouterLink v-if="!store.state.user.token" class="navbar-brand p-2 fs-2" to="/">
           <img src="../landing/hexarex.png" style="height:30px; width:30px;">
         </RouterLink>
@@ -31,7 +31,7 @@
         </ul>
         <span style="position:absolute; top:0px; right:0px;" @click="displayLinks" v-if="!store.state.user.token" class="icon-bar">&#8801;</span>
       </div>
-      <div v-if="store.state.user.token" id="mobile-nav" class="mobile-nav">
+      <ul v-if="store.state.user.token"  class="mobile-nav list-unstyled">
         <RouterLink
           :to="link.location"
           @click="link.function ? link.function() : null"
@@ -40,11 +40,9 @@
           v-for="(link, index) in links"
           :key="index"
         >
-          <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:red; position:fixed; top:0px; border-radius: 5px; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' : notify_msg_count.count < 1 ? '' : notify_msg_count.count }}</small>
-          <small v-if="link.linkname === 'Notifications'" class="fs-6" style="color:red; position:fixed; top:0px; border-radius: 5px; font-weight:bold;">{{ notify_count.count > 10 ? '10+' : notify_count.count    < 1 ? '' : notify_count.count }}</small>
           <i :class="link.itemicon"></i>
         </RouterLink>
-      </div>
+    </ul>
       <div id="sidecontainer" class="container-fluid shadow-lg p-4 side-container">
         <RouterLink
           :to="link.location"
@@ -98,8 +96,17 @@
             router.push({ name: 'Home' });
           }
         },
-        itemicon: "fa fa-regular fa-comment"
+        itemicon: "fa-light fa-play-pause"
        
+      },
+      {
+        linkname: "Stories",
+        location: "/home/stories",
+        property: "link",
+        function: function gotoSharedPost() {
+          router.push({ name: 'Stories' });
+        },
+        itemicon: "fa-light fa-message"
       },
       {
         linkname: "Conversation",
@@ -108,13 +115,20 @@
         function: function gotoSharedPost() {
           router.push({ name: 'SharedPosts' });
         },
-        itemicon: "far  fa-edit"
+        itemicon: "fa-light fa-messages"
       },
       {
         linkname: "ChannelPosts",
         location: "/home/channelposts",
         property: "link",
         itemicon: "fa-light fa-tv"
+      },
+      {
+        linkname: "Communities",
+        location: "/community",
+        property: "link",
+        itemicon: "fa-light fa-users",
+        badge: 6
       },
     ];
   } else {
@@ -203,22 +217,21 @@ if(checklink.count == 0){
   <style scoped>
   @media screen and (min-width: 320px) {
     .mobile-nav {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: fixed;
+      display:flex;
+      justify-content:center;
+      align-items:center;
       z-index: 1;
       width: 100%;
       padding-top:0px;
     }
   
     .mobile-nav > .mobile-link {
-      margin-right: 20px;
-      margin-top: 2px;
-      font-size: 20px;
+      margin-right: 30px;
+      font-size: 24px;
       font-weight: bold;
-      margin-bottom:10px;
+      padding-top:0px;
     }
+  
   
     .link {
       color: magenta;
@@ -311,7 +324,7 @@ if(checklink.count == 0){
   
     .d-none-mobile > a {
       margin-left: 20px;
-      font-size: 22px;
+      font-size: 25px;
     }
   
     .d-none-mobile-login {
@@ -380,7 +393,7 @@ if(checklink.count == 0){
   
     .d-none-mobile > a {
       margin-left: 20px;
-      font-size: 22px;
+      font-size: 25px;
     }
   
     .d-none-mobile-login {
