@@ -103,7 +103,7 @@
         linkname: "Stories",
         location: "/home/stories",
         property: "link",
-        function: function gotoSharedPost() {
+        function: function gotoStory() {
           router.push({ name: 'Stories' });
         },
         itemicon: "fa-light fa-message"
@@ -112,9 +112,6 @@
         linkname: "Conversation",
         location: "/home/sharedposts",
         property: "link",
-        function: function gotoSharedPost() {
-          router.push({ name: 'SharedPosts' });
-        },
         itemicon: "fa-light fa-messages"
       },
       {
@@ -123,13 +120,7 @@
         property: "link",
         itemicon: "fa-light fa-tv"
       },
-      {
-        linkname: "Communities",
-        location: "/community",
-        property: "link",
-        itemicon: "fa-light fa-users",
-        badge: 6
-      },
+    
     ];
   } else {
     links.value = [

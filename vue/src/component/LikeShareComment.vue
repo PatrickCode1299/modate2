@@ -172,7 +172,7 @@ function hidePost(boxid){
     quote_editor.style.display='none'; 
 }
 function share(){
-    let post_link='http://localhost:8000/status/'+post_id;
+    let post_link='https://hexarex.com/status/'+post_id;
     let link=navigator.clipboard.writeText(post_link);
     alert("Link Copied to Clipboard successfully");
 }
@@ -291,7 +291,7 @@ function hideTagBox(postid){
     </div>
   <ul class="inline-flex">
                         <li :id="post_id" @click="updateLike" class="m-2 list-unstyled"><i class="fa fa-regular fa-heart"></i><span v-if="like_state.count < 2">{{ like_state.count }} Like</span><span v-else>{{ like_state.count }} Likes</span></li>
-                        <li v-if="comment_status === ''"  class="m-2 list-unstyled"><RouterLink :post_data="post_id" :to='`/status/${post_id}`'><i style="margin-right: 2px;" class="fa fa-regular fa-comment"></i>{{ like_state.commentCount }}</RouterLink></li>
+                        <li v-if="comment_status === '' || comment_status === null"  class="m-2 list-unstyled"><RouterLink :post_data="post_id" :to='`/status/${post_id}`'><i style="margin-right: 2px;" class="fa fa-regular fa-comment"></i>{{ like_state.commentCount }}</RouterLink></li>
                         <li @click="share" class="m-2 list-unstyled"><i class="fa-regular fa-share-from-square"></i></li>
                         <li @click="quotePost('quote'+post_id)" class="m-2 list-unstyled"><i class="far  fa-edit"></i>{{ like_state.quoteCount }}</li>
                         <li @click="bookMark(post_id)" :id="'bookmark'+post_id" class="m-2 list-unstyled"><i class="fa-regular fa-newspaper"></i></li>

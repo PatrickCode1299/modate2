@@ -51,7 +51,8 @@ function createPost(e){
 
 } 
 watch(channel_text, ()=>{
-if(channel_text.value.length > 0){
+if(channel_text.value.trim().length > 0){
+    console.log(channel_text.value.length);
     let post_button=document.getElementById("create-text-btn");
    post_button.removeAttribute("disabled");
 }else{

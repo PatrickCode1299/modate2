@@ -77,7 +77,7 @@ let router=useRouter();
 
 
 function share(){
-    let post_link='http://localhost:5173/status/'+post_id;
+    let post_link='https://hexarex.com/status/'+post_id;
     let link=navigator.clipboard.writeText(post_link);
     alert("Link Copied to Clipboard successfully");
 }

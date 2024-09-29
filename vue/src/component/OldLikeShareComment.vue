@@ -172,7 +172,7 @@ function hidePost(boxid){
     quote_editor.style.display='none'; 
 }
 function share(){
-    let post_link='http://localhost:8000/status/'+post_id;
+    let post_link='https://hexarex.com/status/'+post_id;
     let link=navigator.clipboard.writeText(post_link);
     alert("Link Copied to Clipboard successfully");
 }

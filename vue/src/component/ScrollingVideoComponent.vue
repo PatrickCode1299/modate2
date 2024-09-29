@@ -20,6 +20,7 @@
         :src="getVideoUrl(item.video)"
         loop
         playsinline
+        oncontextmenu="return false;"
         :muted="index !== activeIndex"
         @canplay="handleCanPlay($event, index)"
         @waiting="handleWaiting(index)"
@@ -309,6 +310,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('online', handleNetworkChange);
   window.removeEventListener('offline', handleNetworkChange);
+  const videoElement = document.querySelector(`.video-container.active video`);
+  if (videoElement) {
+  videoElement.pause();
+  }
 });
 </script>
   

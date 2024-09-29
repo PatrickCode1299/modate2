@@ -33,7 +33,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
     }
 }));
 watch(caption, ()=>{
-if(caption.value.length > 0){
+if(caption.value.trim().length > 0){
    let post_button=document.getElementById("post-button");
    post_button.removeAttribute("disabled");
 }else{
