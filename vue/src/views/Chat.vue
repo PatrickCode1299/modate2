@@ -246,7 +246,8 @@ function hideDoc(){
     document.getElementById("doc-container").style.display="none";
 }
 watch(user_message, ()=>{
-if(user_message.value.length > 0){
+if(user_message.value.trim().length > 0){
+    console.log(user_message.value.length);
     document.getElementById("send_msg").removeAttribute("disabled");
 }else{
     document.getElementById("send_msg").setAttribute("disabled","true");
@@ -351,7 +352,7 @@ document.title="Chat";
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: rgb(253, 253, 253);
+    background-color: rgb(248, 248, 248);
     height: 100%;
     border-radius: 10px;
     margin-top: 0px;
@@ -387,8 +388,8 @@ justify-content:flex-start;
 position:fixed;
 }
 .reciever-img{
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
 }
 .reciever-name{
@@ -430,7 +431,7 @@ position:fixed;
     flex:1;
     overflow-y: auto;
     padding:10px;
-    
+    margin-top:15px;
 }
 .message-box{
     width: 100%;
@@ -448,7 +449,6 @@ position:fixed;
     margin-bottom:0px;
     box-sizing:border-box; 
     z-index:2;
-    background-color:white;
 }
 .send-message-box{
 position: relative;
@@ -504,8 +504,8 @@ z-index: 0;
     .edit-container{
     max-width: 100%;
     margin:0px auto;
-    background-color: rgb(253, 253, 253);
-    height: auto;
+    background-color: rgb(248, 248, 248);
+    height: 100%;
     border-radius: 10px;
     margin-top: 0px;
 }
@@ -540,8 +540,8 @@ justify-content:flex-start;
 position:fixed;
 }
 .reciever-img{
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     margin-top: 0px;
 }
@@ -579,7 +579,7 @@ position:fixed;
     white-space:pre-wrap;
 }
 .conversation{
-    margin-bottom: 100px;
+    margin-top:20px;
 }
 .message-box{
     width: 100%;
@@ -629,8 +629,8 @@ z-index: 0;
     .edit-container{
     max-width: 50%;
     margin:0px auto;
-    background-color: rgb(253, 253, 253);
-    height: auto;
+    background-color: rgb(248, 248, 248);
+    height: 100%;
     border-radius: 10px;
     margin-top: 0px;
 }
@@ -667,8 +667,8 @@ justify-content:flex-start;
 position:fixed;
 }
 .reciever-img{
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     margin-top: 0px;
 }
@@ -690,7 +690,6 @@ position:fixed;
     flex-direction:column;
     justify-content:center;
     align-items:center;
-    background-color:white;
 }
 .message-recieved{
     background-color: rgb(212, 255, 216,0.711);
@@ -718,7 +717,7 @@ position:fixed;
     white-space:pre-wrap;
 }
 .conversation{
-    margin-bottom: 100px;
+   margin-top:20px;
 }
 .send-message-box{
 position: relative;

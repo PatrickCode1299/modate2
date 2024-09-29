@@ -113,7 +113,7 @@ onMounted(()=>{
 });
 
 onMounted(() =>{
-    user_mail=store.state.user.data;
+    user_mail=localStorage.getItem('USER_MAIL');
     axiosClient.post("/profile",{email:user_mail}).then((response=>{
     if(response.data.info==="false"){
        info.info_value="true";
@@ -443,7 +443,7 @@ function replaceHashTagWithLink(text) {
     <div style="margin-top: 100px;" v-if="info.info_value==='true'" class="incomplete d-flex justify-content-center">
         <h2 class="fs-5 m-4 text-black font-bold">You need to complete your profile to use channels</h2>
     </div>
-    <div style="margin-top: 40px;" v-else  class="channel-container">
+    <div v-else  class="channel-container">
         <span v-if="info.user_has_channel ==''" class="spinner"></span>
         <div   v-if="info.user_has_channel==='true'">
             <div class="d-flex justify-content-flex-start channel-info-holder">
@@ -486,7 +486,7 @@ function replaceHashTagWithLink(text) {
                         <img style="border-bottom-right-radius: 5px;" v-if="x.post_img4 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img4}`' />
                     </div>
                     <div v-if="x.video != null" class="flex-video">
-                        <VideoPlayerComponent style="width:100%;" :video_info="{
+                        <VideoPlayerComponent style="max-width:100%;" :video_info="{
                             source:x.video
                         }"/>
                     </div>
@@ -592,9 +592,10 @@ function replaceHashTagWithLink(text) {
     .channel-container{
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    width:97%;
+    justify-content:center;
+    width:100%;
     cursor: pointer;
+    margin-top:60px;
    
 }
 .channel-info{
@@ -646,8 +647,6 @@ border-radius: 5px;
 }
 .card{
     border: none;
-    padding-left: 5px;
-    padding-right: 5px;
     width: 100%;
 }
 .text-grey{
@@ -729,7 +728,9 @@ border-radius: 5px;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    width: 100%;
+    width: 50%;
+    margin:0px auto;
+    margin-top:40px;
 }
 .channel-info{
     margin: 0px auto; 
@@ -788,7 +789,7 @@ border-radius: 5px;
     border: none;
     padding-left: 2px;
     padding-right: 2px;
-    width: 400px;
+    width:100%;
 }
 .text-grey{
     color: rgb(158, 156, 156);
@@ -862,18 +863,17 @@ border-radius: 5px;
 @media screen and (min-width:1224px) {
     .channel-container{
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    width: 100%;
-    margin:0 auto;
-  
+    width: 50%;
+    margin:0px auto;
+    margin-top:40px;
 }
 .channel-info{
     margin: 0px auto; 
     margin-top:50px;
-    width: 60%;
+    width: 80%;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -935,9 +935,7 @@ border-radius: 5px;
 }
 .card{
     border: none;
-    padding-left: 2px;
-    padding-right: 2px;
-    width: 600px;
+    width:100%;
 }
 .text-grey{
     color: rgb(158, 156, 156);

@@ -37,13 +37,15 @@ function setMessageIsRead(date,chat_id,chat_sender){
     });
 }
 function checkMsgLength(text){
-    if(text.length > 50){
+  if(text===null){
+    return "";
+  }else if(text.length > 50){
         let caption_new=text.slice(0,100) + "......";
         return caption_new;
-    }else{
+  }else{
         return text;
     }
-    
+     
 }
 </script>
 <template>
@@ -68,7 +70,7 @@ function checkMsgLength(text){
     margin:0px auto;
     height: auto;
     border-radius: 10px;
-    margin-top: 20px;
+    margin-top: 50px;
 }
 .green-text-bold{
     color: green;

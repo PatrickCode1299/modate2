@@ -141,12 +141,8 @@ console.log(error);
     <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
    <div  class="container settings-container">
-    <div v-if="personal_info.u_incomplete === 'true'" class="incomplete-profile">
-                    <h2 class="fs-4 font-bold text-bold text-center">Your profile is not visible to other users.</h2>
-                    <p class="text-center m-3">Click on Edit at the right side to add your info and the green Customize button to update your photo and cover text</p>
-                </div>
-    <ul v-else>
-        <li class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-lock"></i></span>Privacy
+    <ul>
+        <li  class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-lock"></i></span>Privacy
             <div class="p-2">
                <span  class="m-2 fs-6"><span style="color:red;" @click="setIsPrivateTrue" v-if="isPrivate=='false'"><i class="fa-light fa-toggle-large-off"></i>Enable Private Profile</span><span style="color:forestgreen;" @click="setIsPrivateFalse" v-else > <i class="fa-light fa-toggle-large-on"></i>Disable Private Profile</span></span>
             </div>
@@ -166,7 +162,7 @@ console.log(error);
 @media screen and (min-width:320px) {
     .settings-container{
     display:block; 
-    margin-top:50px; 
+    margin-top:80px; 
     max-width:100%;
 }
 .icon{

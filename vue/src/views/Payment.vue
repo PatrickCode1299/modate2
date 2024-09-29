@@ -25,8 +25,8 @@ function gotoMerchant(e){
         }else{
         let url_data=JSON.stringify(response.data.url);
         let new_url=JSON.parse(url_data);
-        window.location.href=response.data.url;
-        //window.location.href=new_url.url;
+       // window.location.href=response.data.url;
+        window.location.href=new_url.url;
         }
     }).
     catch(err=>{

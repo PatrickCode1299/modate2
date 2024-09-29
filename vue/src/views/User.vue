@@ -76,7 +76,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
             }
             
             if(response.data.coverText==null){
-               info.cover_text="I am an Hexarex User...";
+               info.cover_text="I am an Hexarex.com User...";
                
             }else{
                 
@@ -273,7 +273,7 @@ function formatNumber(num) {
                 <div    class="complete-profile">
                 <ul class="d-flex" style="margin-top:75px; cursor: pointer;">
                     <li class=" m-2"><span class="title m-2"><i class="fa-light fa-location-dot"></i></span><span>{{personal_info.u_location}}</span></li>
-                    <li class="m-2"><span class="title m-2"><i class="fa-solid fa-user"></i></span><RouterLink :to="`/followers/${user_id}`"><span class="font-bold text-black">{{formatNumber(personal_info.u_followers_count)}} </span>Followers</RouterLink></li>
+                    <li class="m-2"><span class="title m-2"><i class="fa-solid fa-user"></i></span><RouterLink :to="`/followers/${user_id}`"><span class="font-bold text-black">{{formatNumber(personal_info.u_followers_count)}} </span>{{personal_info.u_followers_count < 2 ? "Follower" : "Followers"}}</RouterLink></li>
                 </ul>
                 </div>
             </div>
@@ -355,7 +355,7 @@ function formatNumber(num) {
     </div>
    </div>
    <div v-else class="d-flex justify-content-center bg-white shadow-sm p-4 align-items-center">
-    <h1 class="fs-6 font-bold"><i class="fa-light fs-4 fa-lock"></i> Only Users who follow can see their contents..</h1>
+    <h1 class="fs-6 font-bold"><i class="fa-light fs-4 fa-lock"></i> Only users who follow can see their contents..</h1>
    </div>
    </div>
 </div>
@@ -369,12 +369,12 @@ function formatNumber(num) {
     height:100%;
     padding:0px;
     position: relative;
-    margin-top:35px;
+    margin-top:60px;
     
 }
 .images{
     border-radius: 0px;
-    background-image: linear-gradient(to right, orange,rgb(150, 29, 142),magenta);
+    background-color:rgba(147, 148, 148, 1);
     opacity: 0.8;
     color: white;
     height: 150px;
@@ -528,7 +528,7 @@ function formatNumber(num) {
 }
 .images{
     border-radius: 10px;
-    background-image: linear-gradient(to right, orange,rgb(150, 29, 142),magenta);
+    background-color:rgba(147, 148, 148, 1);
     opacity: 0.8;
     color: white;
     height: 150px;
@@ -672,7 +672,7 @@ function formatNumber(num) {
 }
 .images{
     border-radius: 10px;
-    background-image: linear-gradient(to right, orange,rgb(150, 29, 142),magenta);
+   background-color:rgba(147, 148, 148, 1);
     opacity: 0.8;
     color: white;
     height: 150px;

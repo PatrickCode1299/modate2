@@ -74,7 +74,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
             cover_photo=`https://res.cloudinary.com/fishfollowers/image/upload/${cover_bg}`;
             info.bgUrl='url('+cover_photo+')';
             if(response.data.coverText==null){
-               info.cover_text="I am a Uhangout member...";
+               info.cover_text="I am an Hexarex.com member...";
                
             }else{
                 
@@ -360,7 +360,7 @@ let balloon_num=ref(10);
     width: 100%;
     background-color: rgb(252, 252, 252);
     height:100%;
-    margin-top:35px;
+    margin-top:50px;
     padding:0px;
     position: relative;
 
@@ -368,7 +368,7 @@ let balloon_num=ref(10);
 }
 .images{
     border-radius: 0px;
-    background-image: linear-gradient(to right, orange,rgb(150, 29, 142),magenta);
+    background-color:rgba(147, 148, 148, 1);
     opacity: 0.8;
     color: white;
     height: 150px;
@@ -387,7 +387,7 @@ let balloon_num=ref(10);
     width: 100px;
     object-position: center center;
     object-fit: cover;
-    border:3px solid rgb(254, 213, 238);
+    border:5px solid rgb(255, 255, 255);
     background-color:white;
 }
 .bold{
@@ -585,7 +585,7 @@ display:none;
 }
 .images{
     border-radius: 10px;
-    background-image: linear-gradient(to right, orange,rgb(150, 29, 142),magenta);
+    background-color:rgba(147, 148, 148, 1);
     opacity: 0.8;
     color: white;
     height: 150px;
@@ -790,7 +790,7 @@ display:none;
 }
 .images{
     border-radius: 10px;
-    background-image: linear-gradient(to right, orange,rgb(150, 29, 142),magenta);
+    background-color:rgba(147, 148, 148, 1);
     opacity: 0.8;
     color: white;
     height: 150px;

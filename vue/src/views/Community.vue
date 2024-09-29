@@ -59,7 +59,7 @@ function setUpChannel(){
 
 
 onMounted(() =>{
-    user_mail=store.state.user.data;
+    user_mail=localStorage.getItem('USER_MAIL');
     axiosClient.post("/profile",{email:user_mail}).then((response=>{
     if(response.data.info==="false"){
        info.info_value="true";

@@ -43,7 +43,7 @@ function checkifInfoIsLong(text){
     </div>
     <div class="container edit-container">
     <h2 class="fs-5 font-bold">Followers</h2>
-    <ul>
+    <ul style="margin-top:5px;">
       <li style="position:relative; margin-top:0px;"  v-for="x in followers.all_followers"><RouterLink class="d-flex"  :to='`/user/${x.follower}`'><img v-if="x.profile_picture === null" class="notify-img" src="../pictures/profile.png" ><img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" /><span class="font-bold" style="display:inline; margin-left:5px;  margin-top:10px;">{{ x.first_name }}</span></RouterLink><span style="position:absolute; display:none; top:0px; right:0px;" class="follow-unfollow"><button style="border-radius:20px;" class="btn btn-sm btn-success fs-6 font-bold">Follow</button><button style="border-radius:20px;" class="btn btn-sm btn-danger fs-5 font-bold">Unfollow</button></span>
         <div style="position: relative; margin-bottom:40px;">
         <p  style="position:absolute; left:50px;">{{ x.cover_text }}</p>
@@ -79,13 +79,13 @@ function checkifInfoIsLong(text){
     height: auto;
     border-radius: 10px;
     display: flex;
-    margin-top:50px;
+    margin-top:80px;
     flex-direction: column;
 }
 .notify-img{
     border-radius: 50%;
-    height: 50px;
-    width: 50px;
+    height: 40px;
+    width: 40px;
     object-fit: cover;
 }
 .not-info{

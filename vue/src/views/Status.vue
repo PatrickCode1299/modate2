@@ -486,8 +486,8 @@ let encoded_mail=btoa(user_mail);
    }" />
   <form class="comment-form"  v-if="user_mail!=null"  @submit="postComment">
   <div class="comment-box-wrapper">
-  <textarea v-if="all_post_info.isReply === ''"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; z-index:2; font-weight:4te00; margin-top: 0px; border:none;   width: 100%;"></textarea>
-  <span     v-if="all_post_info.isReply === ''"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-sm btn-success"><i class="fa fa-paper-plane"></i></button></span>
+  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; z-index:2; font-weight:4te00; margin-top: 0px; border:none;   width: 100%;"></textarea>
+  <span     v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-sm btn-success"><i class="fa fa-paper-plane"></i></button></span>
     </div>
   <div id="tag_box" class="card tag_users_box card-default shadow-md cursor-pointer p-2">
         <div style="display:block;"><span @click="hideTagBox" class="m-2"><i class="fa fa-arrow-left"></i></span></div>
@@ -521,6 +521,7 @@ let encoded_mail=btoa(user_mail);
             <RouterLink :to='`/comment/${x.comment_id}`'><p style="white-space:pre-wrap;" v-html="checkIfCommentIsLong(url_to_link(x.comment))" class="p-2"></p></RouterLink>
             
         </div>
+        <h2 class="m-2 font-semibold" v-if="user_mail==null">Comments</h2>
         <div v-for="i in showComment.all_comments" :id="i.created_at+i.user_who_comment" style=" width: 100%;"  class="card p-2 card-default">
             
             <div  style="position:relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header d-flex">
@@ -569,7 +570,7 @@ let encoded_mail=btoa(user_mail);
   flex-direction: column;
   justify-content: flex-start;
   width: 100%;
-  margin-top:20px;
+  margin-top:60px;
   padding:0px 0px;
  }
  

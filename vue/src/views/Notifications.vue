@@ -75,6 +75,7 @@ function checkifInfoIsLong(text){
 .edit-container{
     width: 100%;
     margin:0px auto;
+    margin-top:50px;
     background-color: rgb(253, 253, 253);
     height: auto;
     border-radius: 10px;

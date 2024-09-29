@@ -57,7 +57,7 @@ function setUserMatch(email){
     <div v-for="i in hold_user_suggestion.interest" class="d-flex p-2 religion-suggestions justify-content-center align-items-center">
         <div style="position:relative;" class="card p-2 card-default shadow-sm user-suggestion-card">
         <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
-        <img v-else class="img-circle avatar"  :src='`http://localhost:8000/storage/${i.profile_picture}`' />
+        <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
         <h6>{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
         <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
         </div>
@@ -135,7 +135,7 @@ function setUserMatch(email){
   }
 
   .search-bar {
-    margin-top: 60px;
+    margin-top: 80px;
     margin-bottom: 20px;
   }
 

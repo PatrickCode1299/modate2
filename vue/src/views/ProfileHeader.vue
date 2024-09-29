@@ -149,8 +149,7 @@ function gotoSupport(){
     .profile-header-container{
     background-color: red;
     width: 100%;
-    margin:0 auto;
-    margin-top:20px;
+    margin-top:50px;
     background-color: rgb(253, 253, 253);
     height: 800px;
     border-radius: 10px;

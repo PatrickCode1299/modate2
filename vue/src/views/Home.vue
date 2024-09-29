@@ -53,7 +53,7 @@ function updateUserLastActivity(){
 }));
 }
 function checkIfUserHasCompleteProfile(){
-    user_mail=store.state.user.data;
+    user_mail=localStorage.getItem('USER_MAIL');
     axiosClient.post("/profile",{email:user_mail}).then((response=>{
     if(response.data.info==="false"){
        info.info_value="true";
@@ -74,8 +74,15 @@ updateUserLastActivity();
     <HomeTopHeader class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
     <Header class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
-    <div v-if="info.info_value==='true'" style="margin-top: 100px;" class=" incomplete d-flex justify-content-center">
+    <div v-if="info.info_value==='true'" style="margin-top: 100px; flex-direction:column;" class=" incomplete d-flex justify-content-center align-items-center">
         <h2 class="fs-5 font-bold m-4">Click on profile icon above and complete your profile to be visible</h2>
+
+    <video
+    style="width:50%; height:400px; border:1px solid grey; padding:0px; border-radius:10px;" 
+    autoplay
+    controls
+    src="https://res.cloudinary.com/fishfollowers/video/upload/v1727547032/users_posts/vxlj09dtsbpqouu4ueku.mp4"
+    />
     </div>
     <div v-else  class="story-and-post">
     <ChannelPostComponent v-if="route.params.cat=='channelposts'" />
