@@ -280,8 +280,15 @@ const handleScroll = () => {
 };
 
 onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleScroll);
+  // Pause all video elements when navigating away
+  const videoElements = document.querySelectorAll('video');
+  videoElements.forEach(video => {
+    if (!video.paused) {
+      video.pause();
+    }
+  });
 });
+
 
 onMounted(async () => {
   const response = await axiosClient.post('/fetchAllChannelsVideo', { email: user_mail }).catch(e => {
@@ -313,6 +320,7 @@ onUnmounted(() => {
   const videoElement = document.querySelector(`.video-container.active video`);
   if (videoElement) {
   videoElement.pause();
+  videoElement.src = '';
   }
 });
 </script>
