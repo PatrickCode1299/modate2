@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\AgoraController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\WebRTCController;
@@ -29,6 +30,7 @@ Route::post('/profile', [AuthController::class, 'checkIfUserHasCompleteProfile']
 Route::post('/updateProfile', [AuthController::class, 'updateUserProfile']);
 Route::post('/find', [AuthController::class, 'findUserMatch']);
 Route::post('/choice', [AuthController::class, 'setUserMatch']);
+Route::post('/request', [AuthController::class, 'setPendingMatch']);
 Route::post('/removeChoice', [AuthController::class, 'unMatchUser']);
 Route::post('/update',[AuthController::class, 'updateUserPicture']);
 Route::post('/updateCoverPhoto',[AuthController::class, 'updateCoverPhoto']);
@@ -79,6 +81,7 @@ Route::post('/findUserPost',[AuthController::class, 'findUserPost']);
 Route::post('/blockUser',[AuthController::class, 'blockUser']);
 Route::post('/isUserBlocked',[AuthController::class, 'check_if_current_user_has_being_blocked']);
 Route::post('/isUserFollowed',[AuthController::class, 'check_if_current_user_has_being_followed']);
+Route::post('/isPrivateUserFollowed',[AuthController::class, 'check_if_private_account_is_followed']);
 Route::post('/bookmarkPost',[AuthController::class, 'bookmarkPost']);
 Route::post('/findAllBookMarkedPosts',[AuthController::class, 'findAllBookMarkedPosts']);
 Route::post('/Search',[AuthController::class, 'Search']);
@@ -95,6 +98,28 @@ Route::delete('/delete-stream-videos/{streamId}', [WebRTCController::class, 'del
 Route::post('/live-video/chunk', [WebRTCController::class, 'getVideoChunk']);
 Route::post('/uploadTextStory', [AuthController::class, 'uploadTextStory']);
 Route::post('/findComment', [AuthController::class, 'findComment']);
+Route::post('/fetchNewChannelPost', [AuthController::class, 'fetchNewChannelPost']);
+Route::post('/fetchNewSharedPost', [AuthController::class, 'fetchNewSharedPost']);
+Route::post('/customiseProfile', [AuthController::class, 'customiseProfile']);
+Route::post('/related', [AuthController::class, 'findRelatedPost']);
+Route::post('/findUserFollowers', [AuthController::class, 'findUserFollowers']);
+Route::post('/fetchAllChannelsVideo', [AuthController::class, 'fetchAllChannelsVideo']);
+Route::post('/updateLastActivity', [AuthController::class, 'updateUserLastActivity']);
+Route::post('/createCommunity', [AuthController::class, 'createCommunity']);
+Route::post('/fetchAllCommunitiesPost',[AuthController::class, 'fetchCommunitiesPost']);
+Route::post('/findCommunitiesOwnedByUser',[AuthController::class, 'findCommunitiesOwnedByUser']);
+Route::post('/findCommunityDetails',[AuthController::class, 'findCommunityDetails']);
+Route::post('/fetchCommunityPosts',[AuthController::class, 'fetchCommunityPosts']);
+Route::post('/createCommunityPost',[AuthController::class, 'createCommunityPost']);
+Route::post('/fetchLatestCommunityPosts',[AuthController::class, 'fetchLatestCommunityPosts']);
+Route::post('/fetchRandomTopCommunityPost',[AuthController::class, 'fetchRandomTopCommunityPost']);
+Route::post('/fetchRandomLatestCommunityPosts',[AuthController::class, 'fetchRandomLatestCommunityPosts']);
+Route::post('/createCommunityPostVideo',[AuthController::class, 'createCommunityPostVideo']);
+Route::post('/removeMember',[AuthController::class, 'removeMember']);
+Route::post('/joinCommunity',[AuthController::class, 'joinCommunity']);
+Route::post('/deleteCommunityPost',[AuthController::class, 'deleteCommunityPost']);
+Route::post('/sendResetLink',[AuthController::class, 'sendResetLink']);
+Route::post('/updateDetails',[AuthController::class, 'updateDetails']);
 
 
 
