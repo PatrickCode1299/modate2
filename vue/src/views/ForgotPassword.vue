@@ -7,7 +7,29 @@ import { useRouter,useRoute } from "vue-router";
 import axiosClient from "../axios";
 const router=useRouter();
 const route=useRoute();
-console.log(route.params);
+const link_date=atob(route.params.current_day);
+
+if (link_date) {
+    // Parse the link_date into a Date object
+    const parsedLinkDate = new Date(link_date);
+
+    // Get the current date without time (to only compare the day, month, and year)
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+
+    // Also reset the time for parsedLinkDate (assuming link_date has no time or you want to compare only the date)
+    parsedLinkDate.setHours(0, 0, 0, 0);
+
+    // Compare the dates
+    if (parsedLinkDate.getTime() === currentDate.getTime()) {
+        console.log("The dates are the same.");
+    }else {
+       router.push({
+        name:"Home"
+       });
+    }
+}
+console.log(link_date);
 const email=ref('');
 const password=ref('');
 const user={
@@ -40,7 +62,7 @@ if(localStorage.getItem('USER_COOKIE')){
 }
 function updateNewPassword(e){
     e.preventDefault();
-    let user_who_reset_password=route.params.user_mail;
+    let user_who_reset_password=atob(route.params.user_mail);
     if(password.value.length < 6){
      alert("Your password needs to be greater than six characters, ensure you use a strong password");
     }else{
