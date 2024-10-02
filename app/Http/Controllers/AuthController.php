@@ -20,6 +20,7 @@ use App\Models\Blocked_List;
 use App\Models\Bookmark;
 use App\Models\Follow_Request;
 use App\Models\CommunityFollower;
+use App\Notifications\ResetPassword;
 use Pusher\Pusher;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
@@ -2066,5 +2067,49 @@ class AuthController extends Controller
     return response([
       "reply"=>$update_last_activity
     ]);
+  }
+  public function sendResetLink(Request $request){
+    $email=$request->input('email');
+    $recipient=User::where('email',$email)->first();
+    $current_date=date('Y-m-d');
+    $reset_link=[
+      'welcome_text'=>"We would help you get back on hexarex.com, $email",
+       'body' => "Click on the link at the bottom of this email to reset your password",
+       'call_to_action'=>'This link expires today, do not share this mail with anyone..',
+       'url' => url("https://hexarex.com/reset/".base64_encode($current_date)."/".base64_encode($email).""),
+       'conclusion' => "From hexarex.com",
+       'id'  => 1
+    ];
+    Notification::send($recipient, new ResetPassword($reset_link));
+    return response([
+      "reply"=>"Reset Email sent successfuly"
+    ]);
+  }
+  public function updateDetails(Request $request){
+    $data = $request->validate([
+      'email' => 'required|email',
+      'password' => [
+          'required',
+          Password::min(6)  // Ensures the password is at least 6 characters
+      ]
+  ]);
+
+  // Retrieve the email and the password from the request
+  $email = $request->input('email');
+  $hashedPassword = bcrypt($request->input('password'));
+
+  // Proceed with further logic (e.g., updating the user's password in the database)
+  // You can find the user by email and update their password, for example:
+  $user = User::where('email', $email)->first();
+  
+  if ($user) {
+      $user->password = $hashedPassword;
+      $user->save();
+
+      return response()->json(['reply' => 'Password updated successfully']);
+  } else {
+      return response()->json(['reply' => 'User not found']);
+  }
+   
   }
 }
