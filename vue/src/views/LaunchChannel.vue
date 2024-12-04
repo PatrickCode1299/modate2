@@ -100,7 +100,7 @@ onUpdated(()=>{
             <div class="d-flex"><button  style="margin-left: auto; margin-top: 10px;"  class="btn btn-success btn-sm" @click="cancelError">Close</button></div>
         </div>
         <form @submit="createChannel">
-            <h2 class="text-danger fs-6 m-4 text-center">Please Fill All Details Correctly and Crosscheck Before Submitting. This is your only chance...</h2>
+            <h2 class="text-danger fs-6 m-4 text-center">Please Fill All Details Correctly and Confirm.</h2>
             <div class="form-group m-2">
                 <label class="green-text-bold" for="firstname">Channel Name</label>
                 <input v-model="channel_name" type="text" placeholder="Your Channel Name example: Pew-Die-Pie" class="form-control rounded" required>
@@ -137,7 +137,8 @@ onUpdated(()=>{
     .edit-container{
     width: 100%;
     background-color: rgb(253, 253, 253);
-    height: auto;
+    height:100vh;
+    margin-top:50px;
     border-radius: 10px;
 }
 .green-text-bold{
@@ -166,6 +167,7 @@ onUpdated(()=>{
     background-color: rgb(253, 253, 253);
     height: auto;
     border-radius: 10px;
+    margin-top:50px;
 }
 .green-text-bold{
     color: green;
@@ -193,6 +195,7 @@ onUpdated(()=>{
     background-color: rgb(253, 253, 253);
     height: auto;
     border-radius: 10px;
+    margin-top:50px;
 }
 .green-text-bold{
     color: green;

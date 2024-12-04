@@ -151,7 +151,7 @@ console.log(error);
         <li     class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-microphone-slash"></i></span>Sound  <div class="p-2">
                <span  class="m-2 fs-6"><span style="color:red;" @click="setIsSoundTrue" v-if="isSound=='false'"><i class="fa-light fa-toggle-large-on"></i>Toggle Sound Off</span><span style="color:forestgreen;" @click="setIsSoundFalse" v-else ><i class="fa-light fa-toggle-large-off"></i>Toggle Sound On</span></span>
             </div></li>
-        <li     class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-user-pen"></i></span>Customize <div class="p-2">
+        <li     class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-user-pen"></i></span>Appearance<div class="p-2">
                <span  class="m-2 fs-6"><span style="color:red;" @click="setColorModeTrue" v-if="isColor=='dark'"><i class="fa-light fa-toggle-large-on"></i>Enable Light Mode</span><span style="color:forestgreen;" @click="setColorModeFalse" v-else ><i class="fa-light fa-toggle-large-off"></i>Enable Dark Mode</span></span>
             </div></li>
         <li  @click="logout"   class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-right-from-bracket"></i></span>Log Out</li>

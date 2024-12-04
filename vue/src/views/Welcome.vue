@@ -85,7 +85,9 @@ document.title='Welcome | Get back to real life.';
 <input required v-model="password" class="form-control" placeholder="your password" type="password">
 </div>
 <button style="margin-top:10px;">Log In</button>
-<p class="signup-info-tag">Don't have an accoun't yet <RouterLink class="signup" to="/signup">Sign up</RouterLink></p>
+<p class="signup-info-tag">Don't have an accoun't yet? <RouterLink class="signup" to="/signup">Sign up</RouterLink></p>
+<p class="signup-info-tag m-2">Forgot Password? <RouterLink class="signup" to="/reset">Reset</RouterLink></p>
+
 </form>
 </div>
 
@@ -344,7 +346,7 @@ height: 100%;
     border-radius: 10px;
 }
 .details-holder{
-    margin-top: 20px;
+    margin-top: 50px;
 }
 .signup-info-tag{
     color: gray;

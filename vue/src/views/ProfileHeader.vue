@@ -101,8 +101,14 @@ let personal_info=reactive({
      });
 
 personal_info.u_incomplete=localStorage.getItem('INCOMPLETE');
-function gotoSupport(){
-    alert("Please Contact Support");
+function updateProfile(){
+    let formData=new FormData();
+    formData.append("email",user_mail);
+    axiosClient.post("/sendUpdateProfileLink",formData).then(response=>{
+        alert(response.data.reply);
+    }).catch(error=>{
+        console.log(error);
+    });
 }
 </script>
 <template>
@@ -110,7 +116,7 @@ function gotoSupport(){
     <SideNav style="display:none;" />
     <div class="profile-header-container shadow-sm container p-4">
         <button style="width:100%;" v-if="personal_info.u_incomplete === 'true'" class="btn btn-success btn-block font-bold fs-6 edit btn-sm" @click="gotoEdit">Click Here and Update Details</button>
-        <button v-else style="width:100%;" class="btn btn-default btn-success edit btn-sm font-bold" @click="gotoSupport">Modify</button>
+        <button v-else style="width:100%;" class="btn btn-default btn-success edit btn-sm font-bold" @click="updateProfile">Modify</button>
         <form style="position:relative;" @submit="editProfilePic">
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Edit Profile Picture</label>
@@ -137,7 +143,7 @@ function gotoSupport(){
             <div class="form-group">
                 <label class="m-2 fs-5 form-label" for="Display Picture">Add Cover Text</label>
                 <h2 class="text-danger fs-6 m-2">Your cover text cannot be greater than 65 characters...</h2>
-                <textarea required v-model="cover_text" placeholder="I am a bored introvert currently working at Modate2..." class="form-control covertext" ></textarea>
+                <textarea required v-model="cover_text" placeholder="I am a bored introvert currently working at Hexarex..." class="form-control covertext" ></textarea>
             </div>
             <button id="cover_text_button" class="btn m-2 cover-text-btn btn-block btn-md btn-success">Add Cover Text</button>
         </form>

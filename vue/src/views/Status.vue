@@ -4,6 +4,7 @@ import SideNav from "../component/SideNav.vue";
 import LikeCommentSharesCount from "../component/LikeCommentSharesCount.vue";
 import VideoPlayerComponent from "../component/VideoPlayerComponent.vue";
 import UploadCommentProgress from "../component/UploadCommentProgress.vue";
+import ImageSliderForPost from "../component/ImageSliderForPost.vue";
 import * as toxicity from '@tensorflow-models/toxicity';
 import store from "../store";
 import { ref,reactive, watch, onMounted, onBeforeUpdate, onUpdated } from "vue";
@@ -462,12 +463,18 @@ let encoded_mail=btoa(user_mail);
   
   <a v-if="all_post_info.sharer_name !=undefined " :href="`/status/${all_post_info.postid}`"><p  style="margin-bottom: 5px; white-space:pre-wrap;" class="m-2 post-caption" v-html="url_to_link(replaceHashTagWithLink(all_post_info.caption))"></p></a>
   <p v-else style="margin-bottom: 5px; white-space:pre-wrap;" v-html="url_to_link(replaceHashTagWithLink(all_post_info.caption))" class="m-2 post-caption"></p>
-                <div class="flex-img">
-                        <img style="border-top-left-radius:10px;" v-if=" all_post_info.img_1 !=null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_1}`' />
-                        <img style="border-top-right-radius:10px;" v-if="all_post_info.img_2 !=null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_2}`' />
-                        <img style="border-bottom-left-radius:10px;" v-if="all_post_info.img_3 !=null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_3}`' />
-                        <img style="border-bottom-right-radius:10px;" v-if="all_post_info.img_4 !=null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_4}`' />
-                    </div>
+               <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="all_post_info.video === null && all_post_info.img_1 !== null"
+                        :user_email="all_post_info.post_email"
+                        :postid="all_post_info.postid"
+                        :images="[
+                            all_post_info.img_1 && `https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_1}`,
+                            all_post_info.img_2 && `https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_2}`,
+                            all_post_info.img_3 && `https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_3}`,
+                            all_post_info.img_4 && `https://res.cloudinary.com/fishfollowers/image/upload/${all_post_info.img_4}`
+                        ].filter(Boolean)"
+                    />
                     <div v-if=" all_post_info.video != null" class="flex-video">
                       <VideoPlayerComponent style="max-width:100%;" :video_info="{
                         source:all_post_info.video
@@ -485,8 +492,9 @@ let encoded_mail=btoa(user_mail);
 
    }" />
   <form class="comment-form"  v-if="user_mail!=null"  @submit="postComment">
+    <UploadCommentProgress :progress="showComment.progress" />
   <div class="comment-box-wrapper">
-  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; z-index:2; font-weight:4te00; margin-top: 0px; border:none;   width: 100%;"></textarea>
+  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; z-index:2; font-weight:400; margin-top: 0px; border:none; padding-left:20px;   width: 100%;"></textarea>
   <span     v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-sm btn-success"><i class="fa fa-paper-plane"></i></button></span>
     </div>
   <div id="tag_box" class="card tag_users_box card-default shadow-md cursor-pointer p-2">
@@ -506,7 +514,6 @@ let encoded_mail=btoa(user_mail);
     <source type="audio/wav" src="../notifications/unlike bell.wav" />
     </audio>
     <div  class="container-fluid all-comments">
-        <UploadCommentProgress :progress="showComment.progress" />
         <div v-for="x in showComment.reply" :id="x.comment_date+x.user_who_comment" style=" width: 100%;" v-if="user_new_comment.status === 'true'" class="card  card-default">
             <div  style="position:relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header d-flex">
                 <div style="margin-right: auto;"><img v-if="x.avatar === null" src="../pictures/profile.png" style="border-radius: 50%; object-fit: cover; width: 40px; height: 40px;"> <img v-else style="border-radius: 50%; object-fit: cover; width: 40px; height: 40px; " :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.avatar}`'/><span style="position:absolute; top:0px; margin-left:50px; margin-top:10px;">{{x.first_name}}
@@ -571,7 +578,8 @@ let encoded_mail=btoa(user_mail);
   justify-content: flex-start;
   width: 100%;
   margin-top:60px;
-  padding:0px 0px;
+  padding-left:10px;
+  padding-right:10px;
  }
  
 .flex-img{
@@ -721,10 +729,10 @@ let encoded_mail=btoa(user_mail);
 }
 
 .comment-box-wrapper > textarea {
-    flex: 1;
+    flex: 2;
     padding-left: 5px;
     border: 1px solid #ccc;
-    border-radius: 20px;
+    border-radius: 50px;
     resize: none;
     overflow-y: auto;
     max-height: 50px;
@@ -742,6 +750,7 @@ button {
     border-radius: 20px;
     font-weight: bold;
     padding: 8px 16px;
+   flex:1;
 }
 .comment-date{
     font-size:12px;

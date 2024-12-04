@@ -7,59 +7,33 @@ import { useRouter,useRoute } from "vue-router";
 import axiosClient from "../axios";
 const router=useRouter();
 const route=useRoute();
-const link_date=atob(route.params.current_day);
-if (link_date) {
-    // Parse the link_date into a Date object
-    const parsedLinkDate = new Date(link_date);
 
-    // Get the current date without time (to only compare the day, month, and year)
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
-
-    // Also reset the time for parsedLinkDate (assuming link_date has no time or you want to compare only the date)
-    parsedLinkDate.setHours(0, 0, 0, 0);
-
-    // Compare the dates
-    if (parsedLinkDate.getTime() === currentDate.getTime()) {
-       
-    }else {
-       router.push({
-        name:"Home"
-       });
-    }
-}
 const email=ref('');
-const password=ref('');
 const user={
     email:ref(email.value),
-    password:ref(password.value)
 }
 let err=ref();
+let server_res=ref('Enter your email, if you have an account with us you would be sent your password reset link.')
+function sendResetLink(e){
+    const resetButton = document.getElementById('reset_link_button');
+resetButton.setAttribute("disabled", "true");  // Disable button immediately
 
-if(localStorage.getItem('USER_COOKIE')){
-    let user_cookie=localStorage.getItem('USER_COOKIE');
-   store.dispatch('cookieisSet',user_cookie);
-   //router.push('/home');
-}else{
-    console.log('');
-}
-function updateNewPassword(e){
-    e.preventDefault();
-    let user_who_reset_password=atob(route.params.user_mail);
-    if(password.value.length < 6){
-     alert("Your password needs to be greater than six characters, ensure you use a strong password");
-    }else{
-    let formData=new FormData();
-    formData.append("email",user_who_reset_password);
-    formData.append("password",password.value);
-    axiosClient.post("/updateDetails",formData).
-    then(response=>{
-     alert(response);
-    }).catch(error=>{
-     console.log(error);
+user.email = email.value;
+let formData = new FormData();
+formData.append("email", user.email);
+e.preventDefault();
+
+axiosClient.post("/sendResetLink", formData)
+    .then(response => {
+        alert(response.data.reply);
+        server_res.value = 'Kindly check your inbox for your password reset link. If you do not find it, check your spam folder.';
+    })
+    .catch(error => {
+        console.log(error);
+    })
+    .finally(() => {
+        resetButton.removeAttribute("disabled");  // Re-enable the button regardless of the request outcome
     });
-    }
-    
 }
 </script>
 <template>
@@ -67,11 +41,18 @@ function updateNewPassword(e){
 <main>
 <div class="container signup-holder">
 <div>
-    <form @submit="updateNewPassword">
-    <label for="password" class="form-label">Enter Your New Password</label>
-    <input required v-model="password" placeholder="Enter your new password" class="form-control" type="password">   
-    <button style="margin-top:10px;">Update</button>
-    </form>
+<h2 class="fs-2 sign-up-header font-weight-bold m-2">Enter your email address to continue</h2>
+<form class="" method="POST" @submit="sendResetLink">
+<div v-if="err != null" class="d-flex justify-content-center align-items-center text-danger border-radius-5 text-bold bg-danger text-white p-2">
+{{ err }}
+</div>
+<div class="form-group">
+<label for="password" class="form-label">Your Email</label>
+<input required v-model="email" placeholder="patrick@example.com" class="form-control" type="email">
+</div>
+<button id="reset_link_button" style="margin-top:10px;">Reset</button>
+<p class="signup-info-tag m-2">{{ server_res }}</p>
+</form>
 </div>
 </div>
 </main>

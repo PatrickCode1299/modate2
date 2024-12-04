@@ -241,7 +241,7 @@ let balloon_num=ref(10);
         </div>  
     </div>
     <div class="user-info-card">        
-        <div class="bg-white shadow-sm user-info-card">
+        <div class="shadow-sm user-info-card">
             <div class="heading-edit-btn">
                 <div class="heading p-2">
                 <!--<h2 class="fs-5 p-2 user-info-title">Your information 

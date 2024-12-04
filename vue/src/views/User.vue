@@ -265,7 +265,7 @@ function formatNumber(num) {
        
     </div>
     <div class="user-info-card">
-        <div class="bg-white shadow-sm user-info-card ">
+        <div class=" shadow-sm user-info-card ">
             <div class="all-user-info">
                 <div class="heading">
                 
@@ -354,7 +354,7 @@ function formatNumber(num) {
     </div>
     </div>
    </div>
-   <div v-else class="d-flex justify-content-center bg-white shadow-sm p-4 align-items-center">
+   <div v-else class="d-flex justify-content-center  shadow-sm p-4 align-items-center">
     <h1 class="fs-6 font-bold"><i class="fa-light fs-4 fa-lock"></i> Only users who follow can see their contents..</h1>
    </div>
    </div>

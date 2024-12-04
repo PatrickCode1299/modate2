@@ -29,7 +29,9 @@ const ChannelPostComponent=defineAsyncComponent({
 const SharedPostComponent=defineAsyncComponent({
     loader: () => import("../component/SharedPostComponent.vue")
 });
-
+const StatusComponent=defineAsyncComponent({
+    loader: () => import("../component/Status.vue")
+});
 let user_mail;
 const router=useRouter();
 
@@ -71,8 +73,8 @@ updateUserLastActivity();
 </script>
 <template>
     {{ checkIfUserHasCompleteProfile() }}
-    <HomeTopHeader class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
-    <Header class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
+    <HomeTopHeader class="shadow-md" style="background-color:rgb(254,254,254); position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
+    <Header  class="shadow-md" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
     <div v-if="info.info_value==='true'" style="margin-top: 100px; flex-direction:column;" class=" incomplete d-flex justify-content-center align-items-center">
         <h2 class="fs-5 font-bold m-4">Click on profile icon above and complete your profile to be visible</h2>
@@ -88,6 +90,7 @@ updateUserLastActivity();
     <ChannelPostComponent v-if="route.params.cat=='channelposts'" />
     <SharedPostComponent v-else-if="route.params.cat=='sharedposts'" />
     <StoriesandPostComponent v-else-if="route.params.cat=='stories'" />
+    <StatusComponent v-else-if="route.params.cat=='status'" />
     <ScrollingVideoComponent v-else />
     </div>
 </template>

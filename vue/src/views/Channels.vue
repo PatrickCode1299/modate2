@@ -11,6 +11,8 @@ import { useRouter,useRoute } from "vue-router";
 import { onMounted,onBeforeUpdate, onBeforeMount, watch, ref, reactive, onUpdated } from "vue";
 import CreateChannelPost from "../component/CreateChannelPost.vue";
 import VideoPlayerComponent from "../component/VideoPlayerComponent.vue";
+import ImageSliderForPost from "../component/ImageSliderForPost.vue";
+import AdvertButtonComponent from "../component/AdvertButtonComponent.vue";
 
 let user_mail;
 const router=useRouter();
@@ -30,7 +32,8 @@ let channel_data=reactive({
     channel_avatar:"",
     channel_category:"",
     channel_cover:"",
-    channel_subscribers:""
+    channel_subscribers:"",
+    owner_last_seen:""
 });
 let channel_post=reactive({
     all_post:[
@@ -119,6 +122,9 @@ onMounted(() =>{
        info.info_value="true";
        localStorage.setItem('INCOMPLETE',info.info_value);
        
+    }else{
+        channel_data.owner_last_seen=response.data.last_seen;
+        
     }
 
 })).catch((error =>{
@@ -473,18 +479,31 @@ function replaceHashTagWithLink(text) {
                 <h2 class="text-center font-bold">You don't have any content on your channel, try creating.</h2>
                 </div>
                 <div  v-else class=" card all_channel_content card-default" v-for="x in channel_post.old_channel_post" :id="'post'+x.postid" style=" margin:0px auto; margin-top: 20px;">
-                   <div style="position: relative; width:100%; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto;"><RouterLink to='/profile'><img v-if="x.profile_picture === null" class="img-circle small-thumbnail" src="../pictures/profile.png" /><img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'></RouterLink></span><span v-if="!route.params.uid" class='m-2'><UserPostSettings :post_id="x.postid" /><span class="m-2">{{reduceNameLength(x.name)}}</span></span>
+                   <div style="position: relative; width:100%; background-color: rgba(255, 255, 255, 0.634);" class="card-header d-flex inline-flex p-2 panel-header">
+                    <span style="margin-right: auto;" class="d-flex">
+                    <RouterLink to='/profile'>
+                    <img v-if="x.profile_picture === null" class="img-circle small-thumbnail" src="../pictures/profile.png" />
+                    <img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'>
+                    </RouterLink>
+                    <ul style='margin-top:10px; margin-left:10px; color:lightslategray; font-size:13px;' class='inline-flex'>
+                    <li style=" width: 100%;" class='d-flex  list-unstyled'><span style="margin-right: auto;">{{moment(x.created_at).fromNow()}}</span></li>
+                    </ul></span><span v-if="!route.params.uid" class='m-2'><UserPostSettings :post_id="x.postid" /><span class="m-2">{{reduceNameLength(x.name)}}</span></span>
                    </div>
                     <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="channel_post.current_key_is_enabled != x.created_at"  class='p-2 fs-6' v-html="url_to_link(checkIfUserPostIsLong(replaceHashTagWithLink(x.caption)))"></p>
    
                     <p style="word-wrap: break-word;" v-if="channel_post.show_current_key === x.created_at">{{channel_post.expandText }}</p>
-                    <div class="flex-img">
-                        <img style="border-top-left-radius: 5px;" v-if="x.post_img1 != null"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img1}`' />
-                        <img style="border-top-right-radius: 5px;" v-if="x.post_img2 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img2}`' />
-                        <img style="border-bottom-left-radius: 5px;" v-if="x.post_img3 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img3}`' />
-                        <img style="border-bottom-right-radius: 5px;" v-if="x.post_img4 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img4}`' />
-                    </div>
+                    <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="x.video === null && x.post_img1 !== null"
+                        :user_email="x.email"
+                        :postid="x.postid"
+                        :images="[
+                            x.post_img1 && `https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img1}`,
+                            x.post_img2 && `https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img2}`,
+                            x.post_img3 && `https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img3}`,
+                            x.post_img4 && `https://res.cloudinary.com/fishfollowers/image/upload/${x.post_img4}`
+                        ].filter(Boolean)"
+                    />
                     <div v-if="x.video != null" class="flex-video">
                         <VideoPlayerComponent style="max-width:100%;" :video_info="{
                             source:x.video
@@ -505,26 +524,52 @@ function replaceHashTagWithLink(text) {
                     post_comments_count:x.comments,
                     post_shares_count:x.shares
                   }" :post_owner="x.email"    :post_id="x.postid" />
-                    <ul class='inline-flex'>
-                    <li style=" width: 100%;" class='d-flex justify-content-space-between list-unstyled'><span style="margin-right: auto;">{{moment(x.created_at).fromNow()}}</span></li>
-                    </ul>
+                    <AdvertButtonComponent :channel_info="{
+                        subscriber_count:channel_data.channel_subscribers,
+                        last_seen:channel_data.owner_last_seen,
+                        postid:x.postid
+                    }
+                    " :post_data="{
+                        name:x.name,
+                        caption:x.caption,
+                        profile_picture:x.profile_picture,
+                        post_img1:x.post_img1,
+                        post_img2:x.post_img2,
+                        post_img3:x.post_img3,
+                        post_img4:x.post_img4,
+                        postid:x.postid,
+                        video:x.video
+                    }"/>
                 </div>
                 </div>
                 <div :id="'post'+k.postid" class="m-2 card all_channel_content card-default" style="position: relative;" v-for="k in new_channel_post.fresh_new_post">
                     <div style=" background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto;"><RouterLink to='/profile'><img v-if="k.avatar === null" class="img-circle small-thumbnail" src="../pictures/profile.png"> <img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.avatar}`' class='img-circle small-thumbnail'></RouterLink></span><span v-if="!route.params.uid" class='m-2'><UserPostSettings :post_id="k.postid" />{{reduceNameLength(k.name)}}</span>
+                    <span style="margin-right: auto;" class="d-flex">
+                    <RouterLink to='/profile'>
+                    <img v-if="k.avatar === null" class="img-circle small-thumbnail" src="../pictures/profile.png"> 
+                    <img v-else :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.avatar}`' class='img-circle small-thumbnail'>
+                    </RouterLink>
+                    <ul class='inline-flex' style="margin-top:10px; margin-left:10px; font-size:13px; color:lightslategray;">
+                    <li style=" width: 100%;" class='d-flex justify-content-space-between list-unstyled'><span style="margin-right: auto;">{{moment(k.date).fromNow()}}</span></li>
+                    </ul></span><span v-if="!route.params.uid" class='m-2'><UserPostSettings :post_id="k.postid" />{{reduceNameLength(k.name)}}</span>
                    </div>
                     <p style="word-wrap: break-word; white-space:pre-wrap;" v-if="channel_post.current_key_is_enabled != k.date"  class='p-2 fs-6' v-html="url_to_link(checkIfUserPostIsLong(replaceHashTagWithLink(k.caption)))"></p>
    
                     <p style="word-wrap: break-word;" v-if="channel_post.show_current_key === k.date">{{channel_post.expandText }}</p>
-                    <div class="flex-img">
-                        <img v-if="k.post_img1 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img1}`' />
-                        <img v-if="k.post_img2 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img2}`' />
-                        <img v-if="k.post_img3 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img3}`' />
-                        <img v-if="k.post_img4 != null" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img4}`' />
-                    </div>
+                    <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="k.video === null && k.post_img1 !== null"
+                        :user_email="k.email"
+                        :postid="k.postid"
+                        :images="[
+                            k.post_img1 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img1}`,
+                            k.post_img2 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img2}`,
+                            k.post_img3 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img3}`,
+                            k.post_img4 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img4}`
+                        ].filter(Boolean)"
+                    />
                     <div v-if="k.video != null" class="flex-video">
-                        <VideoPlayerComponent :video_info="{
+                        <VideoPlayerComponent style="max-width:100%;" :video_info="{
                             source:k.video
                         }"/>
                     </div>
@@ -543,11 +588,22 @@ function replaceHashTagWithLink(text) {
                     post_comments_count:k.comments,
                     post_shares_count:k.shares
                   }" :post_owner="k.email"    :post_id="k.postid" />
-                 <!--  <button :id="k.created_at" v-if="!channel_post.short_post.includes(k.date) " @click="expandChannelText(k.date, k.caption)">Show More</button>
-                    <button  v-if="channel_post.isShortBtn === k.date " @click="reduceChannelText(k.date, k.caption)">Show Less</button>-->
-                    <ul class='inline-flex'>
-                    <li style=" width: 100%;" class='d-flex justify-content-space-between list-unstyled'><span style="margin-right: auto;">{{moment(k.date).fromNow()}}</span></li>
-                    </ul>
+                    <AdvertButtonComponent :channel_info="{
+                        subscriber_count:channel_data.channel_subscribers,
+                        last_seen:channel_data.owner_last_seen,
+                        postid:k.postid
+                    }
+                    " :post_data="{
+                        name:k.name,
+                        caption:k.caption,
+                        profile_picture:k.avatar,
+                        post_img1:k.post_img1,
+                        post_img2:k.post_img2,
+                        post_img3:k.post_img3,
+                        post_img4:k.post_img4,
+                        postid:k.postid,
+                        video:k.video
+                    }"/>
                 </div>
                 </div>
         <div  v-else v-if="info.user_has_channel != ''" class=" channel-info justify-content-center align-items-center">
@@ -659,13 +715,7 @@ border-radius: 5px;
     border-radius: 20px;
     
 }
-.flex-img > img{
-    margin-left: 2px;
-    object-fit: cover;
-    width: 100px;
-    height: 100px;
-    
-}
+
 .flex-img{
     display: flex;
     flex-direction: row;

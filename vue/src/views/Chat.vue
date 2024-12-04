@@ -623,6 +623,7 @@ z-index: 0;
     width:100%; 
     margin:0px auto;  
     height:80vh;
+    border-radius:20px;
 }
 }
 @media screen and (min-width:1224px) {
@@ -770,6 +771,7 @@ width:50%;
     width:100%; 
     margin:0px auto;  
     height:80vh;
+    border-radius:20px;
 }
 }
 

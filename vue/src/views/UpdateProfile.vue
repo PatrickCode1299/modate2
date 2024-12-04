@@ -4,8 +4,7 @@ import SideNav from "../component/SideNav.vue";
 import store from "../store";
 import { ref } from "vue";
 import axiosClient from "../axios";
-import { useRouter } from "vue-router";
-const user_mail=localStorage.getItem('USER_MAIL');
+import { useRouter, useRoute } from "vue-router";
 const countryList = {
   AF: "Afghanistan", AL: "Albania", DZ: "Algeria", AD: "Andorra", AO: "Angola", AG: "Antigua and Barbuda", AR: "Argentina", 
   AM: "Armenia", AU: "Australia", AT: "Austria", AZ: "Azerbaijan", BS: "Bahamas", BH: "Bahrain", BD: "Bangladesh", 
@@ -90,15 +89,42 @@ function updateProfile(e){
    });
    
 }
+const route=useRoute();
+const user_mail=localStorage.getItem('USER_MAIL');
+const link_date=atob(route.params.current_day);
+if (link_date) {
+    // Parse the link_date into a Date object
+    const parsedLinkDate = new Date(link_date);
 
+    // Get the current date without time (to only compare the day, month, and year)
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+
+    // Also reset the time for parsedLinkDate (assuming link_date has no time or you want to compare only the date)
+    parsedLinkDate.setHours(0, 0, 0, 0);
+
+    // Compare the dates
+    if (parsedLinkDate.getTime() === currentDate.getTime()) {
+       const current_email=atob(route.params.user_mail);
+       if(current_email != user_mail){
+        router.push({
+        name:"Home"
+       });
+       }
+    }else {
+       router.push({
+        name:"Home"
+       });
+    }
+}
 
 </script>
 <template>
-    <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
+    <Header style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
     <div class="container p-4 shadow-sm edit-container">
         <form @submit="updateProfile">
-            <h2 class="text-danger fs-6 m-4 text-center">Please Fill All Details Correctly and Crosscheck Before Submitting</h2>
+            <h2 class="text-danger fs-6 m-4 text-center">Please Fill All Details Correctly Before Submitting</h2>
             <div class="form-group m-2">
                 <label class="green-text-bold" for="firstname">First Name</label>
                 <input v-model="first_name" type="text" placeholder="Your First Name e.g Patrick" class="form-control rounded" required>
@@ -119,7 +145,7 @@ function updateProfile(e){
                 </select>
             </div>
             <div class="custom-select form-group m-2">
-    <label class="green-text-bold" for="Location">Your Residence</label>
+    <label class="green-text-bold" for="Location">Current Country</label>
     <div class="select-box" @click="toggleDropdown">
       <div class="selected">
         <span v-if="state" :class="`flag-icon flag-icon-${state.toLowerCase()}`"></span>
@@ -161,7 +187,7 @@ function updateProfile(e){
                 <label class="green-text-bold"  for="Phone Number">Phone Number</label>
                 <input v-model="phone" type="text" placeholder="Phone Number e.g +2349031227654" class="form-control rounded" required>
             </div>
-           <div class="d-flex submit"><button class="btn submit-btn btn-md btn-success">Complete Profile</button></div> 
+           <div class="d-flex submit"><button class="btn submit-btn btn-md btn-success">Update Profile</button></div> 
         </form>
     </div>
 </template>
