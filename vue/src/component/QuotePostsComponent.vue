@@ -218,7 +218,7 @@ function replaceHashTagWithLink(text) {
  <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" /><div class="stories-and-div-container" Ss>
 <div class="user-post-holder" style="margin-top:40px;">
    <span v-if="Loader==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
-   <div v-if="all_post.shared_post != null" v-for="i in all_post.shared_post"  style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
+   <div v-if="all_post.shared_post != null" v-for="i in all_post.shared_post"  style=' border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
                     <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}<ul class='inline-flex'>
                     <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
@@ -259,7 +259,7 @@ function replaceHashTagWithLink(text) {
                     
          
     </div>
-    <div v-if="all_post.shared_post != null" v-for="i in new_friend_post.fresh_new_post"  style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
+    <div v-if="all_post.shared_post != null" v-for="i in new_friend_post.fresh_new_post"  style=' border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
                     <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}<ul class='inline-flex'>
                     <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>

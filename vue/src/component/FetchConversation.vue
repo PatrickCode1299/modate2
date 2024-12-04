@@ -142,6 +142,7 @@ onMounted(async()=>{
         console.log(e);
     });
     all_post.shared_post=response.data.reply;
+    
 });
 onMounted(()=>{
     
@@ -254,7 +255,9 @@ function replaceHashTagWithLink(text) {
 
     
    </div>
-   <span v-if="Loader==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
+   <div v-if="all_post.shared_post.length === 0">
+    <h3 class="fs-4 m-3 font-semibold">There are no conversations yet</h3>
+   </div>
    <div v-if="all_post.shared_post != null" v-for="i in all_post.shared_post"  style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
                     <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}<ul class='inline-flex'>

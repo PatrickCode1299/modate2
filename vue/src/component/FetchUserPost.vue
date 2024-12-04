@@ -9,7 +9,8 @@ import { RouterLink,useRouter } from 'vue-router';
 import LikeShareComment from "./LikeShareComment.vue";
 import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
-import VideoPlayerComponent from './VideoPlayerComponent.vue';
+import PostSkeletonLoader from './PostSkeletonLoader.vue';
+import CreateTextPostComponent from './CreateTextPostComponent.vue';
 const latest_post=defineProps(['latest']);
 const router=useRouter();
 const user_mail=localStorage.getItem('USER_MAIL');
@@ -252,7 +253,7 @@ function replaceHashTagWithLink(text) {
 
     
    </div>
-   <span v-if="Loader==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
+   <PostSkeletonLoader v-if="keep_all_post.length === 0" style="width:80%;"/>
 
     <div v-if="keep_all_post.length !==0"  v-for="x in keep_all_post" style='border: none; border-radius: 5px;' class=' card  post-container card-default'>
     <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex p-2 panel-header'>
@@ -308,7 +309,7 @@ function replaceHashTagWithLink(text) {
    
    </div>
 </div> 
-
+<CreateTextPostComponent />
 </div> 
 
 

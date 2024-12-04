@@ -42,7 +42,6 @@ const latest_post_data=reactive({
 <template>
 <div class="stories-and-div-container">
 <div style="position: relative;" class="user-post">
-    <StoriesComponent  />
     <FetchChannelPost style="width: 100%; margin-top:0px;" :latest="latest_post_data" />
 </div>
 </div>

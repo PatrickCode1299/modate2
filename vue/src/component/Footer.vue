@@ -2,7 +2,8 @@
 const footeritems=[
     {
         header:"Join Hexarex",
-        firstinfo:new Date().toLocaleString()
+        firstinfo:new Date().toLocaleString(),
+        url:"signup"
     },
     {
         header:"Company",
@@ -38,7 +39,7 @@ const footeritems=[
 <div class="container-fluid app-footer">
 <div class="d-flex footer-link ">
 <ul class="list" v-for="f in footeritems">
-<h2 class="f-5 list-unstyled bold-text">{{f.header }}</h2>
+<h2 class="f-5 list-unstyled bold-text"><RouterLink :to='`${f.url}`'>{{f.header }}</RouterLink></h2>
 <li class="small-text">{{ f.firstinfo }}</li>
 <li class="small-text">{{ f.secondinfo }}</li>
 <li class="small-text">{{ f.thirdinfo }}</li>

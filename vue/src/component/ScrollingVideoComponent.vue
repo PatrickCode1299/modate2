@@ -26,9 +26,10 @@
         @waiting="handleWaiting(index)"
         @playing="handlePlaying(index)"
         @click="togglePlayPause(index)"
+        @loadedmetadata="setDuration(index)" 
         @timeupdate="handleTimeUpdate($event, index)"
       ></video>
-
+      
       <!-- Loading Spinner -->
       <div v-if="loading[index]" class="loading-spinner">
         <div class="spinner"></div>
@@ -39,15 +40,29 @@
           <span style="display:none;" id="pause"><i class="fas fa-pause"></i></span>
         </button>
       </div>
-
+     
       <!-- Overlay and action buttons -->
       <div class="overlay p-2">
         <div class="profile">
-          <img :src="getProfilePictureUrl(item.profile_picture)" alt="profile" />
+          <img v-if="item.profile_picture === null" style="object-fit:cover;"  src="../pictures/profile.png" alt="profile" />
+          <img v-else  :src="getProfilePictureUrl(item.profile_picture)" alt="profile" />
           <p><RouterLink :to="`/channel/${item.email}`">{{ item.name }}</RouterLink></p>
         </div>
         <p class="caption">{{ checkIfFriendPostIsLong(item.caption) }}</p>
-
+        <input 
+      type="range" 
+      class="seek-slider"
+      min="0" 
+      :max="duration" 
+      step="0.1" 
+      v-model="currentTime" 
+      @input="seekVideo"
+      @change="seekVideo"
+    />
+    <div class="time-display">
+      <span>{{ formatTime(currentTime) }}</span> / 
+      <span>{{ formatTime(duration) }}</span>
+    </div>
         <!-- Modern Action Bar -->
         <div class="actions">
           <button @click="previousVideo(index)"  class="btn video-control-btn btn-md font-bold m-2"><i class="fa-solid fa-arrow-up"></i></button>
@@ -80,13 +95,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick, onUnmounted } from 'vue';
+import { ref, onMounted,  nextTick, onUnmounted, onBeforeUnmount } from 'vue';
 import axiosClient from '../axios';
 import SkeletonLoader from "./ScrollingVideoSkeletonLoader.vue";
 import ScrollVideoLikeShareCommentComponent from "./ScrollVideoLikeShareCommentComponent.vue"
 import { RouterLink } from 'vue-router';
 const user_mail = localStorage.getItem('USER_MAIL');
 const replies = ref([]);
+
+const currentTime = ref(0);
+const duration = ref(0);
 
 const activeIndex = ref(0);
 const exitingIndex = ref(null);
@@ -149,6 +167,12 @@ const togglePlayPause = (index) => {
   }
 };
 
+function setDuration(index){
+  const videoElement = document.querySelectorAll('video')[index];
+  duration.value = videoElement.duration;
+  
+}
+
 function nextVideo(index) {
   let end_of_array = replies.value.length - 1;
   exitingIndex.value = activeIndex.value; // Mark the current index as exiting
@@ -181,8 +205,9 @@ function previousVideo(index) {
 const handleTimeUpdate = (event, index) => {
   const videoElement = event.target;
   if (videoElement.currentTime >= videoElement.duration - 0.5) {
-    playNextVideo(index); // Call this when video is almost done
+    playNextVideo(index); 
   }
+  currentTime.value = videoElement.currentTime;
 };
 
 function playNextVideo(index) {
@@ -292,7 +317,7 @@ onBeforeUnmount(() => {
 
 onMounted(async () => {
   const response = await axiosClient.post('/fetchAllChannelsVideo', { email: user_mail }).catch(e => {
-    console.log(e);
+    //console.log(e);
   });
   response.data.reply.forEach(data => {
     replies.value.push(data);
@@ -308,7 +333,37 @@ const handleNetworkChange = () => {
     }
   }
 };
+const initializeVideo = () => {
+  duration.value = videoPlayer.value.duration;
+};
 
+
+
+// Seek the video to a specific time
+const seekVideo = () => {
+  const videoElement = document.querySelectorAll('video')[activeIndex.value];
+  if (videoElement) {
+    videoElement.currentTime = currentTime.value;
+  }
+};
+
+// Format time (MM:SS or HH:MM:SS)
+const formatTime = (seconds) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  return hrs > 0
+    ? `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    : `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+const stopVideo = () =>{
+  const videoElement = document.querySelector(`.video-container.active video`);
+if (videoElement) {
+  videoElement.pause();
+  videoElement.src = '';
+  videoElement.currentTime = 0;
+  }
+}
 onMounted(() => {
   window.addEventListener('online', handleNetworkChange);
   window.addEventListener('offline', handleNetworkChange);
@@ -321,7 +376,12 @@ onUnmounted(() => {
   if (videoElement) {
   videoElement.pause();
   videoElement.src = '';
+  videoElement.currentTime = 0;
   }
+});
+
+onBeforeUnmount(() => {
+  stopVideo();
 });
 </script>
   
@@ -516,6 +576,24 @@ input[type="text"] {
   width: 60px;
   height: 60px;
   animation: spin 1s linear infinite;
+}
+
+.seek-slider{
+  cursor: pointer;
+  background: #ddd;
+  height: 8px;
+  border-radius: 5px;
+  width:100%;
+}
+.seek-slider::-webkit-slider-runnable-track {
+  background: #444;
+  height: 8px;
+  border-radius: 5px;
+}
+
+.time-display {
+  font-size: 14px;
+  color: #555;
 }
 .loading-spinner {
   position: absolute;

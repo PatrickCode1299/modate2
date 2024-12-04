@@ -10,6 +10,8 @@ import LikeShareComment from "./LikeShareComment.vue";
 import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
 import VideoPlayerComponent from './VideoPlayerComponent.vue';
+import PostSkeletonLoader from './PostSkeletonLoader.vue';
+import ImageSliderForPost from './ImageSliderForPost.vue';
 const latest_post=defineProps(['latest']);
 
 const user_mail=localStorage.getItem('USER_MAIL');
@@ -218,13 +220,15 @@ function replaceHashTagWithLink(text) {
   return `<a style='color:#1DA1F2;' href="/related/${tag}">${match}</a>`;
 });
 }
+
+
 </script>
 <template>
 <div class="stories-and-div-container">
 <div class="user-post-holder">
     {{showlatest()}}
 
-    <div v-if="newest_post.name != null" id="user-post" style='border: none; border-radius: 0px;' class='card m-2 p-2 post-container card-default'>
+    <div v-if="newest_post.name != null" id="user-post" style='border:none; border-radius: 0px;' class='card m-2 p-2 post-container card-default'>
     <div style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
         <span style="margin-right: auto; display:flex;"><img loading="lazy" v-if="newest_post.avatar === null" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${newest_post.avatar}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(newest_post.name)}}<ul class='inline-flex'>
         <li class='list-unstyled ' style='font-size:12px; color:lightslategray;'>{{moment(newest_post.date).fromNow()}}</li>
@@ -253,8 +257,8 @@ function replaceHashTagWithLink(text) {
 
     
    </div>
-   <span v-if="Loader==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
-<div v-if="all_post.one_channel_post != null" v-for="i in all_post.one_channel_post"  style='border: none; border-radius: 5px;' class='card p-2 post-container card-default'>
+   <PostSkeletonLoader v-if="all_post.one_channel_post.length === 0" style="width:80%;"/>
+<div v-if="all_post.one_channel_post != null" v-for="i in all_post.one_channel_post"  style='border:none; border-radius: 5px;' class='card p-2 post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
                     <span style="margin-right: auto; display: flex;"><RouterLink :to='`/channel/${i.email}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span @mouseenter="showChanneInfo(i.id)"  @mouseleave="hideChannelInfo(i.id)" class="fs-6 m-2">{{reduceNameLength(i.name)}}<i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="far fa-check-circle"></i><p style='font-size:12px; margin-left:0px;'>{{i.first_name + '\t' + i.last_name}}</p></span> <ul class='inline-flex'>
                     <li style="font-size: 10px;color:lightslategrey; margin-top:12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
@@ -262,13 +266,19 @@ function replaceHashTagWithLink(text) {
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"  class='p-2 fs-6'></p></RouterLink> 
-   
-                    <div class="flex-img">
-                        <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
-                        <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />
-                        <img v-if="i.post_img3 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img3}`' />
-                        <img v-if="i.post_img4 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img4}`' />
-                    </div>
+                        <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="i.video === null && i.post_img1 !== null"
+                        :user_email="i.email"
+                        :postid="i.postid"
+                        :images="[
+                            i.post_img1 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`,
+                            i.post_img2 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`,
+                            i.post_img3 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img3}`,
+                            i.post_img4 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img4}`
+                        ].filter(Boolean)"
+                    />
+
                     <div v-if="i.video != null" class="flex-video">
                         <VideoPlayerComponent style="width:100%; padding:0px;" :video_info="{
                             source:i.video
@@ -304,12 +314,18 @@ function replaceHashTagWithLink(text) {
                    </div>
                    <RouterLink :to='`/status/${k.postid}`'><p style="white-space:pre-wrap; word-wrap: break-word;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(k.caption)))"  class='p-2 fs-6'></p></RouterLink>
    
-                    <div class="flex-img">
-                        <img v-if="k.img_1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.img_1}`' />
-                        <img v-if="k.img_2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.img_2}`' />
-                        <img v-if="k.img_3 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.img_3}`' />
-                        <img v-if="k.img_4 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${k.img_4}`' />
-                    </div>
+                   <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="k.video === null && k.post_img1 !== null"
+                        :user_email="k.email"
+                        :postid="k.postid"
+                        :images="[
+                            k.post_img1 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img1}`,
+                            k.post_img2 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img2}`,
+                            k.post_img3 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img3}`,
+                            k.post_img4 && `https://res.cloudinary.com/fishfollowers/image/upload/${k.post_img4}`
+                        ].filter(Boolean)"
+                    />
                     <div v-if="k.video != null" class="flex-video">
                         <VideoPlayerComponent style="width:100%;" :video_info="{
                             source:k.video

@@ -114,6 +114,8 @@ function cancelVideo(){
     let video=document.getElementById("video");
     video.pause();
     video.src='';
+    channel_video.video='';
+    
 }
 let video_text=ref('');
 function setVideo(e){
@@ -130,7 +132,7 @@ function setVideo(e){
             url += '#t=0,10';
 
             video.src = url;
-
+            
             // Play the video after setting the source to ensure it starts buffering
             video.play();
         
@@ -179,8 +181,8 @@ function uploadVideo(e){
     </div>
     
 </form>
-<form style="border-radius:5px;" id="form-video" @submit="uploadVideo" class="p-2 form-video" >
-<span @click="cancelVideo" style="color: white; margin-bottom:0px;" class="cancel-video font-bold m-2 fs-1">&times;</span>
+<form style="border-radius:5px;" id="form-video" @submit="uploadVideo" class="p-2 form-video shadow-md" >
+<span @click="cancelVideo" style="color: black; margin-bottom:0px;" class="cancel-video font-bold m-2 fs-1">&times;</span>
     <div style="margin-top:0px;" class="d-flex justify-content-center align-items-center video-img-post">
         <video style="width:100%; height:300px;" id="video" controls>
             
@@ -216,7 +218,8 @@ function uploadVideo(e){
      position: fixed; 
      width:100%; 
      display: none; 
-     background-color: rgba(0, 0, 0, 0.803); 
+     background-color:white; 
+    border:1px solid grey;
      top:0px; 
      left:0%; 
      right:0%;
@@ -247,14 +250,15 @@ function uploadVideo(e){
     position: fixed; 
     width:50%; 
     display: none; 
-    background-color: rgba(0, 0, 0, 0.824);  
+    background-color:white; 
+    border:1px solid grey;
     top:10%; 
     left:20%; 
     right:20%;
     height: auto;
 }
 .video-upload-btn{
-    width:auto;
+    width:100%;
 }
 }
 @media screen and (min-width:1224px) {
@@ -278,7 +282,9 @@ function uploadVideo(e){
     position: fixed; 
     width:50%; 
     display: none; 
-    background-color: rgba(0, 0, 0, 0.824); 
+    background-color:white; 
+    border:1px solid grey;
+    z-index:1;
     top:10%; 
     left:20%; 
     right:20%;

@@ -76,10 +76,21 @@ document.getElementById(post_id).style.color="red";
 let router=useRouter();
 
 
-function share(){
-    let post_link='https://hexarex.com/status/'+post_id;
-    let link=navigator.clipboard.writeText(post_link);
-    alert("Link Copied to Clipboard successfully");
+async function share(){
+  let post_link='https://hexarex.com/status/'+post_id;
+  const shareData = {
+  title: "From Hexarex",
+  text: "See this Post on Hexarex.com",
+  url:post_link,
+};
+
+   
+    try {
+    await navigator.share(shareData);
+  } catch (err) {
+    console.log(err);
+  }
+
 }
 
 

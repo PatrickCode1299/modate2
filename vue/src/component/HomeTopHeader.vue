@@ -4,7 +4,7 @@
         <RouterLink v-if="!store.state.user.token" class="navbar-brand p-2 fs-2" to="/">
           <img src="../landing/hexarex.png" style="height:30px; width:30px;">
         </RouterLink>
-        <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled p-2 fs-5">
+        <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled fs-5">
           <RouterLink
             :to="link.location"
             @click="link.function ? link.function() : null"
@@ -120,6 +120,13 @@
         property: "link",
         itemicon: "fa-light fa-tv"
       },
+      {
+        linkname: "Status",
+        location: "/home/status",
+        property: "link",
+        itemicon: "fa-light fa-circle-notch"
+      },
+    
     
     ];
   } else {

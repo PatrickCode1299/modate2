@@ -1,52 +1,182 @@
+
 <script setup>
 import store from '../store';
 import axiosClient from '../axios';
-import { computed, onMounted,onBeforeUnmount, onUpdated, reactive, ref, watch } from 'vue';
-import FetchConversation from './FetchConversation.vue';
+import { reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import StoriesComponent from './StoriesComponent.vue';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 const router=useRouter();
 const user_mail=localStorage.getItem('USER_MAIL');
-const user_friends_story_length=ref('');
 let caption=ref();
 let hold_picture=reactive({
     picture:"",
     isLoadingStoryPic:"true",
 });
-axiosClient.post("/profile",{email:user_mail}).then((response=>{
-    if(response.data.info==="false"){
-      return;
-    }else{
-        hold_picture.isLoadingStoryPic="false";
-        localStorage.setItem('FIRSTNAME',response.data.first_name);
-        localStorage.setItem('LASTNAME',response.data.last_name);
-        localStorage.setItem('LOCATION',response.data.location);
-        localStorage.setItem('PHONE',response.data.phone_number);
-        localStorage.setItem('PICTURE',response.data.profile_picture);
-        localStorage.setItem('COVER_PHOTO',response.data.coverPhoto);
-        hold_picture.picture=localStorage.getItem('PICTURE');
-    }
-}));
-const latest_post_data=reactive({
-    date:sessionStorage.getItem('NEW_POST_DATE'),
-    name:sessionStorage.getItem('NEW_POSTER_NAME'),
-    avatar:sessionStorage.getItem('NEW_POST_AVATAR'),
-    caption:sessionStorage.getItem('NEW_POST_CAPTION'),
-    postid:sessionStorage.getItem('NEW_POST_POSTID'),
-    email:sessionStorage.getItem('NEW_POST_EMAIL'),
+watch(caption, ()=>{
+if(caption.value.trim().length > 0){
+   let post_button=document.getElementById("post-button");
+   post_button.removeAttribute("disabled");
+}else{
+    let post_button=document.getElementById("post-button");
+   post_button.setAttribute("disabled","true");
+}
 });
+let taglist=reactive({
+tagged_users:[],
+tagged_users_result:{}
+});
+let all_tagged_users=reactive({
+info:[],
+value:[]
+}); 
+watch(caption, ()=>{
+let str = caption.value;
+let pattern = /\B@[a-z0-9_-]+/gi;
+let user_match=str.match(pattern);
+if(user_match === null)
+return;
+else{
+    user_match.forEach(x => {
+    taglist.tagged_users=x;
+    
+});
+document.getElementById("tag_box").style.display="block";
+let formData=new FormData();
+let tagged_user=taglist.tagged_users.substring(1);
+formData.append('search_info',tagged_user);
+axiosClient.post("/Search",formData).then(response=>{
+taglist.tagged_users_result=response.data.reply;
+}).catch(e=>{
+    console.log(e);
+})
+
+}
+
+});
+function sendUserPost(e){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if(all_tagged_users.info.length==0){
+    axiosClient.post("/createUserPost",{email:user_mail, user_caption:caption.value, tagged_users:""}).then(response=>{
+        findNewestPost();
+    }).catch(e=>{
+        alert("Network Error");
+    });
+    }else{
+        axiosClient.post("/createUserPost",{email:user_mail, user_caption:caption.value, tagged_users:all_tagged_users.info}).then(response=>{
+        findNewestPost();
+    }).catch(e=>{
+        alert("Network Error");
+    });
+    }
+   
+    caption.value="";
+}
+function findNewestPost(){
+    axiosClient.post("/fetchNewPost",{email:user_mail}).then(response=>{
+    from_user_sent.date=response.data.reply.created_at;
+    from_user_sent.name=response.data.reply.name;
+    from_user_sent.avatar=response.data.reply.avatar;
+    from_user_sent.caption=response.data.reply.caption;
+    from_user_sent.email=response.data.reply.email;
+    from_user_sent.postid=response.data.reply.postid;
+
+
+    }).catch(err=>{
+        console.log(err);
+    });
+}
+let from_user_sent=reactive({
+    date:"",
+    name:"",
+    avatar:"",
+    caption:"",
+    email:"",
+    postid:""
+});
+
+
+
+
+
+watch(from_user_sent, ()=>{
+    sessionStorage.removeItem('NEW_POST_DATE');
+    sessionStorage.removeItem('NEW_POSTER_NAME');
+    sessionStorage.removeItem('NEW_POST_AVATAR');
+    sessionStorage.removeItem('NEW_POST_CAPTION');
+    sessionStorage.setItem('NEW_POST_DATE',from_user_sent.date);
+    sessionStorage.setItem('NEW_POSTER_NAME',from_user_sent.name);
+    sessionStorage.setItem('NEW_POST_AVATAR',from_user_sent.avatar);
+    sessionStorage.setItem('NEW_POST_CAPTION',from_user_sent.caption);
+    sessionStorage.setItem('NEW_POST_POSTID',from_user_sent.postid);
+    sessionStorage.setItem('NEW_POST_EMAIL',from_user_sent.email);
+    location.reload();
+});
+
+
+
+
+
+function setTaggedUser(email,first_name,last_name){
+    let user_to_get_tagged_email=atob(email);
+    all_tagged_users.info.push(user_to_get_tagged_email);
+    let user_full_name=first_name +'\t'+ last_name;
+    all_tagged_users.value.pop();
+    all_tagged_users.value.push(user_full_name);
+    let name_suggestion_from_user=caption.value;
+    //let string_pattern='/'+name_suggestion_from_user.substring(1)+'/g';
+   let user_occurence=all_tagged_users.info.filter(x => x==user_to_get_tagged_email).length;
+   if(user_occurence > 1){
+   for(let i=0; i<all_tagged_users.info.length; i++){
+    if(all_tagged_users.info[i]==user_to_get_tagged_email){
+        all_tagged_users.info.splice(i,1);
+        
+    }
+   }
+   for(let i=0; i<all_tagged_users.value.length; i++){
+    if(all_tagged_users.value[i]==user_full_name){
+        all_tagged_users.value.splice(i,1);
+       
+    }
+   }
+   }
+   let current_caption=caption.value;
+   caption.value=current_caption.replace(/@\w+/,"")+all_tagged_users.value.join(" ");
+   document.getElementById("tag_box").style.display="none";
+    
+    
+}
+function hideTagBox(){
+    let tag_box=document.getElementById("tag_box");
+    tag_box.style.display="none";
+}
+function hideTextPost(){
+    document.getElementById('text_post').style.display='none';
+}
+function createNewPost(){
+    document.getElementById('text_post').style.display='block';
+}
 </script>
 <template>
 <div class="stories-and-div-container">
-<div style="position: relative;" class="user-post">
-    
-    <FetchConversation style="width: 100%; margin-top:0px;" :latest="latest_post_data" />
-</div>
-</div>
 
+<div style="position: relative;" class="user-post">
+    <button @click="createNewPost" id="create_new_post" class="btn create_new_post  p-2 m-2 fs-1 btn-md">&plus;</button>
+    <div id="text_post" class='user-text-post shadow-md'>
+    <span @click="hideTextPost" class="back-arrow font-bold fs-1 cursor-pointer">&times;</span>
+    <form style="margin:0px auto;" @submit="sendUserPost" class="user-posting-form">
+        <textarea style="outline: none; outline: 0; outline-style: none; margin:0px;  " v-model="caption" class="post-text form-control" placeholder="Feeling good write something.."></textarea>
+        <span class="position-to-right"><button style="margin-top:5px;" id="post-button" disabled   class="btn border-20px btn-md btn-success">Post</button></span>
+    </form>
+    <div id="tag_box" class="card tag_users_box card-default cursor-pointer p-2" style="position: absolute; top:155px; z-index:1; left:10px; overflow-x: hidden;  overflow-y: scroll;  height:200px; border-radius:5px; width:auto;">
+        <div style="display:block;"><span @click="hideTagBox" class="m-2"><i class="fa fa-arrow-left"></i></span></div>
+            <li @click="setTaggedUser(u.email,u.first_name,u.last_name)" class="list-unstyled m-4" v-for="u in taglist.tagged_users_result"><img v-if="u.profile_picture === null || u.profile_picture === 'null'" loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  src="../pictures/profile.png"  ><img v-else loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  :src="`https://res.cloudinary.com/fishfollowers/image/upload/${u.profile_picture}`"   ><span class="m-2">{{ u.first_name + '\t' + u.last_name }}</span></li>
+    </div>
+    </div>
+</div>
+</div>
 </template>
 <style scoped>
 @media screen and (min-width:320px) {
@@ -130,7 +260,7 @@ border-radius: 10px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 0px;
     width: 100%;
     padding:0px 0px;
 
@@ -230,7 +360,7 @@ background-color:rgba(0,0,0,0.8);
 }
 .spinner {
   position: absolute;
-  top: 50%;
+  top: 80%;
   left: 50%;
   transform: translate(-50%, -50%);
   border: 8px solid #f3f3f3; /* Light grey */
@@ -353,10 +483,10 @@ border-radius: 10px;
 }
 .stories-and-div-container{
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 0px;
     width: 50%;
 
 }
@@ -579,10 +709,11 @@ border-bottom-right-radius: 5px;
 }
 .stories-and-div-container{
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 0px;
+    margin:0px auto;
     width: 50%;
 
 }

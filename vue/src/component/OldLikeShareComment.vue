@@ -9,6 +9,7 @@ import axiosClient from '../axios';
 import {ref} from "vue";
 import { watch } from 'vue';
 import { reactive } from 'vue';
+import ImageSliderForPost from './ImageSliderForPost.vue';
 let user_post_id=defineProps(['post_id','post_content','post_owner']);
 let post_id=user_post_id.post_id;
 let post_content=user_post_id.post_content;
@@ -171,11 +172,23 @@ function hidePost(boxid){
     let quote_editor=document.getElementById(boxid);
     quote_editor.style.display='none'; 
 }
-function share(){
-    let post_link='https://hexarex.com/status/'+post_id;
-    let link=navigator.clipboard.writeText(post_link);
-    alert("Link Copied to Clipboard successfully");
+async function share(){
+  let post_link='https://hexarex.com/status/'+post_id;
+  const shareData = {
+  title: "From Hexarex",
+  text: "See this Post on Hexarex.com",
+  url:post_link,
+};
+
+   
+    try {
+    await navigator.share(shareData);
+  } catch (err) {
+    console.log(err);
+  }
+
 }
+
 function bookMark(post_id){
     let formData=new FormData();
     formData.append("post_id",post_id);
@@ -259,7 +272,7 @@ function hideTagBox(postid){
 }
 </script>
 <template>
-    <div :id='`quote${post_id}`' class=" quote-editor">
+    <div :id='`quote${post_id}`' class=" quote-editor shadow-sm">
         <span style='color:black; cursor:pointer;' @click="hidePost('quote'+post_id)" class="fs-3 font-bold">&times;</span>
         <button @click="sharePost" style="border-radius:50px; float: right; width: 80px;" class="btn p-2 m-2 btn-sm font-bold btn-success">Repost</button>
         <div class="user-opinion-div" style="position:relative;">
@@ -276,12 +289,18 @@ function hideTagBox(postid){
                 <span class="m-2" style="position: absolute; left: 15%; top: 20%;">{{post_content.post_owner_name}}</span>
             </div>
             <p style="white-space: pre-wrap;" class="p-2">{{checkIfFriendPostIsLong(post_content.post_caption)}}</p>
-            <div class="flex-img">
-                        <img v-if="post_content.post_image_one != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_one}`' />
-                        <img v-if="post_content.post_image_two != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_two}`' />
-                        <img v-if="post_content.post_image_three != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_three}`' />
-                        <img v-if="post_content.post_image_four != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_four}`' />
-                    </div>
+            <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="post_content.post_video === null && post_content.post_image_one !== null"
+                        :user_email="post_content.post_owner_email"
+                        :postid="post_content.postid"
+                        :images="[
+                            post_content.post_image_one && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_one}`,
+                            post_content.post_image_two && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_two}`,
+                            post_content.post_image_three && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_three}`,
+                            post_content.post_image_four && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_four}`
+                        ].filter(Boolean)"
+                    />
                     <div v-if="post_content.post_video != null" class="flex-video">
                         <video  controls>
                             <source :src='`https://res.cloudinary.com/fishfollowers/video/upload/${post_content.post_video}`' />
@@ -593,7 +612,7 @@ function hideTagBox(postid){
 .user-opinion-div > textarea{
     background:none;
     outline: none;
-    width:100%;
+    max-width:100%;
     margin-left:10px;
     border-radius: 5px;
     background-color: white;

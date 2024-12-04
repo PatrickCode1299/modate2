@@ -262,39 +262,7 @@ behavior:"smooth"
 }
 get_All_User_Friend();
 
-function setTaggedUser(email,first_name,last_name){
-    let user_to_get_tagged_email=atob(email);
-    all_tagged_users.info.push(user_to_get_tagged_email);
-    let user_full_name=first_name +'\t'+ last_name;
-    all_tagged_users.value.pop();
-    all_tagged_users.value.push(user_full_name);
-    let name_suggestion_from_user=caption.value;
-    //let string_pattern='/'+name_suggestion_from_user.substring(1)+'/g';
-   let user_occurence=all_tagged_users.info.filter(x => x==user_to_get_tagged_email).length;
-   if(user_occurence > 1){
-   for(let i=0; i<all_tagged_users.info.length; i++){
-    if(all_tagged_users.info[i]==user_to_get_tagged_email){
-        all_tagged_users.info.splice(i,1);
-        
-    }
-   }
-   for(let i=0; i<all_tagged_users.value.length; i++){
-    if(all_tagged_users.value[i]==user_full_name){
-        all_tagged_users.value.splice(i,1);
-       
-    }
-   }
-   }
-   let current_caption=caption.value;
-   caption.value=current_caption.replace(/@\w+/,"")+all_tagged_users.value.join(" ");
-   document.getElementById("tag_box").style.display="none";
-    
-    
-}
-function hideTagBox(){
-    let tag_box=document.getElementById("tag_box");
-    tag_box.style.display="none";
-}
+
 const swiper = new Swiper('.swiper', {
 touchEventsTarget: 'container',
 simulateTouch: true,
@@ -359,20 +327,6 @@ function createNewPost(){
     <button style="margin-left:auto;" @click="right" class="btn btn-md btn-default"><i class="text-white fs-1 fas fa-angle-double-right"></i></button>
     </div> 
 </div>
-</div>
-<div style="position: relative;" class="user-post">
-    <button @click="createNewPost" id="create_new_post" class="btn create_new_post  p-2 m-2 fs-1 btn-md">&plus;</button>
-    <div id="text_post" class='user-text-post shadow-md'>
-    <span @click="hideTextPost" class="back-arrow font-bold fs-1 cursor-pointer">&times;</span>
-    <form style="margin:0px auto;" @submit="sendUserPost" class="user-posting-form">
-        <textarea style="outline: none; outline: 0; outline-style: none; margin:0px;  " v-model="caption" class="post-text form-control" placeholder="Feeling good write something.."></textarea>
-        <span class="position-to-right"><button style="margin-top:5px;" id="post-button" disabled   class="btn border-20px btn-md btn-success">Post</button></span>
-    </form>
-    <div id="tag_box" class="card tag_users_box card-default cursor-pointer p-2" style="position: absolute; top:155px; z-index:1; left:10px; overflow-x: hidden;  overflow-y: scroll;  height:200px; border-radius:5px; width:auto;">
-        <div style="display:block;"><span @click="hideTagBox" class="m-2"><i class="fa fa-arrow-left"></i></span></div>
-            <li @click="setTaggedUser(u.email,u.first_name,u.last_name)" class="list-unstyled m-4" v-for="u in taglist.tagged_users_result"><img v-if="u.profile_picture === null || u.profile_picture === 'null'" loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  src="../pictures/profile.png"  ><img v-else loading="lazy" style="border-radius: 50px; width: 40px; height:40px; object-fit: cover; float:left;"  :src="`https://res.cloudinary.com/fishfollowers/image/upload/${u.profile_picture}`"   ><span class="m-2">{{ u.first_name + '\t' + u.last_name }}</span></li>
-    </div>
-    </div>
 </div>
 </div>
 <div id="set-story" class="story-posts-container">

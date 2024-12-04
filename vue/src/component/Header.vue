@@ -4,7 +4,7 @@
         <RouterLink v-if="!store.state.user.token" class="navbar-brand p-2 fs-2" to="/">
           <img src="../landing/hexarex.png" style="height:30px; width:30px;">
         </RouterLink>
-        <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled p-2 fs-5">
+        <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled fs-5">
           <RouterLink
             :to="link.location"
             @click="link.function ? link.function() : null"
@@ -40,8 +40,8 @@
           v-for="(link, index) in links"
           :key="index"
         >
-          <small v-if="link.linkname === 'Messages'" style="color:white;  position:fixed; top:30px;  font-weight:bold;"><span v-if="notify_msg_count.count > 0" class="p-2" style='display:flex; width:5px; height:5px;  border-radius: 20px; position:absolute; font-size:10px; background-color:red; top:0px; justify-content:center; align-items:center;'>{{ notify_msg_count.count > 10 ? '10+' : notify_msg_count.count < 1 ? '' : notify_msg_count.count }}</span></small>
-          <small v-if="link.linkname === 'Notifications'"  style="color:white;  position:fixed; top:30px;  font-weight:bold;"><span v-if="notify_count.count > 0" class="p-2" style='display:flex; width:5px; height:5px;  border-radius: 20px; position:absolute; font-size:10px; background-color:red; top:0px; justify-content:center; align-items:center;'>{{ notify_count.count > 10 ? '10+' : notify_count.count    < 1 ? '' : notify_count.count }}</span></small>
+          <small v-if="link.linkname === 'Messages'" style="color:white;  position:fixed; top:25px;  font-weight:bold;"><span v-if="notify_msg_count.count > 0" class="p-2" style='display:flex; width:5px; height:5px;  border-radius: 20px; position:absolute; font-size:10px; background-color:red; top:0px; justify-content:center; align-items:center;'>{{ notify_msg_count.count > 10 ? '10+' : notify_msg_count.count < 1 ? '' : notify_msg_count.count }}</span></small>
+          <small v-if="link.linkname === 'Notifications'"  style="color:white;  position:fixed; top:25px;  font-weight:bold;"><span v-if="notify_count.count > 0" class="p-2" style='display:flex; width:5px; height:5px;  border-radius: 20px; position:absolute; font-size:10px; background-color:red; top:0px; justify-content:center; align-items:center;'>{{ notify_count.count > 10 ? '10+' : notify_count.count    < 1 ? '' : notify_count.count }}</span></small>
           <i :class="link.itemicon"></i>
         </RouterLink>
       </div>
