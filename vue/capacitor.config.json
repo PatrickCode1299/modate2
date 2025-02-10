@@ -1,0 +1,12 @@
+{
+  "appId": "com.hexarex.app",
+  "appName": "Hexarex",
+  "webDir": "dist",
+  "server": {
+    "allowedOriginRules": [
+      "https://api.hexarex.com/api"
+    ],
+    "hostname": "hexarex.com",
+    "androidScheme": "https"
+  }
+}
