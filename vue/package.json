@@ -48,6 +48,7 @@
     "vue-cookies": "^1.8.3",
     "vue-router": "^4.0.13",
     "vue-webrtc": "^3.0.1",
+    "vue3-paystack": "^0.0.5",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
