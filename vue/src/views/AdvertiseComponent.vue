@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import Header from '../component/Header.vue';
 import VideoPlayerComponent from '../component/VideoPlayerComponent.vue';
 import ImageSliderForPost from '../component/ImageSliderForPost.vue';
+import AdPayButton from '../component/AdPayButton.vue';
 
 // Utility functions
 function checkIfUserPostIsLong(text) {
@@ -31,84 +32,49 @@ let post_detail = defineProps({
   post_data: Object,
 });
 let post = post_detail.post_data;
+let current_user_email=localStorage.getItem('USER_MAIL');
 
 // Router and state
 const router = useRouter();
 const budget = ref(1); // Default budget
 const current_rate=1496.00;
-const budget_price=0;
-// Watcher to enforce minimum budget
-watch(budget, (newVal) => {
-  if (newVal < 0.2) budget.value = 0.2;
-  updateAdInfo();
 
+// Watcher to enforce minimum budget
+
+
+// Reactive store for ad info
+const store_current_ad_info = reactive({
+  ad_duration: computed(() => Math.min(Math.floor(budget.value * 5), 365)),
+  ad_amount: current_rate * 100, // Computed based on budget
+  minReach: computed(() => Math.floor(budget.value * 10)),
+  maxReach: computed(() => Math.floor(budget.value * 50)),
+  day_count: computed(() => Math.min(Math.floor(budget.value * 5), 365)),
+  payer_email:current_user_email
 });
-function updateAdInfo() {
-  store_current_ad_info.ad_amount = budget.value * current_rate;
-}
-// Computed properties
-const minReach = computed(() => Math.floor(budget.value * 10));
-const maxReach = computed(() => Math.floor(budget.value * 50));
-const day_count = computed(() => Math.min(Math.floor(budget.value * 5), 365));
+
+watch(budget, (newVal) => {
+  if (newVal < 0.2) budget.value = 0.2; // Ensure min budget is 0.2
+  store_current_ad_info.ad_amount=budget.value * current_rate * 100;
+  console.log(store_current_ad_info.ad_amount);
+});
 
 // Utility to shorten names
 function reduceNameLength(name) {
   return name.length > 14 ? name.slice(0, 14) + ".." : name;
 }
-const store_current_ad_info=reactive({
-ad_duration:day_count,
-ad_amount:1,
-});
 
-function create_user_advert(){
-console.log(`
-This is the amount spent on running this ad ${store_current_ad_info.ad_amount}, This is the duration spent on running the ads ${store_current_ad_info.ad_duration}`)
+function create_user_advert() {
+  console.log(`
+    This is the amount spent on running this ad: ${store_current_ad_info.ad_amount}, 
+    This is the duration spent on running the ad: ${store_current_ad_info.ad_duration}`);
 }
 </script>
 
 <template>
   <Header class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
-  <div class="container-fluid d-flex  ad-preview-container">
-    <div class="ad-setup-info">
-      <div class="card shadow-md p-2 m-2 card-default">
-        <h5 class="font-bold">Audience</h5>
-        <div style="border:none; background-color:lightgray;" class="card p-2">
-          <h6 class="font-bold">Audience Details</h6>
-          <small>Location: Nigeria</small>
-          <small>Age: 18-65+</small>
-        </div>
-      </div>
-      <div class="card shadow-md p-2 m-2 card-default">
-        <h5 class="font-bold">Duration</h5>
-        <div style="border:none; background-color:lightslategray;" class="card">
-          <p class="p-2">Duration: <strong>{{ day_count }} days</strong></p>
-        </div>
-        <div class="ad-duration">
-          <div class="slider-container">
-            <h2>Estimated {{ minReach }} - {{ maxReach }} accounts reached per day</h2>
-            <div class="budget-display">
-              <span>$</span>
-              <input
-                type="number"
-                v-model="budget"
-                step="0.01"
-                class="budget-input"
-                :min="0.2"
-              />
-            </div>
-            <input
-              type="range"
-              v-model="budget"
-              :min="0.2"
-              :max="100"
-              :step="0.01"
-              class="slider"
-            />
-          </div>
-          <div class="d-flex  justify-center align-items-center"><button @click="create_user_advert" class="btn p-2 btn-success btn-md">Create Advertisement</button></div>
-        </div>
-      </div>
-    </div>
+  <div class="container-fluid d-flex ad-preview-container">
+   
+    <AdPayButton />
     <div class="ad-post-preview shadow-md">
       <h2 class="font-bold m-4">Ad Preview</h2>
       <div class="card all_channel_content card-default">

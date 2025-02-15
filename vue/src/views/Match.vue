@@ -58,7 +58,7 @@ function setUserMatch(email){
         <div style="position:relative;" class="card p-2 card-default shadow-sm user-suggestion-card">
         <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
         <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
-        <h6>{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <h6 class="text-center m-2">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
         <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
         </div>
     </div>
@@ -69,7 +69,7 @@ function setUserMatch(email){
         <div style="position:relative;" class="card p-2 card-default shadow-sm user-suggestion-card">
         <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
         <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
-        <h6>{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <h6 class="text-center m-2">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
         <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
         </div>
     </div>
@@ -80,7 +80,7 @@ function setUserMatch(email){
         <div style="position:relative;" class="card p-2 card-default shadow-sm user-suggestion-card">
         <RouterLink :to="`/user/${i.email}`"><img v-if="i.profile_picture === '' || i.profile_picture===null" class="img-circle avatar"  src="../pictures/profile.png"/>
         <img v-else class="img-circle avatar"  :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' />
-        <h6>{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
+        <h6 class="text-center m-2">{{i.first_name + '\t' + i.last_name}}</h6></RouterLink>
         <button :id="i.email" @click="setUserMatch(i.email)" class="btn follow-suggestion-btn btn-sm btn-success font-bold">Follow</button>
         </div>
     </div>
