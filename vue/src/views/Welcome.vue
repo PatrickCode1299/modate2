@@ -93,12 +93,13 @@ document.title='Welcome | Get back to real life.';
 
             
         </div>
+        <!--
         <div for="pictures" class="picture p-4">
                 <img class="black-lady model-pic" src="../landing/blackie.jpg" />
                 <img class="white-lady model-pic" src="../landing/blondie.jpg" />
                 <img class="asian-lady model-pic" src="../landing/asian.jpg" />
             
-        </div>
+        </div>-->
     </div>
     
 </div>
@@ -346,7 +347,7 @@ height: 100%;
     border-radius: 10px;
 }
 .details-holder{
-    margin-top: 50px;
+    margin-top: 20px;
 }
 .signup-info-tag{
     color: gray;
@@ -435,7 +436,7 @@ height: 100%;
     border-radius: 10px;
 }
 .details-holder{
-    margin-top: 50px;
+    margin-top: 20px;
 }
 .signup-info-tag{
     color: gray;
