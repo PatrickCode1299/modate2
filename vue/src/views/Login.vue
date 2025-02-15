@@ -52,7 +52,7 @@ document.title='Login';
 <label for="password" class="form-label">Your Password</label>
 <input required v-model="password" class="form-control" placeholder="your password" type="password">
 </div>
-<button>Log In</button>
+<button style="margin-top:10px;">Log In</button>
 <p class="signup-info-tag">Don't have an accoun't yet <RouterLink class="signup" to="/signup">Sign up</RouterLink></p>
 </form>
 </div>
@@ -236,7 +236,7 @@ input{
 .signup-holder{
     width:50%;
     margin:0px auto;
-    margin-top:10vh;
+    margin-top:5vh;
     background-color: none;
 }
 .signup-info-tag{

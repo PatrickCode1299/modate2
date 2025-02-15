@@ -56,12 +56,13 @@ if(localStorage.getItem('USER_COOKIE')){
 <label for="password" class="form-label">Your Password</label>
 <input required v-model="password" class="form-control" placeholder="your password" type="password">
 </div>
-<button>Sign Up</button>
+<button style="margin-top:10px;">Sign Up</button>
+<p style="font-size:12px;" class="signup-info-tag m-2"><i>It's important you make use of a valid email, else you won't be able to complete your profile</i></p>
 <p class="signup-info-tag m-2">By Signing up we ensure you have agree to our <RouterLink class="terms" to="/terms">Terms and Conditions</RouterLink></p>
 </form>
 </div>
 </main>
-<Footer  class="footer-fixed-bottom"/>
+<!--<Footer  class="footer-fixed-bottom"/> -->
 </template>
 <style scoped>
 @media screen and (min-width:320px) {
