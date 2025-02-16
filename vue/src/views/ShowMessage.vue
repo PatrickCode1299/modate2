@@ -55,7 +55,14 @@ function checkMsgLength(text){
         <div v-if="all_messages.isLoading==='true'" class="d-flex justify-content-center spinner align-items-center loading-icon">
         </div>
         <div v-else>
-       <p @click="setMessageIsRead(x.created_at,x.unique_id,x.sender)" style="position: relative;" class="m-4" v-for="x in all_messages.info"><RouterLink  :to='`/chat/${x.unique_id}`'><img v-if="x.profile_picture === null || x.profile_picture === 'null'" src="../pictures/profile.png" class="notify-img" /><img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" /><span style="position: absolute; font-weight: bold; top:10%; left:20%;">{{x.first_name+'\t'+x.last_name}}</span><p style="margin-left: 20%;" v-if="x.isRead === 'false'"><b>{{checkMsgLength(x.conversation)}}</b></p><p style="margin-left: 20%;" v-else>{{checkMsgLength(x.conversation)}}</p></RouterLink>
+       <p @click="setMessageIsRead(x.created_at,x.unique_id,x.sender)" style="position: relative;" class="m-4" v-for="x in all_messages.info">
+        <RouterLink  :to='`/chat/${x.unique_id}`'>
+            <img v-if="x.profile_picture === null || x.profile_picture === 'null'" src="../pictures/profile.png" class="notify-img" />
+            <img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" />
+            <span style="position: absolute; margin-bottom:0px; top:10%; left:10%;">{{x.first_name+'\t'+x.last_name}}</span>
+            <p style="margin-left: 10%; margin-top:0px; color:grey;" v-if="x.isRead === 'false'"><b>{{checkMsgLength(x.conversation)}}</b></p>
+            <p style="margin-left: 10%; margin-top:0px; color:grey;" v-else>{{checkMsgLength(x.conversation)}}</p>
+        </RouterLink>
         </p>
         <h3 style="margin-top:50px; margin-bottom:50px;" class="fs-5 text-center" v-if="all_messages.info.length===0">You have no new messages yet..</h3>
         </div>
