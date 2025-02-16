@@ -10,9 +10,9 @@ document.title="Terms";
 <h2 class="fs-3 text-bold font-weight-bold">Terms of Service</h2>
 <p class="m-4">The following page outlines the terms of use of this software Hexarex. Before using any of the services, you are require to read and go through this terms thoroughly.<br />
 Read through the next paragraph below to understand the terms of use.
-<div class="d-flex justify-content-center align-items-center">
+<span class="d-flex justify-content-center align-items-center">
 <img class="" src="../assets/icon-foreground.jpg" width="200px" height="auto" />
-</div>
+</span>
 </p>
 <div class="grey-out-essential-site-info d-flex p-2">
 <div class="p-2 essential">

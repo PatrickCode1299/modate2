@@ -5,7 +5,11 @@
       <div style="border:none; background-color:lightgray;" class="card p-2">
         <h6 class="font-bold">Audience Details</h6>
         <small>Location: Nigeria</small>
-        <small>Age: 18-65+</small>
+        <small>Target Age Range</small>
+        <div class="d-flex">
+      <input placeholder="18" type="number" v-model="minimum_target_age" min="18" max="65" />
+      <input disabled placeholder="65" type="number" v-model="maximum_target_age" min="65" max="65" />
+    </div>
       </div>
     </div>
     <div class="card shadow-md p-2 m-2 card-default">
@@ -55,11 +59,17 @@
 <script>
 import { ref, reactive, computed, watch, onMounted, onUpdated } from 'vue';
 import paystack from "vue3-paystack";
-import { nanoid } from "nanoid"; // if using nanoid
+import { nanoid } from "nanoid"; 
+import axiosClient from '../axios';
+import { min } from 'lodash';
+// if using nanoid
 
 export default {
   components: {
     paystack,
+  },
+  props:{
+    postid:String,
   },
   data() {
     const budget = ref(1); // Default budget
@@ -68,6 +78,7 @@ export default {
     const transactionReference = ref(""); // Store the transaction reference
     const first_name=localStorage.getItem("FIRSTNAME");
     const last_name=localStorage.getItem("LASTNAME");
+    let formData=new FormData();
     // Reactive store for ad info
     const store_current_ad_info = reactive({
       ad_duration: computed(() => Math.min(Math.floor(budget.value * 5), 365)),
@@ -90,8 +101,15 @@ export default {
 
     return {
       budget,
+      minimum_target_age:18,
+      maximum_target_age:65,
       store_current_ad_info,
-      publicKey: 'pk_live_955f2af234dd685e18de8779b4e7d9eba6b65953',
+      formData,
+      post_id:this.postid,
+      ad_duration:store_current_ad_info.day_count,
+      target_location:'Nigeria',
+     // publicKey: 'pk_live_955f2af234dd685e18de8779b4e7d9eba6b65953',
+      publicKey:'pk_test_6b40038aef38a37fc71d010a07528fbe86576d7e',
       email: current_user_email,
       firstname:first_name,
       lastname:last_name,
@@ -100,8 +118,22 @@ export default {
   },
   methods: {
     onSuccessfulPayment(response) {
-      console.log('Payment successful', response);
-    },
+  console.log("Payment successful!");// Add this
+  this.formData.append("email", this.email);
+  this.formData.append("maximum_target_age", this.maximum_target_age);
+  this.formData.append("minimum_target_age", this.minimum_target_age);
+  this.formData.append("postid", this.post_id);
+  this.formData.append("ad_duration", this.store_current_ad_info.day_count);
+  this.formData.append("target_location", this.target_location);
+  this.formData.append("amount_paid", this.store_current_ad_info.ad_amount);
+  axiosClient.post("/creatAdvertisement", this.formData)
+    .then(response => {
+      console.log("Ad created:", response);
+    })
+    .catch(err => {
+      console.error("Error creating ad:", err);
+    });
+},
     onCancelledPayment() {
       console.log('Payment cancelled by user');
     },

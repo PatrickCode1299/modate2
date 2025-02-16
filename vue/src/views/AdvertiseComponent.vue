@@ -74,7 +74,7 @@ function create_user_advert() {
   <Header class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
   <div class="container-fluid d-flex ad-preview-container">
    
-    <AdPayButton />
+    <AdPayButton :postid="post.postid"/>
     <div class="ad-post-preview shadow-md">
       <h2 class="font-bold m-4">Ad Preview</h2>
       <div class="card all_channel_content card-default">
