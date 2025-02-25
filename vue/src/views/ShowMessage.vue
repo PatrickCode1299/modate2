@@ -59,9 +59,9 @@ function checkMsgLength(text){
         <RouterLink  :to='`/chat/${x.unique_id}`'>
             <img v-if="x.profile_picture === null || x.profile_picture === 'null'" src="../pictures/profile.png" class="notify-img" />
             <img v-else class="notify-img" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`" />
-            <span style="position: absolute; margin-bottom:0px; top:10%; left:10%;">{{x.first_name+'\t'+x.last_name}}</span>
-            <p style="margin-left: 10%; margin-top:0px; color:grey;" v-if="x.isRead === 'false'"><b>{{checkMsgLength(x.conversation)}}</b></p>
-            <p style="margin-left: 10%; margin-top:0px; color:grey;" v-else>{{checkMsgLength(x.conversation)}}</p>
+            <span class="convo-name">{{x.first_name+'\t'+x.last_name}}</span>
+            <p class="convo" style="color:grey;" v-if="x.isRead === 'false'"><b>{{checkMsgLength(x.conversation)}}</b></p>
+            <p class="convo" style="color:grey;" v-else>{{checkMsgLength(x.conversation)}}</p>
         </RouterLink>
         </p>
         <h3 style="margin-top:50px; margin-bottom:50px;" class="fs-5 text-center" v-if="all_messages.info.length===0">You have no new messages yet..</h3>
@@ -115,7 +115,16 @@ function checkMsgLength(text){
   height: 30px;
   animation: spin 2s linear infinite;
 }
-
+.convo{
+    margin-left: 20%; 
+    margin-top:0px;
+}
+.convo-name{
+    position: absolute; 
+    margin-bottom:0px; 
+    top:10%;
+    left:20%;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -164,6 +173,16 @@ function checkMsgLength(text){
   width: 30px;
   height: 30px;
   animation: spin 2s linear infinite;
+}
+.convo{
+    margin-left: 20%; 
+    margin-top:0px;
+}
+.convo-name{
+    position: absolute; 
+    margin-bottom:0px; 
+    top:10%;
+    left:20%;
 }
 
 @keyframes spin {
@@ -215,7 +234,16 @@ function checkMsgLength(text){
   height: 30px;
   animation: spin 2s linear infinite;
 }
-
+.convo{
+    margin-left: 10%; 
+    margin-top:0px;
+}
+.convo-name{
+    position: absolute;
+     margin-bottom:0px;
+      top:10%; 
+      left:10%;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
