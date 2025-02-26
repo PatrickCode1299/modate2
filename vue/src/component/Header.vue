@@ -1,7 +1,7 @@
 <template>
     <nav style="height:auto;" class="nav navbar navbar-fixed-top">
       <div class="container-fluid" style='padding:0px;'>
-        <RouterLink v-if="!store.state.user.token" class="navbar-brand p-2 fs-2" to="/">
+        <RouterLink  class="navbar-brand p-2 fs-2" to="/">
           <img src="../landing/hexarex.png" style="height:30px; width:30px;">
         </RouterLink>
         <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled fs-5">
