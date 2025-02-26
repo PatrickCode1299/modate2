@@ -254,20 +254,27 @@ function displayDeleteIcon(comment_id){
     checklink.current_item=comment_id;
     checklink.count++;
     if(checklink.count > 1){
-    checklink.count=0;
-    }
     let current_comment=document.getElementById(comment_id);
     current_comment.style.display="flex";  
+    checklink.count=0;
+    }else{
+        let current_comment=document.getElementById(comment_id);
+        current_comment.style.display="none";  
+    }
+    
 }
 function displayDeleteRepliesIcon(comment_id){
     checklink.status=true;
     checklink.current_item=comment_id;
     checklink.count++;
     if(checklink.count > 1){
-    checklink.count=0;
-    }
     let current_comment=document.getElementById(comment_id);
     current_comment.style.display="block";  
+    checklink.count=0;
+    }else{
+        let current_comment=document.getElementById(comment_id);
+        current_comment.style.display="none";  
+    }
 }
 let hold_certain_comment_replies=reactive({
     to_decieve_compiler:"random",
