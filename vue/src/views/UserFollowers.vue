@@ -38,7 +38,7 @@ function checkifInfoIsLong(text){
 }
 </script>
 <template>
-    <Header style="position:fixed; top:0px; width:100%;" class="shadow-sm bg-white" />
+    <Header style="position:fixed; z-index:1; top:0px; width:100%;" class="shadow-sm bg-white" />
     <div v-if="followers.isLoading==='true'" class="d-flex justify-content-center spinner align-items-center loading-icon">
     </div>
     <div class="container edit-container">
