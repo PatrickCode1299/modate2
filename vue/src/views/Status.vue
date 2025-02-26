@@ -319,10 +319,10 @@ let other_reply=reactive({
     user_who_wrote_prev_comment:"",
     comment_id:""
 });
-function replyOtherUsers(user_who_wrote_prev_comment,text_holder){
+function replyOtherUsers(user_who_wrote_prev_comment,text_holder, user_first_name){
     let prev_comment_owner=atob(user_who_wrote_prev_comment);
     let textbox=document.getElementById(text_holder);
-    let new_val=textbox.placeholder="Replying to \t"+prev_comment_owner;
+    let new_val=textbox.placeholder="Replying to \t"+user_first_name;
     other_reply.user_who_wrote_prev_comment=prev_comment_owner;
     other_reply.comment_id=text_holder;
     let reply_btn=text_holder+"reply-btn";
@@ -543,7 +543,7 @@ let encoded_mail=btoa(user_mail);
                 </ul></span>
             </div>
             <RouterLink :to='`/comment/${i.comment_id}`'><p style="white-space:pre-wrap;" v-html="checkIfCommentIsLong(url_to_link(i.comment))" class="p-2"></p></RouterLink>
-            <small @click="showReplyBox(i.created_at+i.comment_id,i.comment_id)" class="m-2 cursor-pointer"><b><i class="fs-6 fa fa-regular fa-comment"></i>{{ i.reply_count }}</b></small>
+            <small @click="showReplyBox(i.created_at+i.comment_id,i.comment_id)" class="m-2 cursor-pointer"><b><i class="fs-6 fa-regular fa-comment"></i>{{ i.reply_count }}</b></small>
             
             <h6 v-if="i.reply_count > 0" class="m-2"> <b>Replies</b></h6>
             <div  :id="i.created_at+i.comment_id" class="comment-replies">
@@ -557,7 +557,7 @@ let encoded_mail=btoa(user_mail);
                 </ul></span>
             </div>
             <p v-html="url_to_link(y.comment_reply)" style="white-space:pre-wrap;" class="p-2"></p>
-            <small @click="replyOtherUsers(y.user_who_replied,i.comment_id)" class="m-2 cursor-pointer"><b><i class="fs-6 fa fa-regular fa-comment"></i>{{ y.other_reply_count }}</b></small>
+            <small @click="replyOtherUsers(y.user_who_replied,i.comment_id, y.first_name)" class="m-2 cursor-pointer"><b><i class="fs-6 fa fa-regular fa-comment"></i>{{ y.other_reply_count }}</b></small>
           
                 </div>
               
