@@ -41,19 +41,7 @@ let newest_post=reactive({
 
 });
 
-function checkIfUserPostIsLong(text){
-    if(text==null){
-        return;
-    }else if(text.length < 128){
-        return newest_post.caption;
-    }
-    else if(text.length > 128){
-        newest_post.isLong="true";
-        newest_post.isLongBtn="true";
-        newest_post.textShortener=newest_post.caption.slice(0,128) + "............";
-        return newest_post.textShortener;
-    }
-}
+
 let friend_post=reactive({
     post_key:[],
     short_post:[],
@@ -105,7 +93,7 @@ function expandText(){
    newest_post.isLong='false';
    newest_post.isLongBtn='false';
 
-   //return newest_post.textShortener;
+
 }
 function reduceText(){
         newest_post.expandLongPost=newest_post.caption.slice(0,128)+ "...............";
@@ -199,7 +187,7 @@ function deleteUserPost(postid){
 function url_to_link(text) {
     const urlPattern = /(?:https?:\/\/|www\.)?(?:[\w-]+\.)+(?:[a-z]{2,})(\/\S*)?/gi;
     if (!urlPattern.test(text)) {
-        return text; // No URLs found, return original text
+        return text; 
       }else{
         return text.replace(urlPattern, match => {
         const href = match.match(/^https?:\/\//i) ? match : `http://${match}`;
@@ -216,7 +204,7 @@ function replaceHashTagWithLink(text) {
 </script>
 <template>
  <Header class="shadow-sm" style="background-color:white; padding-bottom:10px; position: fixed; width: 100%; z-index: 1; top: 0px;" /><div class="stories-and-div-container" Ss>
-<div class="user-post-holder" style="margin-top:40px;">
+<div class="user-post-holder" style="margin-top:60px;">
    <span v-if="Loader==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
    <div v-if="all_post.shared_post != null" v-for="i in all_post.shared_post"  style=' border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
