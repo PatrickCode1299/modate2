@@ -630,7 +630,7 @@ function replaceHashTagWithLink(text) {
                         <img @click="gotoPost(p.postid)" style="width:150px; border-radius:5px; height: 150px;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${p.post_img1}`' />
                     </div>
                     <div  v-if="channel_gallery.isPhotoActive === false" v-for="p in channel_gallery.videos" style="position:relative;">
-                        <button @click="()=>{document.getElementById('video'+p.postid).play()}" style="width:50px; height:50px; position:absolute; top:40px; left:40px; border-radius:50px;" class="btn btn-success  btn-md"><i class="fa-solid fa-play"></i></button>
+                        <button @click="()=>{document.getElementById('video'+p.postid).play()}" style="width:50px; height:50px; position:absolute; top:40px; border:none; background: rgba(0, 0, 0, 0.5); left:40px; border-radius:50px;" class="btn btn-success  btn-md"><i class="fa-solid fa-play"></i></button>
                         <video  @click="gotoPost(p.postid)" :id="'video'+p.postid" style="width:150px; object-fit:cover; border-radius:5px; height: 150px;">
                             <source :src='`https://res.cloudinary.com/fishfollowers/video/upload/${p.video}#t=0.0010`'/>
                         </video>

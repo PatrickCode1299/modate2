@@ -8,10 +8,7 @@ import StoriesComponent from './StoriesComponent.vue';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-const router=useRouter();
 const user_mail=localStorage.getItem('USER_MAIL');
-const user_friends_story_length=ref('');
-let caption=ref();
 let hold_picture=reactive({
     picture:"",
     isLoadingStoryPic:"true",

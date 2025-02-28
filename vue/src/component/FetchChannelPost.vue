@@ -260,12 +260,30 @@ function replaceHashTagWithLink(text) {
    <PostSkeletonLoader v-if="all_post.one_channel_post.length === 0" style="width:80%;"/>
 <div v-if="all_post.one_channel_post != null" v-for="i in all_post.one_channel_post"  style=' border-radius: 5px;' class='card p-2 post-container card-default'>
       <div  class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/channel/${i.email}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span @mouseenter="showChanneInfo(i.id)"  @mouseleave="hideChannelInfo(i.id)" class="fs-6 m-2">{{reduceNameLength(i.name)}}<i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="far fa-check-circle"></i><p style='font-size:12px; margin-left:0px;'>{{i.first_name + '\t' + i.last_name}}</p></span> <ul style='background:none;' class='inline-flex'>
+                    <RouterLink style="margin-right: auto; display: flex;" :to='`/channel/${i.email}`'>
+                    <span style="margin-right: auto; display: flex;">
+                    
+                    <img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" />
+                    <img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'>
+                  
+                    <span @mouseenter="showChanneInfo(i.id)"  @mouseleave="hideChannelInfo(i.id)" class="fs-6 m-2">{{reduceNameLength(i.name)}}
+                    <i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="far fa-check-circle"></i>
+                    <p style='font-size:12px; margin-left:0px;'>{{i.first_name + '\t' + i.last_name}}</p>
+                    </span> 
+                   
+                    <ul style='background:none;' class='inline-flex'>
                     <li style="font-size: 10px;color:lightslategrey; margin-top:12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
-                    </ul></span><BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
-                    <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
+                    </ul>
+                    </span>
+                    </RouterLink>
+                    <BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
+                    <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br />
+                    <i>"This user makes money from channels, launch your channel and get paid like them.."</i>
+                    </span>
                    </div>
-                   <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"  class='p-2 fs-6'></p></RouterLink> 
+                   <RouterLink :to='`/status/${i.postid}`'>
+                   <p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"  class='p-2 fs-6'></p>
+                   </RouterLink> 
                         <ImageSliderForPost
                         style="margin-top:0px;"
                         v-if="i.video === null && i.post_img1 !== null"
@@ -308,10 +326,23 @@ function replaceHashTagWithLink(text) {
     <span v-if="new_friend_post.loader==='true'" class="text-bold cursor-pointer fs-4"><img style="margin:0px auto;" width="100px" height="100px" src="../landing/loading-loader.gif"></span>
 <div  v-for="k in new_channel_post.fresh_channel_post" style=' border-radius: 5px;' class='card  post-container card-default'>
     <div  class="card-header inline-flex  panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/channel/${k.email}`'><img v-if="k.avatar===null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${k.avatar}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(k.name)}}<i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="far fa-check-circle"></i><p style='font-size:12px;'>{{k.first_name + '\t' + k.last_name}}</p></span>   <ul class='inline-flex'>
+                    <RouterLink style="margin-right: auto; display: flex;" :to='`/channel/${k.email}`'>
+                    <span style="margin-right: auto; display: flex;">
+                    <img v-if="k.avatar===null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/>
+                    <img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${k.avatar}`" class='img-circle small-thumbnail'>
+                    <span class='m-2'>{{reduceNameLength(k.name)}}
+                    <i style="height: 15px; width:15px; background-color: rgb(28, 121, 252); font-weight: bold; color: white; border-radius: 50%;" class="far fa-check-circle"></i>
+                    <p style='font-size:12px;'>{{k.first_name + '\t' + k.last_name}}</p>
+                    </span> 
+                      
+                    <ul class='inline-flex'>
                     <li style="font-size: 10px; margin-top:12px; color:lightslategray;" class='list-unstyled'>{{moment(k.date).fromNow()}}</li>
-                    </ul></span><BlockReportUserComponent :post_owner="k.email" :post_id="k.postid" />
+                    </ul>
+                    </span>
+                    </RouterLink>   
+                    <BlockReportUserComponent :post_owner="k.email" :post_id="k.postid" />
                    </div>
+                
                    <RouterLink :to='`/status/${k.postid}`'><p style="white-space:pre-wrap; word-wrap: break-word;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(k.caption)))"  class='p-2 fs-6'></p></RouterLink>
    
                    <ImageSliderForPost
