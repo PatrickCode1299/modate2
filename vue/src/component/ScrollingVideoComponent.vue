@@ -316,9 +316,18 @@ onBeforeUnmount(() => {
 
 
 onMounted(async () => {
-  const response = await axiosClient.post('/fetchAllChannelsVideo', { email: user_mail }).catch(e => {
-    //console.log(e);
-  });
+  const response = await axiosClient.post
+  ('/fetchAllChannelsVideo', { email: user_mail })
+  .catch((error) => {
+    alert('Network Error...');
+
+    let checkOnline = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(checkOnline); // Stop checking
+            window.location.reload(); // Reload page when online
+        }
+    }, 5000);
+});
   response.data.reply.forEach(data => {
     replies.value.push(data);
   });

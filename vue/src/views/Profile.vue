@@ -97,9 +97,16 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
 
     }
     
-})).catch((error =>{
+})).catch((error) => {
     alert('Network Error...');
-}))
+
+    let checkOnline = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(checkOnline); // Stop checking
+            window.location.reload(); // Reload page when online
+        }
+    }, 5000);
+});
        
       
 const goto=useRouter();
