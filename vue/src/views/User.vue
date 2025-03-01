@@ -31,8 +31,15 @@ formData.append("current_user",current_user);
 formData.append("user_who_blocked",user_mail);
 axiosClient.post("/isUserBlocked",formData).then(response=>{
 info.isBlocked=response.data.reply;
-}).catch(error=>{
-console.log(error);
+}).catch((error) => {
+    alert('Network Error...');
+
+    let checkOnline = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(checkOnline); // Stop checking
+            window.location.reload(); // Reload page when online
+        }
+    }, 5000);
 });
 });
 onMounted(()=>{

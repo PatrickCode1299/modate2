@@ -39,9 +39,16 @@ const router=useRouter();
 function deleteOldStories(){
     axiosClient.post("/deleteOldStory",{data:""}).then(response=>{
 
-    }).catch(err=>{
-        console.log(err)
-    });
+    }).catch((error) => {
+    alert('Network Error...');
+
+    let checkOnline = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(checkOnline); // Stop checking
+            window.location.reload(); // Reload page when online
+        }
+    }, 5000);
+});
 }
 let info=reactive({
     info_value:"",
@@ -136,6 +143,7 @@ updateUserLastActivity();
     align-items: center;
     cursor: pointer;
     width: 100%;
+    
 }
 .fetch-user-post-container{
     display:flex; 

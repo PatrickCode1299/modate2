@@ -17,9 +17,16 @@ formData.append('email',user_mail);
 axiosClient.post("/findAllMessages",formData).then(response=>{
 all_messages.isLoading="false";
 all_messages.info=response.data.reply;
-}).catch(e=>{
-    console.log(e);
-})
+}).ccatch((error) => {
+    alert('Network Error...');
+
+    let checkOnline = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(checkOnline); // Stop checking
+            window.location.reload(); // Reload page when online
+        }
+    }, 5000);
+});
 });
 onMounted(()=>{
 document.title='Messages';

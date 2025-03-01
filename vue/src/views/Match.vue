@@ -26,8 +26,15 @@ axiosClient.post("/suggestUsers",formData).then(response=>{
    hold_user_suggestion.interest    =response.data.user_with_similar_interest;
    hold_user_suggestion.religion    =response.data.user_with_similar_religion;
    hold_user_suggestion.school      =response.data.user_with_similar_school;
-}).catch(error=>{
-    console.log(error);
+}).catch((error) => {
+    alert('Network Error...');
+
+    let checkOnline = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(checkOnline); // Stop checking
+            window.location.reload(); // Reload page when online
+        }
+    }, 5000);
 });
 });
 function setUserMatch(email){

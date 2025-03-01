@@ -231,7 +231,7 @@ function replaceHashTagWithLink(text) {
     <div v-if="newest_post.name != null" id="user-post" style=' border-radius: 0px;' class='card m-2 p-2 post-container card-default'>
     <div class='card-header inline-flex  panel-header'>
         <span style="margin-right: auto; display:flex;"><img loading="lazy" v-if="newest_post.avatar === null" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${newest_post.avatar}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(newest_post.name)}}<ul class='inline-flex'>
-        <li class='list-unstyled ' style='font-size:12px; color:lightslategray;'>{{moment(newest_post.date).fromNow()}}</li>
+        <li class='list-unstyled ' style='background-color:none; font-size:12px; color:lightslategray;'>{{moment(newest_post.date).fromNow()}}</li>
     </ul></span></span><span @click="deleteUserPost(newest_post.postid)">Delete</span>
     </div>
     <p v-if="newest_post.isLong=='true'"   class='p-2 fs-6'>{{ replaceHashTagWithLink(newest_post.caption) }}</p>
@@ -258,7 +258,7 @@ function replaceHashTagWithLink(text) {
     
    </div>
    <PostSkeletonLoader v-if="all_post.one_channel_post.length === 0" style="width:80%;"/>
-<div v-if="all_post.one_channel_post != null" v-for="i in all_post.one_channel_post"  style=' border-radius: 5px;' class='card p-2 post-container card-default'>
+<div v-if="all_post.one_channel_post != null" v-for="i in all_post.one_channel_post"   class='card p-2 post-container card-default'>
       <div  class="card-header inline-flex p-2 panel-header">
                     <RouterLink style="margin-right: auto; display: flex;" :to='`/channel/${i.email}`'>
                     <span style="margin-right: auto; display: flex;">
@@ -272,7 +272,7 @@ function replaceHashTagWithLink(text) {
                     </span> 
                    
                     <ul style='background:none;' class='inline-flex'>
-                    <li style="font-size: 10px;color:lightslategrey; margin-top:12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
+                    <li style="background-color:none; font-size: 10px;color:lightslategrey; margin-top:12px;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
                     </ul>
                     </span>
                     </RouterLink>
@@ -324,7 +324,7 @@ function replaceHashTagWithLink(text) {
     </div>
   
     <span v-if="new_friend_post.loader==='true'" class="text-bold cursor-pointer fs-4"><img style="margin:0px auto;" width="100px" height="100px" src="../landing/loading-loader.gif"></span>
-<div  v-for="k in new_channel_post.fresh_channel_post" style=' border-radius: 5px;' class='card  post-container card-default'>
+<div  v-for="k in new_channel_post.fresh_channel_post"  class='card  post-container card-default'>
     <div  class="card-header inline-flex  panel-header">
                     <RouterLink style="margin-right: auto; display: flex;" :to='`/channel/${k.email}`'>
                     <span style="margin-right: auto; display: flex;">
@@ -336,7 +336,7 @@ function replaceHashTagWithLink(text) {
                     </span> 
                       
                     <ul class='inline-flex'>
-                    <li style="font-size: 10px; margin-top:12px; color:lightslategray;" class='list-unstyled'>{{moment(k.date).fromNow()}}</li>
+                    <li style="background:none; font-size: 10px; margin-top:12px; color:lightslategray;" class='list-unstyled'>{{moment(k.date).fromNow()}}</li>
                     </ul>
                     </span>
                     </RouterLink>   
@@ -397,6 +397,7 @@ function replaceHashTagWithLink(text) {
     justify-content: center;
     align-items: center;
     width: 100%;
+    
 }
 .user-story{
     display: flex;
@@ -443,6 +444,8 @@ border-radius: 5px;
     align-items: center;
     margin-top: 0px;
     width: 100%;
+    border-left: 1px solid #e1e8ed; /* Left border */
+    border-right: 1px solid #e1e8ed;
 
 }
 .stories-and-div-container > div{
@@ -579,6 +582,8 @@ border-radius: 5px;
     align-items: center;
     margin-top: 0px;
     width: 100%;
+    border-left: none; /* Left border */
+    border-right: none;
 
 }
 .stories-and-div-container > div{
@@ -669,6 +674,7 @@ border-radius: 5px;
     justify-content: center;
     align-items: center;
     width: 100%;
+    
    
 }
 .user-story{
@@ -715,6 +721,8 @@ border-radius: 5px;
     align-items: center;
     margin-top: 0px;
     width: 100%;
+    border-left: 1px solid #e1e8ed; /* Left border */
+    border-right: 1px solid #e1e8ed;
 
 }
 .stories-and-div-container > div{

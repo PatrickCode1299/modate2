@@ -90,9 +90,16 @@ if(all_post_info.sharer_quote === '' || all_post_info.sharer_quote === undefined
     metaDescription.setAttribute('content', description);
 }
 }
-}).catch(e=>{
-  console.log(e);
-})
+}).catch((error) => {
+    alert('Network Error...');
+
+    let checkOnline = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(checkOnline); // Stop checking
+            window.location.reload(); // Reload page when online
+        }
+    }, 5000);
+});
 
 });
 let comment=ref('');

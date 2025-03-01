@@ -915,6 +915,7 @@ border-radius: 5px;
     width: 50%;
     margin:0px auto;
     margin-top:40px;
+    
 }
 .channel-info{
     margin: 0px auto; 
