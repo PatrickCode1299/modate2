@@ -95,7 +95,7 @@ const routes=[
              
     },
     {
-        path:"/update/:current_day/:user_mail",
+        path:"/updateprofile/:current_day/:user_mail",
         component:UpdateProfile,
         meta:{requiresAuth:true},
     },

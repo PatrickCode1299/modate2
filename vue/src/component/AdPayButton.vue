@@ -126,7 +126,7 @@ export default {
   this.formData.append("ad_duration", this.store_current_ad_info.day_count);
   this.formData.append("target_location", this.target_location);
   this.formData.append("amount_paid", this.store_current_ad_info.ad_amount);
-  axiosClient.post("/creatAdvertisement", this.formData)
+  axiosClient.post("/createAdvertisement", this.formData)
     .then(response => {
       console.log("Ad created:", response);
     })
