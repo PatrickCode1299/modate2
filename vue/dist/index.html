@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/assets/hexarex-mn-k2cv0.png" />
+    <link rel="icon" type="image/png" href="/assets/hexarex-Caf6TZy_.png" />
     <link
     rel="stylesheet"
     data-purpose="Layout StyleSheet"
@@ -52,9 +52,15 @@
 
 
 .dark-mode  div{
-  background-color: none !important;
+  background-color: unset !important;
+  background-blend-mode: normal;
    /* Lighter dark background */
    /* Lighter text color */
+}
+.dark-mode  .images{
+  background-blend-mode: normal;
+  
+
 }
 .dark-mode nav{
   background-color: #1e1e1e !important; /* Lighter dark background */
@@ -68,8 +74,8 @@
 
 /* Override any inline styles */
 .dark-mode * {
-  background:none !important; /* Lighter dark background */
-  color: #ff81cd !important; /* Lighter text color */
+  background-color:auto !important; /* Lighter dark background */
+  color: #ffd5ee !important; /* Lighter text color */
 }
 
 /* Target placeholder text */
@@ -88,7 +94,7 @@
 
 /* Target links */
 .dark-mode a {
-  color: #fff !important; /* Light blue color for links */
+  color: #fff !important; /* White  color for links */
 }
 
 /* Target borders */
@@ -98,12 +104,15 @@
 .dark-mode .overlay{
   background-color:none;
 }
+.dark-mode .quote-editor{
+  background-color:black !important;
+}
     </style>
-    <script type="module" crossorigin src="/assets/index-PjQiA5ak.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-P5VydJ0k.css">
+    <script type="module" crossorigin src="/assets/index-3XR7Uy0D.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CXiO1QEj.css">
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app"></div>
     <script>
       console.log(localStorage.getItem("darkMode"));
       if(localStorage.getItem("darkMode"))
@@ -111,6 +120,7 @@
       else
       console.log("active");
     </script>
+   
   </body>
 </html>
 
