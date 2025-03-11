@@ -28,9 +28,9 @@ You agree to not making use of this software as an avenue for illegal meetups, o
 <p>Read the following terms thoroughly and ensure you agree to them before completing your registration..</p>
 <ul class="list-group">
 <li class="list-unstyled m-2 red">I agree that the company can remove my account at any point in time if my mode of using this software is malicious to some users..</li>
-<li class="list-unstyled m-2 red">I agree to paying a one time fee when required as i become an active user of this software..</li>
-<li class="list-unstyled m-2 red">I agree that the company can make use of my data for advertisement, which includes target social media adverts or promotions.</li>
-<li class="list-unstyled m-2 red">I agree to any advert shown to me via the software..</li>
+<li class="list-unstyled m-2 red">Using this software is free, however you agree to subscriptions prices whenever you try to make use of them.</li>
+<li class="list-unstyled m-2 red">The company can make use of your data for advertisement, however we do not sell your data to people, this includes target social media adverts or promotions to match you up with the right business.</li>
+<li class="list-unstyled m-2 red">We recommend adverts based on your interest, hence information gathered from you are used for this targeting.</li>
 </ul>
 <small class="m-2">Please ensure you read the following terms thoroughly thanks..</small>
 </div>
@@ -51,7 +51,8 @@ You agree to not making use of this software as an avenue for illegal meetups, o
     
 }
 .red{
-    color: darkgreen;
+   color:black;
+   font-weight: normal;
 }
 .essential{
     flex: 4;
@@ -82,7 +83,8 @@ You agree to not making use of this software as an avenue for illegal meetups, o
     
 }
 .red{
-    color: darkgreen;
+   color:black;
+   font-weight: normal;
 }
 .essential{
     flex: 4;
@@ -113,7 +115,8 @@ You agree to not making use of this software as an avenue for illegal meetups, o
     
 }
 .red{
-    color: darkgreen;
+   color:black;
+   font-weight: normal;
 }
 .essential{
     flex: 4;
