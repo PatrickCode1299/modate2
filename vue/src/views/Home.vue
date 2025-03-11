@@ -72,7 +72,7 @@ deleteOldStories();
 updateUserLastActivity();
 </script>
 <template>
-    {{ checkIfUserHasCompleteProfile() }}
+  {{ checkIfUserHasCompleteProfile() }}
     <HomeTopHeader class="shadow-md" style="background-color:rgb(254,254,254); position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
     <Header  class="shadow-md" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
