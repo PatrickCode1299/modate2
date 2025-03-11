@@ -28,13 +28,15 @@
         @click="togglePlayPause(index)"
         @loadedmetadata="setDuration(index)" 
         @timeupdate="handleTimeUpdate($event, index)"
+        @mousemove="handleMouseLeave"
+        
       ></video>
       
       <!-- Loading Spinner -->
       <div v-if="loading[index]" class="loading-spinner">
         <div class="spinner"></div>
       </div>
-      <div v-if="activeIndex === index" class="play-pause-controls">
+      <div @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" v-if="activeIndex === index" class="play-pause-controls">
         <button @click="togglePlayPause(index)" class="play-btn">
           <span id="play"><i class="fas fa-play"></i></span>
           <span style="display:none;" id="pause"><i class="fas fa-pause"></i></span>
@@ -95,7 +97,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted,  nextTick, onUnmounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted,  nextTick, defineEmits, onUnmounted, onBeforeUnmount } from 'vue';
 import axiosClient from '../axios';
 import SkeletonLoader from "./ScrollingVideoSkeletonLoader.vue";
 import ScrollVideoLikeShareCommentComponent from "./ScrollVideoLikeShareCommentComponent.vue"
@@ -112,7 +114,7 @@ const showComments = ref(false);
 const selectedReply = ref(null);
 const newComment = ref("");
 const loading = ref([]);
-
+const playing=ref();
 const getVideoUrl = (path) => `https://res.cloudinary.com/fishfollowers/video/upload/${path}`;
 const getProfilePictureUrl = (path) => `https://res.cloudinary.com/fishfollowers/image/upload/${path}`;
 
@@ -154,16 +156,19 @@ const togglePlayPause = (index) => {
   const videoElement = document.querySelectorAll('video')[index];
   if (videoElement.paused) {
     //Video is Played
+    console.log(playing.value);
     document.getElementById("play").style.display = "none";
     document.getElementById("pause").style.display = "block";
     videoElement.play().catch(error => {
       console.error('Play failed:', error);
     });
+    playing.value=false;
   } else {
-    //Video is paused
+    console.log(playing.value);
     document.getElementById("pause").style.display = "none";
     document.getElementById("play").style.display = "block";
     videoElement.pause();
+    playing.value=true;
   }
 };
 
@@ -367,6 +372,8 @@ if (videoElement) {
 onMounted(() => {
   window.addEventListener('online', handleNetworkChange);
   window.addEventListener('offline', handleNetworkChange);
+  isHovering.value = false;
+  emit('handle_header', false); 
 });
 
 onUnmounted(() => {
@@ -383,6 +390,22 @@ onUnmounted(() => {
 onBeforeUnmount(() => {
   stopVideo();
 });
+const emit= defineEmits(['handle_header']);
+const isHovering = ref(false);
+
+// Function to handle hover events
+const handleMouseEnter = () => {
+  isHovering.value = playing.value;
+  emit('handle_header', playing.value); 
+
+};
+
+const handleMouseLeave = () => {
+
+  isHovering.value = playing.value;
+  emit('handle_header', playing.value); 
+  
+};
 </script>
   
 <style scoped>
