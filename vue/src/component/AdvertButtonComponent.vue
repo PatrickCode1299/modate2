@@ -22,7 +22,7 @@ const post_id=channel_details.channel_info.postid;
       query: {
         post_data: encodeURIComponent(JSON.stringify(post_data)),
       },
-    }" v-if="number_of_subscribers > 8 && !route.params.uid"  class="btn btn-md font-bold fs-5 btn-primary">Promote</RouterLink>
+    }" v-if="number_of_subscribers > 0 && !route.params.uid"  class="btn btn-md font-bold fs-5 btn-primary">Promote</RouterLink>
 </template>
 <style scoped>
 

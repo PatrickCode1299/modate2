@@ -16,9 +16,9 @@ onMounted(() =>{
             return;
          }else{
     
-       router.push({
+      /* router.push({
             name:'Payment'
-           });  
+           });   **/
        } 
         }).catch(error => {
             console.error('Error',error);

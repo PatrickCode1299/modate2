@@ -119,7 +119,7 @@ const getVideoUrl = (path) => `https://res.cloudinary.com/fishfollowers/video/up
 const getProfilePictureUrl = (path) => `https://res.cloudinary.com/fishfollowers/image/upload/${path}`;
 
 const handleCanPlay = (event, index) => {
-  if (index === activeIndex.value) {
+  if (index === activeIndex.value) {   
     event.target.play().catch(error => {
       console.error('Play failed:', error);
     });

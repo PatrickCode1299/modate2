@@ -154,6 +154,10 @@ console.log(error);
         <li     class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-user-pen"></i></span>Appearance<div class="p-2">
                <span  class="m-2 fs-6"><span style="color:red;" @click="setColorModeTrue" v-if="isColor=='dark'"><i class="fa-light fa-toggle-large-on"></i>Disable Dark Mode</span><span style="color:forestgreen;" @click="setColorModeFalse" v-else ><i class="fa-light fa-toggle-large-off"></i>Enable Dark Mode</span></span>
             </div></li>
+            <li     class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-user-pen"></i></span>History<div class="p-2">
+               <RouterLink to="bookmarks"  class="m-2 fs-6"><span style="color:grey;">Bookmarks</span></RouterLink>
+            </div></li>
+           
         <li  @click="logout"   class="fs-5 list-unstlyed cursor-pointer m-5"><span class="icon"><i class="fa-light fa-right-from-bracket"></i></span>Log Out</li>
     </ul>
    </div>
