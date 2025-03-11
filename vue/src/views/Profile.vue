@@ -237,7 +237,7 @@ let balloon_num=ref(10);
             <img v-else-if="user_profile_pic === 'null' || user_profile_pic === null || user_profile_pic===undefined" src="../pictures/profile.png" class="user-profile-img" />
             <img v-else :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${user_profile_pic}`" class="user-profile-img" />
             <span style="text-shadow: none; text-align:center;" class="fs-4  text-black text-bold bold">{{ personal_info.u_first_name }}</span>
-            <p class="fs-6" style="word-wrap: break-word; padding:0px; margin-top:0px; text-shadow:none; color:black; font-weight:400;"><small style="word-wrap: break-word;">{{ info.cover_text }}</small></p>
+            <p class="fs-5" style="word-wrap: break-word; padding:0px; margin-top:0px; text-shadow:none; color:black; font-weight:400;"><small style="word-wrap: break-word;">{{ info.cover_text }}</small></p>
         </div>  
     </div>
     <div class="user-info-card">        
