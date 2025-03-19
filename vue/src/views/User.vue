@@ -249,8 +249,8 @@ function formatNumber(num) {
    <div style="position: relative;" v-else class="container user-profile">
     <div :style="{backgroundImage:info.bgUrl}" class="images p-4">
         <span style="word-wrap: break-word;" class="fs-5">{{ info.cover_text }}</span>
-        <div v-if="store.state.user.token != null" style="position:absolute; z-index:1; top:150px; right:20px;" class="d-flex justify-content-flex-start">
-            <button style="margin-right:10px; color:black;"  @click="gotoChat" class="btn btn-default btn-sm "><i style="border-radius:5px;" class="fs-4 fa-light fa-envelope"></i></button>
+        <div v-if="store.state.user.token != null" style="position:absolute; z-index:1; top:155px; right:20px;" class="d-flex justify-content-flex-start">
+            <button style="margin-right:10px; color:black; border:1px solid black; border-radius:50px;"  @click="gotoChat" class="btn btn-default btn-sm "><i style="border-radius:5px;" class="fs-4 fa-light fa-envelope"></i></button>
             <button id="follow-btn" v-if="info.isUserFollowed === 'false' && user_mail!=current_user && personal_info.u_isPrivate != 'true' && info.isFollowPending==''" @click="followUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-success  font-bold">Follow</button>
             <button id="follow-btn" v-else-if="info.isUserFollowed === 'false' && user_mail!=current_user && personal_info.u_isPrivate == 'true' && info.isFollowPending==''" @click="requestToFollowUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-primary  font-bold">Request</button>
             <button v-else-if="info.isUserFollowed === 'false' && user_mail!=current_user && personal_info.u_isPrivate == 'true' && info.isFollowPending=='true'" @click="requestToFollowUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px; background-color:grey; border:grey; color:white;"  class="btn edit-btn btn-sm btn-default  font-bold">Pending</button>
@@ -266,13 +266,13 @@ function formatNumber(num) {
     </div>
     <div class="user-info-card">
         <div class=" shadow-sm user-info-card ">
-            <div class="all-user-info">
+            <div class="all-user-info ">
                 <div class="heading">
                 
                 </div>
                 <div    class="complete-profile">
                 <ul class="d-flex" style="margin-top:75px; cursor: pointer;">
-                    <li class=" m-2"><span class="title m-2"><i class="fa-light fa-location-dot"></i></span><span>{{personal_info.u_location}}</span></li>
+                    <li class="m-2"><span class="title m-2"><i class="fa-light fa-location-dot"></i></span><span>{{personal_info.u_location}}</span></li>
                     <li class="m-2"><span class="title m-2"><i class="fa-solid fa-user"></i></span><RouterLink :to="`/followers/${user_id}`"><span class="font-bold text-black">{{formatNumber(personal_info.u_followers_count)}} </span>{{personal_info.u_followers_count < 2 ? "Follower" : "Followers"}}</RouterLink></li>
                 </ul>
                 </div>
@@ -394,7 +394,7 @@ function formatNumber(num) {
     object-position: center center;
     object-fit: cover;
     background-color:white;
-    border:3px solid rgb(254, 213, 238);
+    border:3px solid rgb(255, 255, 255);
 }
 .bold{
     font-weight: bold;
