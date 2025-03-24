@@ -5,6 +5,7 @@ import OldLikeShareComment from "../component/OldLikeShareComment.vue";
 import BlockReportUserComponent from "../component/BlockReportUserComponent.vue";
 import ProfileSkeletonLoader from "../component/ProfileSkeletonLoader.vue";
 import PostSkeletonLoader from "../component/PostSkeletonLoader.vue";
+import ImageSliderForPost from "../component/ImageSliderForPost.vue";
 import store from "../store";
 import { ref,reactive,onMounted } from "vue";
 import axiosClient from "../axios";
@@ -321,12 +322,18 @@ function formatNumber(num) {
                     <div class="card">
                     <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.avatar_of_original_poster}`'/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
                     <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="checkIfFriendPostIsLong(url_to_link(i.caption))"></p></RouterLink>
-                    <div class="flex-img">
-                        <img v-if="i.post_img1 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`' />
-                        <img v-if="i.post_img2 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`' />
-                        <img v-if="i.post_img3 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img3}`' />
-                        <img v-if="i.post_img4 != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img4}`' />
-                    </div>
+                    <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="i.video === null && i.post_img1 !== null"
+                        :user_email="i.email"
+                        :postid="i.postid"
+                        :images="[
+                            i.post_img1 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img1}`,
+                            i.post_img2 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img2}`,
+                            i.post_img3 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img3}`,
+                            i.post_img4 && `https://res.cloudinary.com/fishfollowers/image/upload/${i.post_img4}`
+                        ].filter(Boolean)"
+                    />
                     <div v-if="i.video != null" class="flex-video">
                         <video controls>
                             <source :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.video}#t=0.0010`' />
