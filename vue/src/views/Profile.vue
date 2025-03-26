@@ -100,6 +100,12 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
     
 })).catch((error =>{
     alert('Network Error...');
+    const interval = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(interval);
+            location.reload();
+        }
+    }, 5000);
 }))
        
       

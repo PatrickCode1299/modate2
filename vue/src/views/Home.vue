@@ -1,6 +1,4 @@
 <script setup>
-import axios from "axios";
-import store from "../store";
 import axiosClient from "../axios.js";
 import { useRouter,useRoute } from "vue-router";
 import { ref, reactive } from "vue";
@@ -64,6 +62,12 @@ function checkIfUserHasCompleteProfile(){
     }
 
 })).catch((error =>{
+    const interval = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(interval);
+            location.reload();
+        }
+    }, 5000);
     console.log(error);
 }))
 }

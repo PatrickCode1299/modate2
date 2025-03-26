@@ -72,7 +72,7 @@ function create_user_advert() {
 
 <template>
   <Header class="shadow-sm" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
-  <div class="container-fluid d-flex ad-preview-container">
+  <div class="container-fluid  ad-preview-container">
    
     <AdPayButton :postid="post.postid"/>
     <div class="ad-post-preview shadow-md">
@@ -110,6 +110,30 @@ function create_user_advert() {
 
 
 <style scoped>
+@media screen and (min-width:320px) {
+  .ad-preview-container{
+  display:block;
+  width:100%;
+}
+}
+@media screen and (min-width:420px) {
+  .ad-preview-container{
+  display:block;
+  width:100%;
+}
+}
+@media screen and (min-width:620px) {
+  .ad-preview-container{
+  display:flex;
+  width:100%;
+}
+}
+@media screen and (min-width:1224px) {
+  .ad-preview-container{
+  display:flex;
+  width:100%;
+}
+}
 .slider-container {
   max-width: 500px;
   margin: auto;

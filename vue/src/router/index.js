@@ -41,6 +41,8 @@ import store from '../store/index.js';
 import SendResetLink from "../views/SendResetLink.vue";
 import UpdateProfile from "../views/UpdateProfile.vue";
 import AdvertiseComponent from "../views/AdvertiseComponent.vue";
+import ChannelPhoto from "../component/ChannelPhoto.vue";
+import ChannelVideo from "../component/ChannelVideo.vue";
 
 
 const routes=[
@@ -179,14 +181,21 @@ const routes=[
         path:"/channel",
         name:"Channel",
         component:Channel,
-        children:[
-            {
-                path:"/channel/:uid",
-                component:Channel
-            }
-            
-        ]
+      children: [
+      {
+        path: "photo",
+        component: ChannelPhoto,
+      },
+      {
+        path: "video",
+        component: ChannelVideo,
+      },
+    ],
        
+    },
+    {
+        path:"/channel/:uid",
+        component:Channel
     },
     {
         path:"/community",

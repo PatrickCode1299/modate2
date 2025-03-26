@@ -322,7 +322,13 @@ onBeforeUnmount(() => {
 
 onMounted(async () => {
   const response = await axiosClient.post('/fetchAllChannelsVideo', { email: user_mail }).catch(e => {
-    //console.log(e);
+    alert("You are not connected to Internet");
+    const interval = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(interval);
+            location.reload();
+        }
+    }, 5000);
   });
   response.data.reply.forEach(data => {
     replies.value.push(data);

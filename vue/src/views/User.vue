@@ -100,6 +100,12 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
     
 })).catch((error =>{
     alert('Network Error...');
+    const interval = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(interval);
+            location.reload();
+        }
+    }, 5000);
 }));
 onMounted(()=>{
 let formData=new FormData();
@@ -249,7 +255,6 @@ function formatNumber(num) {
     </div>
    <div style="position: relative;" v-else class="container user-profile">
     <div :style="{backgroundImage:info.bgUrl}" class="images p-4">
-        <span style="word-wrap: break-word;" class="fs-5">{{ info.cover_text }}</span>
         <div v-if="store.state.user.token != null" style="position:absolute; z-index:1; top:155px; right:20px;" class="d-flex justify-content-flex-start">
             <button style="margin-right:10px; color:black; border:1px solid black; border-radius:50px;"  @click="gotoChat" class="btn btn-default btn-sm "><i style="border-radius:5px;" class="fs-4 fa-light fa-envelope"></i></button>
             <button id="follow-btn" v-if="info.isUserFollowed === 'false' && user_mail!=current_user && personal_info.u_isPrivate != 'true' && info.isFollowPending==''" @click="followUser" style="border-radius:40px; width:100px; padding-top:0px; padding-bottom:0px; margin-bottom:5px; margin-top:2px;"  class="btn edit-btn btn-sm btn-success  font-bold">Follow</button>
@@ -262,17 +267,18 @@ function formatNumber(num) {
             <img v-if="personal_info.u_profile_pic === null" src="../pictures/profile.png" class="user-profile-img" />
             <img v-else :src="`https://res.cloudinary.com/fishfollowers/image/upload/${personal_info.u_profile_pic}`" class="user-profile-img" />
             <span style="text-shadow: none;" class="fs-4 text-black text-bold bold">{{ personal_info.u_first_name }}</span>
+            <p class="fs-5" style="word-wrap: break-word; padding:0px; margin-top:0px; text-shadow:none; color:black; font-weight:400;"><small style="word-wrap: break-word;">{{ info.cover_text }}</small></p>
         </div>
        
     </div>
-    <div class="user-info-card">
+    <div class="user-info-card" >
         <div class=" shadow-sm user-info-card ">
             <div class="all-user-info ">
                 <div class="heading">
                 
                 </div>
-                <div    class="complete-profile">
-                <ul class="d-flex" style="margin-top:75px; cursor: pointer;">
+                <div  style="margin-top:120px;"  class="complete-profile">
+                <ul class="d-flex" style="margin-top:75px; margin-left:10px; cursor: pointer;">
                     <li class="m-2"><span class="title m-2"><i class="fa-light fa-location-dot"></i></span><span>{{personal_info.u_location}}</span></li>
                     <li class="m-2"><span class="title m-2"><i class="fa-solid fa-user"></i></span><RouterLink :to="`/followers/${user_id}`"><span class="font-bold text-black">{{formatNumber(personal_info.u_followers_count)}} </span>{{personal_info.u_followers_count < 2 ? "Follower" : "Followers"}}</RouterLink></li>
                 </ul>
