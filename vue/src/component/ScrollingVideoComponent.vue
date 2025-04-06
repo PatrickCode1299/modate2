@@ -38,8 +38,8 @@
       </div>
       <div @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" v-if="activeIndex === index" class="play-pause-controls">
         <button @click="togglePlayPause(index)" class="play-btn">
-          <span id="play"><i class="fas fa-play"></i></span>
-          <span style="display:none;" id="pause"><i class="fas fa-pause"></i></span>
+          <span id="play" style="display:none;"><i class="fas fa-play"></i></span>
+          <span style="display:block;" id="pause"><i class="fas fa-pause"></i></span>
         </button>
       </div>
      
@@ -147,6 +147,8 @@ const updateVideoPlayState = () => {
         document.getElementById("play").style.display = "none";
       } else {
         video.pause();
+        document.getElementById("pause").style.display = "none";
+        document.getElementById("play").style.display = "block";
       }
     });
   });
@@ -156,7 +158,6 @@ const togglePlayPause = (index) => {
   const videoElement = document.querySelectorAll('video')[index];
   if (videoElement.paused) {
     //Video is Played
-    console.log(playing.value);
     document.getElementById("play").style.display = "none";
     document.getElementById("pause").style.display = "block";
     videoElement.play().catch(error => {
@@ -164,7 +165,6 @@ const togglePlayPause = (index) => {
     });
     playing.value=false;
   } else {
-    console.log(playing.value);
     document.getElementById("pause").style.display = "none";
     document.getElementById("play").style.display = "block";
     videoElement.pause();

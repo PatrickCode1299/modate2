@@ -85,8 +85,8 @@ updateUserLastActivity();
 </script>
 <template>
     {{ checkIfUserHasCompleteProfile() }}
-    <HomeTopHeader v-if="userIsHover" class="shadow-md" style="background-color:rgb(254,254,254); position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
-    <Header v-if="userIsHover" id="header" class="shadow-md" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
+    <HomeTopHeader class="shadow-md" style="background-color:rgb(254,254,254); position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
+    <Header  id="header" class="shadow-md" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
     <div v-if="info.info_value==='true'" style="margin-top: 50px; flex-direction:column;" class=" incomplete d-flex justify-content-center align-items-center">
         <h2 class="fs-5 font-bold m-4">Click on profile icon above and complete your profile to be visible</h2>
