@@ -334,7 +334,6 @@ if(checklink.count == 0){
       display: flex;
       flex-direction: row;
       margin: 0px auto;
-      margin-top:40px;
       font-family: Raleway;
     }
   
