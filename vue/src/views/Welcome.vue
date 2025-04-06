@@ -55,7 +55,7 @@ document.title='Welcome | Get back to real life.';
 </script>
 <template>
 <main>
-    <Header  class="shadow-sm" />
+    <Header style="font-family:Raleway;"  class="shadow-sm" />
     <div class="contenido" style="flex:2;">
 <ul class="backgroundslider">
 <li></li>
