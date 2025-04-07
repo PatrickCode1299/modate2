@@ -5,7 +5,7 @@ document.title="Terms";
 </script>
 <template>
 <main>
-<Header class="shadow-sm" />
+<Header style="font-family:Raleway;" class="shadow-sm" />
 <div class="container-fluid d-flex justify-content-center align-items-center">
 <h2 class="fs-3 text-bold font-weight-bold">Terms of Service</h2>
 <p class="m-4">The following page outlines the terms of use of this software Hexarex. Before using any of the services, you are require to read and go through this terms thoroughly.<br />

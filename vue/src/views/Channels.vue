@@ -13,7 +13,8 @@ import CreateChannelPost from "../component/CreateChannelPost.vue";
 import VideoPlayerComponent from "../component/VideoPlayerComponent.vue";
 import ImageSliderForPost from "../component/ImageSliderForPost.vue";
 import AdvertButtonComponent from "../component/AdvertButtonComponent.vue";
-
+import ChannelVideo from "../component/ChannelVideo.vue";
+import ChannelPhoto from "../component/ChannelPhoto.vue";
 let user_mail;
 const router=useRouter();
 const route=useRoute();
@@ -148,6 +149,12 @@ onMounted(()=>{
    
 })).catch((error =>{
     console.log(error);
+    const interval = setInterval(() => {
+        if (navigator.onLine) {
+            clearInterval(interval);
+            location.reload();
+        }
+    }, 5000);
 }))
     }else{
     user_picture=localStorage.getItem('PICTURE');
@@ -475,6 +482,17 @@ function replaceHashTagWithLink(text) {
                 <div style="margin-top:0px;" v-if="!route.params.uid" id="text-content" class="display-content">
                     <CreateChannelPost :channel_name="channel_data.channel_name"/>
                 </div>
+                <div v-if="info.user_has_channel==='true'" id="channel_photo_gallery" class="channel_photo_gallery">
+                    <div v-if="channel_gallery.isPhotoActive === true" v-for="p in channel_gallery.photos">
+                        <img @click="gotoPost(p.postid)" style="width:150px; border-radius:5px; height: 150px;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${p.post_img1}`' />
+                    </div>
+                    <div  v-if="channel_gallery.isPhotoActive === false" v-for="p in channel_gallery.videos" style="position:relative;">
+                        <button @click="()=>{document.getElementById('video'+p.postid).play()}" style="width:50px; height:50px; position:absolute; top:40px; left:40px; border-radius:50px;" class="btn btn-success  btn-md"><i class="fa-solid fa-play"></i></button>
+                        <video  @click="gotoPost(p.postid)" :id="'video'+p.postid" style="width:150px; object-fit:cover; border-radius:5px; height: 150px;">
+                            <source :src='`https://res.cloudinary.com/fishfollowers/video/upload/${p.video}#t=0.0010`'/>
+                        </video>
+                    </div>
+                 </div>
                 <div  v-if="channel_post.old_channel_post.length===0">
                 <h2 class="text-center font-bold">You don't have any content on your channel, try creating.</h2>
                 </div>
@@ -625,17 +643,7 @@ function replaceHashTagWithLink(text) {
         </div>
         </div>
       
-        <div v-if="info.user_has_channel==='true'" id="channel_photo_gallery" class="channel_photo_gallery">
-                    <div v-if="channel_gallery.isPhotoActive === true" v-for="p in channel_gallery.photos">
-                        <img @click="gotoPost(p.postid)" style="width:150px; border-radius:5px; height: 150px;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${p.post_img1}`' />
-                    </div>
-                    <div  v-if="channel_gallery.isPhotoActive === false" v-for="p in channel_gallery.videos" style="position:relative;">
-                        <button @click="()=>{document.getElementById('video'+p.postid).play()}" style="width:50px; height:50px; position:absolute; top:40px; left:40px; border-radius:50px;" class="btn btn-success  btn-md"><i class="fa-solid fa-play"></i></button>
-                        <video  @click="gotoPost(p.postid)" :id="'video'+p.postid" style="width:150px; object-fit:cover; border-radius:5px; height: 150px;">
-                            <source :src='`https://res.cloudinary.com/fishfollowers/video/upload/${p.video}#t=0.0010`'/>
-                        </video>
-                    </div>
-        </div>
+    
     </div>
 
 </template>

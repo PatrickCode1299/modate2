@@ -2,7 +2,7 @@
     <nav style="height:auto;" class="nav navbar navbar-fixed-top">
       <div class="container-fluid" style='padding:0px;'>
         <RouterLink v-if="!store.state.user.token"  class="navbar-brand p-2 fs-2" to="/">
-          <img src="../landing/hexarex.png" style="height:30px; width:30px;">
+          <img src="../landing/hexarex.png" style="height:30px; margin-left:20px; width:30px;">
         </RouterLink> 
         <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled fs-5">
           <RouterLink
@@ -334,11 +334,13 @@ if(checklink.count == 0){
       display: flex;
       flex-direction: row;
       margin: 0px auto;
+      font-family: Raleway;
     }
   
     .d-none-mobile > a {
       margin-left: 20px;
       font-size: 25px;
+      font-family: Raleway;
     }
   
     .d-none-mobile-login {
@@ -403,10 +405,12 @@ if(checklink.count == 0){
       display: flex;
       flex-direction: row;
       margin: 0px auto;
+      font-family:Raleway;
     }
   
     .d-none-mobile > a {
       margin-left: 20px;
+      font-family: Raleway;
       font-size: 25px;
     }
   

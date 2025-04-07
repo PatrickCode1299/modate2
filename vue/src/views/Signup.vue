@@ -39,7 +39,7 @@ if(localStorage.getItem('USER_COOKIE')){
 
 </script>
 <template>
-<Header  class="shadow-sm" />
+<Header  style="font-family: Raleway;" class="shadow-sm" />
 <main>
 <div class="container signup-holder">
 <h2 class="fs-2 sign-up-header font-weight-bold m-2">Signup today we are waiting</h2>

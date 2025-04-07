@@ -37,7 +37,7 @@ axiosClient.post("/sendResetLink", formData)
 }
 </script>
 <template>
-<Header  class="shadow-sm" />
+<Header style="font-family: Raleway;"  class="shadow-sm" />
 <main>
 <div class="container signup-holder">
 <div>

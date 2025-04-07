@@ -34,7 +34,7 @@ function hiderr(){
 document.title='Login';
 </script>
 <template>
-<Header  class="shadow-sm" />
+<Header style="font-family: Raleway;" class="shadow-sm" />
 
 <main>
 <div class="container signup-holder">
