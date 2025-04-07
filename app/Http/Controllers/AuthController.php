@@ -712,7 +712,7 @@ class AuthController extends Controller
       $name = $request->input('name');
       $avatar = $request->input('avatar');
       $caption = $request->input('caption');
-      $post_id = $request->input('postid');
+  
 
       // Create the post in the database
       $create_post = ChannelPost::create([
