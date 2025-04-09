@@ -149,7 +149,7 @@ async function postComment(e){
    const isToxic= await checkToxicity(comment.value, handleProgress);
     if (isToxic) {
     document.getElementById("toxic_comment_div").style.display="block";
-    isToxicComment.value=`You posted a toxic "${comment.value}"`;
+    isToxicComment.value=`Toxic comments "${comment.value}" goes against our community standards, see hexarex.com/terms to avoid getting banned`;
     return;
   }else{
     if(all_post_info.sharer_email != undefined){
@@ -501,7 +501,7 @@ let encoded_mail=btoa(user_mail);
   <form class="comment-form"  v-if="user_mail!=null"  @submit="postComment">
     <UploadCommentProgress :progress="showComment.progress" />
   <div class="comment-box-wrapper">
-  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; overflow:hidden; height:50px; margin-bottom:5px; border:2px solid lightblue; z-index:2; font-weight:400; margin-top: 0px;  padding-left:20px;   width: 100%;"></textarea>
+  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; overflow:hidden; height:50px; margin-bottom:2px; border:2px solid lightblue; z-index:2; font-weight:400; margin-top: 0px;  padding-left:20px;   width: 100%;"></textarea>
   <span     v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-sm fs-6 btn-success"><i class="fa fa-paper-plane"></i></button></span>
     </div>
   <div id="tag_box" class="card tag_users_box card-default shadow-md cursor-pointer p-2">
