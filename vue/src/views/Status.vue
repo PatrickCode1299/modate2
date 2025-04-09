@@ -1037,13 +1037,14 @@ button {
 .tag_users_box{
     display:none;
     position: absolute; 
-    top:300px; 
+    top:auto; 
     z-index:1; 
     left:20px; 
     overflow-x: hidden;  
     overflow-y: scroll; 
     height:200px; 
     border-radius:5px; width:auto;
+  
 }
 .spinner {
   position: absolute;

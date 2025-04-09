@@ -361,6 +361,7 @@ if(checklink.count == 0){
       display: block;
       margin-right: 20px;
       font-weight: bold;
+      
     }
   
     .navbar-brand {
