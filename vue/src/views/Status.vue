@@ -501,8 +501,8 @@ let encoded_mail=btoa(user_mail);
   <form class="comment-form"  v-if="user_mail!=null"  @submit="postComment">
     <UploadCommentProgress :progress="showComment.progress" />
   <div class="comment-box-wrapper">
-  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; z-index:2; font-weight:400; margin-top: 0px; border:none; padding-left:20px;   width: 100%;"></textarea>
-  <span     v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-sm btn-success"><i class="fa fa-paper-plane"></i></button></span>
+  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; overflow:hidden; height:50px; margin-bottom:5px; border:2px solid lightblue; z-index:2; font-weight:400; margin-top: 0px;  padding-left:20px;   width: 100%;"></textarea>
+  <span     v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-sm fs-6 btn-success"><i class="fa fa-paper-plane"></i></button></span>
     </div>
   <div id="tag_box" class="card tag_users_box card-default shadow-md cursor-pointer p-2">
         <div style="display:block;"><span @click="hideTagBox" class="m-2"><i class="fa fa-arrow-left"></i></span></div>
@@ -536,7 +536,7 @@ let encoded_mail=btoa(user_mail);
             
         </div>
         <h2 class="m-2 font-semibold" v-if="user_mail==null">Comments</h2>
-        <div v-for="i in showComment.all_comments" :id="i.created_at+i.user_who_comment" style=" width: 100%;"  class="card p-2 card-default">
+        <div v-for="i in showComment.all_comments" :id="i.created_at+i.user_who_comment" style=" width: 100%;"  class="card  card-default">
             
             <div  style="position:relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header d-flex">
                 <div style="margin-right: auto;"><RouterLink :to='`/user/${i.user_who_comment}`'><img v-if="i.profile_picture === null" src="../pictures/profile.png" style="border-radius: 50%; object-fit: cover; width: 40px; height: 40px;" /><img v-else style="border-radius: 50%; object-fit: cover; width: 40px; height: 40px; " :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`'/><span style="position:absolute; top:0px; margin-left:50px; margin-top:10px;">{{i.first_name}}
@@ -564,7 +564,7 @@ let encoded_mail=btoa(user_mail);
                 </ul></span>
             </div>
             <p v-html="url_to_link(y.comment_reply)" style="white-space:pre-wrap;" class="p-2"></p>
-            <small @click="replyOtherUsers(y.user_who_replied,i.comment_id, y.first_name)" class="m-2 cursor-pointer"><b><i class="fs-6 fa fa-regular fa-comment"></i>{{ y.other_reply_count }}</b></small>
+            <small @click="replyOtherUsers(y.user_who_replied,i.comment_id, y.first_name)" class="m-2 cursor-pointer"><b><i class="fs-6 fa-regular fa-comment"></i>{{ y.other_reply_count }}</b></small>
           
                 </div>
               
@@ -769,7 +769,7 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  width: 50%;
+  width: 80%;
   margin: 0px auto;
   margin-top:60px;
  }
@@ -900,7 +900,7 @@ button {
     display: flex;
     position: fixed;
     bottom: 0;
-    width: 50%;
+    width: 80%;
     padding: 0px;
     z-index: 2;
     background-color:white;
