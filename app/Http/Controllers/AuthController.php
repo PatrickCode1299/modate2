@@ -1748,13 +1748,13 @@ class AuthController extends Controller
     }
     public function findAllChannelVideos(Request $request){
       $email=$request->input('email');
-      $find_all_photos=DB::table("channel_posts")->where("email",$email)->where("video", '!=', '')->select('video','postid')->latest()->take(10)->get();
-      $all_channel_photos=array();
-      foreach($find_all_photos as $photos){
-        array_push($all_channel_photos, $photos);
+      $find_all_videos=DB::table("channel_posts")->where("email",$email)->where("video", '!=', '')->select('video','postid')->latest()->take(10)->get();
+      $all_channel_videos=array();
+      foreach($find_all_videos as $videos){
+        array_push($all_channel_videos, $videos);
       }
       return response([
-        "reply"=>$all_channel_photos
+        "reply"=>$all_channel_videos
       ]);
     }
     public function sharePost(Request $request){
