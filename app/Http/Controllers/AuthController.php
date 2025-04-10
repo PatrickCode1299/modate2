@@ -21,6 +21,7 @@ use App\Models\Bookmark;
 use App\Models\Follow_Request;
 use App\Models\CommunityFollower;
 use App\Notifications\ResetPassword;
+use App\Models\Advertisement;
 use Pusher\Pusher;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
@@ -2128,5 +2129,34 @@ class AuthController extends Controller
       return response()->json(['reply' => 'User not found']);
   }
    
+  }
+  public function createAdvertisement(Request $request){
+    $email=$request->input('email');
+    $max_target_age=$request->input('maximum_target_age');
+    $min_target_age=$request->input('minimum_target_age');
+    $postid=$request->input('postid');
+    $ad_duration=(int)$request->input('ad_duration');
+    $target_location=$request->input('target_location');
+    $initial_amount= $request->input('amount_paid');
+    $amount_paid=$initial_amount * 0.01;
+    $daysToAdd = $ad_duration;
+
+    $date = new DateTime();
+
+    $date->modify("+$daysToAdd days");
+
+    $formattedDate = $date->format('Y-m-d H:i:s');
+
+    $create_advertisement=Advertisement::create([
+      "post_id" => $postid,
+      "ad_owner" => $email,
+      "ad_amount" => $amount_paid,
+      "ad_reach"  => $ad_duration,
+      "ad_stop_date" => $formattedDate
+
+    ]);
+    return response([
+      "reply"           => $create_advertisement
+    ]);
   }
 }
