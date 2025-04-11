@@ -22,6 +22,7 @@ use App\Http\Controllers\WebRTCController;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::middleware('check.api.key')->group(function () {
 Route::post('/pay', [PaymentController::class, 'redirectToGateway']);
 Route::post('/register', [AuthController::class, 'Signup']);
 Route::post('/login', [AuthController::class, 'Login']);
@@ -122,6 +123,7 @@ Route::post('/sendResetLink',[AuthController::class, 'sendResetLink']);
 Route::post('/updateDetails',[AuthController::class, 'updateDetails']);
 Route::post('/sendUpdateProfileLink',[AuthController::class, 'sendUpdateProfileLink']);
 Route::post("/createAdvertisement",[AuthController::class, 'createAdvertisement']);
+});
 
 
 

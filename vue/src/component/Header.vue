@@ -140,12 +140,7 @@
         itemicon: "fa-light fa-bell",
         badge: 6
       },
-      {
-        linkname: "Settings",
-        location: "/preference",
-        property: "link",
-        itemicon: "fa-light fa-gear",
-      }
+      
     ];
   } else {
     links.value = [
@@ -242,7 +237,7 @@ if(checklink.count == 0){
     }
   
     .mobile-nav > .mobile-link {
-      margin-right: 20px;
+      margin-right: 25px;
       font-size: 24px;
       font-weight: bold;
     }

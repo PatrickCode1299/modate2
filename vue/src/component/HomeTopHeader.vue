@@ -126,6 +126,12 @@
         property: "link",
         itemicon: "fa-light fa-circle-notch"
       },
+      {
+        linkname: "Settings",
+        location: "/preference",
+        property: "link",
+        itemicon: "fa-light fa-gear",
+      }
     
     
     ];

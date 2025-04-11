@@ -1256,6 +1256,7 @@ class AuthController extends Controller
     public function DeleteComment(Request $request){
       $post_id=$request->input('date');
       $current_user=$request->input('email');
+    
       DB::table('comments')->where(['created_at'=>$post_id, 'user_who_comment'=>$current_user])->delete();
       return response([
         "reply" => "successful"
@@ -1374,14 +1375,15 @@ class AuthController extends Controller
           "isRead"=>$isRead
         ]);
         $pusher = new Pusher(
-          env('PUSHER_APP_KEY'),
-          env('PUSHER_APP_SECRET'),
-          env('PUSHER_APP_ID'),
+          'd81e8911650d34cdc928',
+          'dd283be2f933a17310dd',
+          '1824187',
           [
-              'cluster' => env('PUSHER_APP_CLUSTER'),
+              'cluster' => 'eu',
               'useTLS' => true
           ]
       );
+
 
       $data = [$network_msg];
 
@@ -1414,11 +1416,11 @@ class AuthController extends Controller
         "isRead"=>$isRead
       ]);
       $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
+        'd81e8911650d34cdc928',
+        'dd283be2f933a17310dd',
+        '1824187',
         [
-            'cluster' => env('PUSHER_APP_CLUSTER'),
+            'cluster' => 'eu',
             'useTLS' => true
         ]
     );
@@ -1454,14 +1456,15 @@ class AuthController extends Controller
         "isRead"=>$isRead
       ]);
       $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
+        'd81e8911650d34cdc928',
+        'dd283be2f933a17310dd',
+        '1824187',
         [
-            'cluster' => env('PUSHER_APP_CLUSTER'),
+            'cluster' => 'eu',
             'useTLS' => true
         ]
     );
+
 
     $data = [$network_msg];
 
@@ -1494,14 +1497,15 @@ class AuthController extends Controller
         "isRead"=>$isRead
       ]);
       $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
+        'd81e8911650d34cdc928',
+        'dd283be2f933a17310dd',
+        '1824187',
         [
-            'cluster' => env('PUSHER_APP_CLUSTER'),
+            'cluster' => 'eu',
             'useTLS' => true
         ]
     );
+
 
     $data = [$network_msg];
 
@@ -1536,11 +1540,11 @@ class AuthController extends Controller
           "isRead"=>"false"
         ]);
         $pusher = new Pusher(
-          env('PUSHER_APP_KEY'),
-          env('PUSHER_APP_SECRET'),
-          env('PUSHER_APP_ID'),
+          'd81e8911650d34cdc928',
+          'dd283be2f933a17310dd',
+          '1824187',
           [
-              'cluster' => env('PUSHER_APP_CLUSTER'),
+              'cluster' => 'eu',
               'useTLS' => true
           ]
       );
