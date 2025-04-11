@@ -53,7 +53,7 @@ document.title='Login';
 <input required v-model="password" class="form-control" placeholder="your password" type="password">
 </div>
 <button style="margin-top:10px;">Log In</button>
-<p class="signup-info-tag">Don't have an accoun't yet <RouterLink class="signup" to="/signup">Sign up</RouterLink></p>
+<p class="signup-info-tag">Don't have an accoun't yet <RouterLink class="signup" style="color:black; font-weight:bold;" to="/signup">Sign up</RouterLink></p>
 </form>
 </div>
 </main>
@@ -85,7 +85,7 @@ button:hover{
     font-weight: bold;
 }
 input{
-    border-radius: 5px;
+    border-radius: 5px
 }
 .signup-holder{
     width:100%;
@@ -93,12 +93,9 @@ input{
     margin-top:10vh;
     background-color: none;
 }
-.signup-info-tag{
-    color: gray;
-    font-weight: 400;
-    font-size: 15px;
+main{
+    background-color: none;
 }
-
 h2{
     font-weight: bold;
     margin-bottom: 25px;
@@ -106,29 +103,22 @@ h2{
 form{
     margin-top: 20px;
 }
-.signup{
+.terms{
     color: black;
     font-weight: bold;
-}
-.border-radius-5{
-    border-radius: 5px;
-}
-.cancel{
-    margin-left:auto;
-    font-size: 45px;
-    font-weight: bold;
-    cursor: pointer;
 }
 .footer-fixed-bottom{
 position: static; 
 bottom: 0px;
 }
-main{
-background-image: none;
-background-color: none;
-position: none;
-width: 100%;
-height: 100%;
+.form-label{
+    margin-top:20px;
+}
+.sign-up-header{
+    margin-bottom:0px;
+}
+.signup-info-tag{
+    margin-top:45px;
 }
 }
 @media screen and (min-width:620px) {
@@ -156,17 +146,13 @@ button:hover{
 }
 input{
     border-radius: 5px;
+    
 }
 .signup-holder{
-    width:50%;
+    width:80%;
     margin:0px auto;
     margin-top:10vh;
     background-color: none;
-}
-.signup-info-tag{
-    color: gray;
-    font-weight: 400;
-    font-size: 15px;
 }
 main{
     background-color: none;
@@ -178,33 +164,13 @@ h2{
 form{
     margin-top: 20px;
 }
-.signup{
+.terms{
     color: black;
     font-weight: bold;
-}
-.border-radius-5{
-    border-radius: 5px;
-}
-.cancel{
-    margin-left:auto;
-    font-size: 45px;
-    font-weight: bold;
-    cursor: pointer;
 }
 .footer-fixed-bottom{
 position: fixed; 
 bottom: 0px;
-}
-main{
-background-image:none;
-background-repeat: no-repeat;
-background-attachment: fixed;
-background-size: cover;
-background-position: center center;
-background-color: none;
-position: fixed;
-width: 100%;
-height: 100%;
 }
 }
 @media screen and (min-width:1224px) {
@@ -236,16 +202,27 @@ input{
 .signup-holder{
     width:50%;
     margin:0px auto;
-    margin-top:5vh;
-    background-color: none;
+    margin-top:0;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    border-radius: 20px;
+    
 }
-.signup-info-tag{
-    color: gray;
-    font-weight: 400;
-    font-size: 15px;
+.sign-up-header{
+    color: black;
 }
 main{
+        background-image:none;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+        background-position: center center;
     background-color: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 h2{
     font-weight: bold;
@@ -254,33 +231,21 @@ h2{
 form{
     margin-top: 20px;
 }
-.signup{
-    color: black;
+.terms{
+    color: magenta;
     font-weight: bold;
-}
-.border-radius-5{
-    border-radius: 5px;
-}
-.cancel{
-    margin-left:auto;
-    font-size: 45px;
-    font-weight: bold;
-    cursor: pointer;
 }
 .footer-fixed-bottom{
 position: fixed; 
 bottom: 0px;
 }
-main{
-background-image:none;
-background-repeat: no-repeat;
-background-attachment: fixed;
-background-size: cover;
-background-position: center center;
-background-color: none;
-position: fixed;
-width: 100%;
-height: 100%;
+.form-label{
+    color: black;
+    font-weight: bold;
+}
+.signup-info-tag{
+    color: black;
+   
 }
 }
 

@@ -89,7 +89,7 @@ button:hover{
     font-weight: bold;
 }
 input{
-    border-radius: 5px;
+    border-radius: 5px
 }
 .signup-holder{
     width:100%;
@@ -114,6 +114,15 @@ form{
 .footer-fixed-bottom{
 position: static; 
 bottom: 0px;
+}
+.form-label{
+    margin-top:20px;
+}
+.sign-up-header{
+    margin-bottom:0px;
+}
+.signup-info-tag{
+    margin-top:45px;
 }
 }
 @media screen and (min-width:620px) {
@@ -141,6 +150,7 @@ button:hover{
 }
 input{
     border-radius: 5px;
+    
 }
 .signup-holder{
     width:80%;
@@ -239,6 +249,7 @@ bottom: 0px;
 }
 .signup-info-tag{
     color: black;
+   
 }
 }
 
