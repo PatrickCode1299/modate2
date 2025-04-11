@@ -9,6 +9,7 @@ import axiosClient from '../axios';
 import {ref} from "vue";
 import { watch } from 'vue';
 import { reactive } from 'vue';
+import ImageSliderForPost from './ImageSliderForPost.vue';
 let user_post_id=defineProps(['post_id','post_content','post_owner']);
 let post_id=user_post_id.post_id;
 let post_content=user_post_id.post_content;
@@ -187,6 +188,7 @@ async function share(){
   }
 
 }
+
 function bookMark(post_id){
     let formData=new FormData();
     formData.append("post_id",post_id);
@@ -215,6 +217,10 @@ function checkIfFriendPostIsLong(text, key){
     }
 }
 watch(quote, ()=>{
+quote.value ==='' ? document.getElementById("repost").setAttribute("disabled","true") 
+: document.getElementById("repost").removeAttribute("disabled");
+
+
 let str = quote.value;
 let pattern = /\B@[a-z0-9_-]+/gi;
 let user_match=str.match(pattern);
@@ -270,9 +276,9 @@ function hideTagBox(postid){
 }
 </script>
 <template>
-    <div :id='`quote${post_id}`' class=" quote-editor">
-        <span style='color:black; cursor:pointer;' @click="hidePost('quote'+post_id)" class="fs-3 font-bold">&times;</span>
-        <button @click="sharePost" style="border-radius:50px; float: right; width: 80px;" class="btn p-2 m-2 btn-sm font-bold btn-success">Repost</button>
+    <div :id='`quote${post_id}`' class=" quote-editor shadow-sm">
+        <span style='color:black; cursor:pointer;' @click="hidePost('quote'+post_id)" class="fs-2 m-4 font-bold">&times;</span>
+        <button id='repost' disabled @click="sharePost" style="border-radius:50px; float: right; width: 80px;" class="btn p-2 m-2 btn-sm font-bold btn-success">Repost</button>
         <div class="user-opinion-div" style="position:relative;">
        <img v-if="user_pic === null || user_pic === 'null'" src="../pictures/profile.png" style="width:40px; height:40px; border-radius:50px; object-fit:cover;" /> <img v-else  style="width:40px; height:40px; border-radius:50px; object-fit:cover;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${user_pic}`' />
         <textarea v-model="quote" placeholder="Add your thought.." style="resize: none;  border:none;"></textarea>
@@ -287,12 +293,18 @@ function hideTagBox(postid){
                 <span class="m-2" style="position: absolute; left: 15%; top: 20%;">{{post_content.post_owner_name}}</span>
             </div>
             <p style="white-space: pre-wrap;" class="p-2">{{checkIfFriendPostIsLong(post_content.post_caption)}}</p>
-            <div class="flex-img">
-                        <img v-if="post_content.post_image_one != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_one}`' />
-                        <img v-if="post_content.post_image_two != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_two}`' />
-                        <img v-if="post_content.post_image_three != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_three}`' />
-                        <img v-if="post_content.post_image_four != null" loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_four}`' />
-                    </div>
+            <ImageSliderForPost
+                        style="margin-top:0px;"
+                        v-if="post_content.post_video === null && post_content.post_image_one !== null"
+                        :user_email="post_content.post_owner_email"
+                        :postid="post_content.postid"
+                        :images="[
+                            post_content.post_image_one && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_one}`,
+                            post_content.post_image_two && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_two}`,
+                            post_content.post_image_three && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_three}`,
+                            post_content.post_image_four && `https://res.cloudinary.com/fishfollowers/image/upload/${post_content.post_image_four}`
+                        ].filter(Boolean)"
+                    />
                     <div v-if="post_content.post_video != null" class="flex-video">
                         <video  controls>
                             <source :src='`https://res.cloudinary.com/fishfollowers/video/upload/${post_content.post_video}`' />
@@ -302,7 +314,7 @@ function hideTagBox(postid){
     </div>
   <ul class="inline-flex">
                         <li :id="post_id" @click="updateLike" class="m-2 list-unstyled"><i class="fa-regular fa-heart"></i><span v-if="like_state.count < 2">{{ like_state.count }} Like</span><span v-else>{{ like_state.count }} Likes</span></li>
-                        <li v-if="comment_status === '' || comment_status === null"  class="m-2 list-unstyled"><RouterLink :post_data="post_id" :to='`/status/${post_id}`'><i style="margin-right: 2px;" class="fa-regular fa-comment"></i>{{ like_state.commentCount }}</RouterLink></li>
+                        <li v-if="comment_status === '' || comment_status===null"  class="m-2 list-unstyled"><RouterLink :post_data="post_id" :to='`/status/${post_id}`'><i style="margin-right: 2px;" class="fa-regular fa-comment"></i>{{ like_state.commentCount }}</RouterLink></li>
                         <li @click="share" class="m-2 list-unstyled"><i class="fa-regular fa-share-from-square"></i></li>
                         <li @click="quotePost('quote'+post_id)" class="m-2 list-unstyled"><i class="far  fa-edit"></i>{{ like_state.quoteCount }}</li>
                         <li @click="bookMark(post_id)" :id="'bookmark'+post_id" class="m-2 list-unstyled"><i class="fa-regular fa-newspaper"></i></li>
@@ -604,7 +616,7 @@ function hideTagBox(postid){
 .user-opinion-div > textarea{
     background:none;
     outline: none;
-    width:100%;
+    max-width:100%;
     margin-left:10px;
     border-radius: 5px;
     background-color: white;

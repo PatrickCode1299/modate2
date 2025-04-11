@@ -7,7 +7,6 @@ import { defineProps } from 'vue';
 import moment from 'moment'
 import { RouterLink,useRouter } from 'vue-router';
 import LikeShareComment from "./LikeShareComment.vue";
-import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
 import PostSkeletonLoader from './PostSkeletonLoader.vue';
 import CreateTextPostComponent from './CreateTextPostComponent.vue';
@@ -235,7 +234,7 @@ function replaceHashTagWithLink(text) {
     <button @click="expandText" v-if="newest_post.isLongBtn == 'true'">Show More</button>
     <p v-if="newest_post.isLong=='false'">{{newest_post.caption}}</p>
     <button @click="reduceText" v-if="newest_post.isLongBtn == 'false'">Show Less</button>
-    <OldLikeShareComment :post_content="{
+    <LikeShareComment :post_content="{
                     post_caption:newest_post.caption,
                     post_owner_name:newest_post.name,
                     post_owner_email:newest_post.post_owner,
@@ -264,7 +263,7 @@ function replaceHashTagWithLink(text) {
     <RouterLink :to='`/status/${x.postid}`'><p style="white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(x.caption)))"  class='p-2 fs-6'></p></RouterLink>
    
     <p v-if="friend_post.show_current_key === x.created_at">{{friend_post.expandText }}</p>
-    <OldLikeShareComment :post_content="{
+    <LikeShareComment :post_content="{
                     post_caption:x.caption,
                     post_owner_name:x.name,
                     post_owner_email:x.email,

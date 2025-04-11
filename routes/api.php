@@ -121,6 +121,7 @@ Route::post('/deleteCommunityPost',[AuthController::class, 'deleteCommunityPost'
 Route::post('/sendResetLink',[AuthController::class, 'sendResetLink']);
 Route::post('/updateDetails',[AuthController::class, 'updateDetails']);
 Route::post('/sendUpdateProfileLink',[AuthController::class, 'sendUpdateProfileLink']);
+Route::post("/createAdvertisement",[AuthController::class, 'createAdvertisement']);
 
 
 

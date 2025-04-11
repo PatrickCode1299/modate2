@@ -7,7 +7,6 @@ import { defineProps } from 'vue';
 import moment from 'moment'
 import { RouterLink } from 'vue-router';
 import LikeShareComment from "./LikeShareComment.vue";
-import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
 import VideoPlayerComponent from './VideoPlayerComponent.vue';
 import ImageSliderForPost from './ImageSliderForPost.vue';
@@ -238,7 +237,7 @@ function replaceHashTagWithLink(text) {
     <button @click="expandText" v-if="newest_post.isLongBtn == 'true'">Show More</button>
     <p v-if="newest_post.isLong=='false'">{{newest_post.caption}}</p>
     <button @click="reduceText" v-if="newest_post.isLongBtn == 'false'">Show Less</button>
-    <OldLikeShareComment :post_content="{
+    <LikeShareComment :post_content="{
                     post_caption:newest_post.caption,
                     post_owner_name:newest_post.name,
                     post_owner_email:newest_post.post_owner,
@@ -288,7 +287,7 @@ function replaceHashTagWithLink(text) {
                         }"/>
                     </div>
                 </div>
-                  <OldLikeShareComment :post_content="{
+                  <LikeShareComment :post_content="{
                     post_caption:i.quote,
                     post_owner_name:i.name_of_user_who_shared,
                     post_owner_email:i.email_of_user_who_shared,
@@ -335,7 +334,7 @@ function replaceHashTagWithLink(text) {
                         }"/>
                     </div>
                 </div>
-                  <OldLikeShareComment :post_content="{
+                  <LikeShareComment :post_content="{
                     post_caption:i.quote,
                     post_owner_name:i.name_of_user_who_shared,
                     post_owner_email:i.email_of_user_who_shared,
