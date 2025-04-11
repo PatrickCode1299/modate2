@@ -181,14 +181,14 @@ function uploadVideo(e){
     </div>
     
 </form>
-<form style="border-radius:5px;" id="form-video" @submit="uploadVideo" class="p-2 form-video shadow-md" >
+<form style="border-radius:5px;" id="form-video" @submit="uploadVideo" class="p-4 form-video shadow-md" >
 <span @click="cancelVideo" style="color: black; margin-bottom:0px;" class="cancel-video font-bold m-2 fs-1">&times;</span>
     <div style="margin-top:0px;" class="d-flex justify-content-center align-items-center video-img-post">
-        <video style="width:100%; object-fit:cover; height:100%;" id="video" controls>
+        <video style="width:100%;  height:250px;" id="video" controls>
             
         </video>
     </div>
-    <textarea class="form-control create_text" v-model="video_text" placeholder="Write something about the video.."></textarea>
+    <textarea class="form-control create_text m-2" v-model="video_text" placeholder="Write something about the video.."></textarea>
     <input accept="video/*" id="videos" v-on:change="setVideo" type="file" name="video" />
     <ProgressBar :progress="channel_video.progress"/>
     <div class="d-flex m-2 justify-content-center align-items-center"><button id="create-video-btn" style="border-radius: 20px; padding-left: 20px; padding-right: 20px;" class="btn font-bold border-20px btn-block video-upload-btn btn-md  btn-success">Upload the Video</button></div>
