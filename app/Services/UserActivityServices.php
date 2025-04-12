@@ -171,19 +171,19 @@ class UserActivityServices{
     public function findChannelVideos($current_user) {
       $today = Carbon::now();
   
-      // Get the users who are matched, excluding the current user
+      // ✅ Step 1: Get matched users (excluding current user)
       $find_user_choice = user_match_choice::where('choice', '!=', $current_user)->pluck('choice');
   
       if ($find_user_choice->isEmpty()) {
-          return response([
-              "reply" => []
-          ]);
+          return response(["reply" => []]);
       }
   
-      // Get the current user's location
-      $current_user_location = User::where('email', $current_user)->value('location');
+      // ✅ Step 2: Get current user data
+      $current_user_data = User::where('email', $current_user)->first(['location', 'interest']);
+      $current_user_location = $current_user_data->location;
+      $current_user_interest = $current_user_data->interest;
   
-      // ✅ Step 1: Fetch posts from `channel_posts` table that are in the advertisement table (if they exist)
+      // ✅ Step 3: Fetch Advertisement Posts
       $advertised_posts = DB::table('channel_posts')
           ->join('users', 'channel_posts.email', '=', 'users.email')
           ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
@@ -192,7 +192,7 @@ class UserActivityServices{
           ->whereIn('channel_posts.email', $find_user_choice)
           ->where('users.location', $current_user_location)
           ->where(function ($query) use ($today) {
-              $query->whereNull('advertisements.ad_stop_date')  // Allow null ad_stop_date in case it's not an active ad
+              $query->whereNull('advertisements.ad_stop_date')
                     ->orWhereDate('advertisements.ad_stop_date', '>=', $today);
           })
           ->select(
@@ -212,16 +212,13 @@ class UserActivityServices{
               'channels.channel_bio',
               'channel_posts.email',
               'channel_posts.id',
-              'advertisements.post_id as ad_post_id'  // Mark posts that exist in the advertisement table
+              'advertisements.post_id as ad_post_id'
           )
           ->latest()
           ->get();
   
-      // ✅ Step 2: Process advertised posts (set `isadvert` to true)
       $store_ad_posts = $advertised_posts->map(function ($post) {
           $post_id = $post->postid;
-  
-          // Check if the post is an ad (i.e., if it exists in advertisements)
           $is_advert = !is_null($post->ad_post_id);
   
           return [
@@ -244,11 +241,12 @@ class UserActivityServices{
               "likes" => PostLike::where('post_id', $post_id)->count(),
               "comments" => Comment::where('post_id', $post_id)->count(),
               "shares" => Shared_Post::where('prev_id', $post_id)->count(),
-              "isadvert" => $is_advert,  // Mark post as ad or not
+              "isadvert" => $is_advert,
+              "isrecommendation" => false,
           ];
       });
   
-      // ✅ Step 3: Fetch normal posts (non-ads) from `channel_posts` table
+      // ✅ Step 4: Fetch Normal Posts
       $normal_posts = DB::table('channel_posts')
           ->join('users', 'channel_posts.email', '=', 'users.email')
           ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
@@ -256,7 +254,7 @@ class UserActivityServices{
           ->where('channel_posts.video', '!=', '')
           ->whereIn('channel_posts.email', $find_user_choice)
           ->where('users.location', $current_user_location)
-          ->whereNull('advertisements.post_id')  // Ensure the post is not in advertisements (normal post)
+          ->whereNull('advertisements.post_id')
           ->select(
               'channel_posts.name',
               'channel_posts.caption',
@@ -275,10 +273,9 @@ class UserActivityServices{
               'channel_posts.email',
               'channel_posts.id'
           )
-          ->orderByDesc(DB::raw('(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = channel_posts.postid)'))  // Order by likes
+          ->orderByDesc(DB::raw('(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = channel_posts.postid)'))
           ->get();
   
-      // ✅ Step 4: Process normal posts (ranked by likes) and set `isadvert` as false
       $store_normal_posts = $normal_posts->map(function ($post) {
           $post_id = $post->postid;
   
@@ -302,17 +299,82 @@ class UserActivityServices{
               "likes" => PostLike::where('post_id', $post_id)->count(),
               "comments" => Comment::where('post_id', $post_id)->count(),
               "shares" => Shared_Post::where('prev_id', $post_id)->count(),
-              "isadvert" => false,  // Mark post as not an advertisement
+              "isadvert" => false,
+              "isrecommendation" => false,
           ];
       });
   
-      // ✅ Step 5: Combine both ad and normal posts
-      $all_posts = $store_ad_posts->merge($store_normal_posts);
+      // ✅ Step 5: Fetch Interest-Based Recommendation Posts
+      $interest_posts = DB::table('channel_posts')
+          ->join('users', 'channel_posts.email', '=', 'users.email')
+          ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
+          ->leftJoin('advertisements', 'channel_posts.postid', '=', 'advertisements.post_id')
+          ->where('channel_posts.video', '!=', '')
+          ->where('users.interest', $current_user_interest)
+          ->where('users.email', '!=', $current_user)
+          ->whereNull('advertisements.post_id')
+          ->select(
+              'channel_posts.name',
+              'channel_posts.caption',
+              'channel_posts.created_at',
+              'channel_posts.post_img1',
+              'channel_posts.post_img2',
+              'channel_posts.post_img3',
+              'channel_posts.post_img4',
+              'channel_posts.video',
+              'channel_posts.postid',
+              'channel_posts.isReply',
+              'users.profile_picture',
+              'users.first_name',
+              'users.last_name',
+              'channels.channel_bio',
+              'channel_posts.email',
+              'channel_posts.id'
+          )
+          ->inRandomOrder()
+          ->limit(5)
+          ->get();
+  
+      $store_interest_posts = $interest_posts->map(function ($post) {
+          $post_id = $post->postid;
+  
+          return [
+              "name" => $post->name,
+              "caption" => $post->caption,
+              "created_at" => $post->created_at,
+              "post_img1" => $post->post_img1,
+              "post_img2" => $post->post_img2,
+              "post_img3" => $post->post_img3,
+              "post_img4" => $post->post_img4,
+              "video" => $post->video,
+              "first_name" => $post->first_name,
+              "last_name" => $post->last_name,
+              "channel_bio" => $post->channel_bio,
+              "id" => $post->id,
+              "postid" => $post_id,
+              "isReply" => $post->isReply,
+              "profile_picture" => $post->profile_picture,
+              "email" => base64_encode($post->email),
+              "likes" => PostLike::where('post_id', $post_id)->count(),
+              "comments" => Comment::where('post_id', $post_id)->count(),
+              "shares" => Shared_Post::where('prev_id', $post_id)->count(),
+              "isadvert" => false,
+              "isrecommendation" => true,
+          ];
+      });
+  
+      // ✅ Step 6: Combine All & Remove Duplicates by postid
+      $all_posts = $store_ad_posts
+          ->merge($store_normal_posts)
+          ->merge($store_interest_posts)
+          ->unique('postid')
+          ->values();
   
       return response([
           "reply" => $all_posts
       ]);
   }
+  
   
   
     public function fetchAllChannelsPost($current_user){
