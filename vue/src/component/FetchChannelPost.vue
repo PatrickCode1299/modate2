@@ -489,6 +489,9 @@ border-radius: 5px;
   height: 30px;
   animation: spin 2s linear infinite;
 }
+.img-circle{
+    margin-top:10px;
+}
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -624,7 +627,9 @@ border-radius: 5px;
   height: 30px;
   animation: spin 2s linear infinite;
 }
-
+.img-circle{
+    margin-top:10px;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -764,7 +769,9 @@ border-radius: 5px;
   height: 30px;
   animation: spin 2s linear infinite;
 }
-
+.img-circle{
+    margin-top:10px;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

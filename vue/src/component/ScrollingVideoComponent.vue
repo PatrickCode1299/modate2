@@ -38,7 +38,7 @@
       </div>
       <div @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" v-if="activeIndex === index" class="play-pause-controls">
         <button @click="togglePlayPause(index)" class="play-btn">
-          <span id="play" style="display:none;"><i class="fas fa-play"></i></span>
+          <span id="play" style="display:none;"></span>
           <span style="display:block;" id="pause"><i class="fas fa-pause"></i></span>
         </button>
       </div>
@@ -470,7 +470,7 @@ const handleMouseLeave = () => {
 }
 
 .play-btn {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.349);
   border: none;
   border-radius: 50%;
   width: 60px;
