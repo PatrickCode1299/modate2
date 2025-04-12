@@ -1,5 +1,6 @@
 <?php
 namespace App\Services;
+use Carbon\Carbon;
 use App\Models\Channel;
 use App\Models\ChannelPost;
 use App\Models\User_Post;
@@ -167,149 +168,153 @@ class UserActivityServices{
         "reply"=>$store_all_post
       ]);
     }
-   public function findChannelVideos($current_user) {
-    // Get the users who are matched, excluding the current user
-    $find_user_choice = user_match_choice::where('choice', '!=', $current_user)->pluck('choice');
-
-    // Ensure we have users to work with
-    if ($find_user_choice->isEmpty()) {
-        return response([
-            "reply" => []
-        ]);
-    }
-
-    // Get the current user's location
-    $current_user_location = User::where('email', $current_user)->value('location');
-
-    // Fetch all channel posts from users you follow and in the same location
-    $find_all_channels_of_who_user_follows_post = DB::table('channel_posts')
-        ->join('users', 'channel_posts.email', '=', 'users.email')
-        ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
-        ->where('channel_posts.video', '!=', '')
-        ->whereIn('channel_posts.email', $find_user_choice)
-        ->where('users.location', $current_user_location) // Filter by location
-        ->select(
-            'channel_posts.name',
-            'channel_posts.caption',
-            'channel_posts.created_at',
-            'channel_posts.post_img1',
-            'channel_posts.post_img2',
-            'channel_posts.post_img3',
-            'channel_posts.post_img4',
-            'channel_posts.video',
-            'channel_posts.postid',
-            'channel_posts.isReply',
-            'users.profile_picture',
-            'users.first_name',
-            'users.last_name',
-            'channels.channel_bio',
-            'channel_posts.email',
-            'channel_posts.id'
-        )
-        ->latest()
-        ->get();
-
-    // Process the posts and aggregate likes, comments, and shares
-    $store_all_post = $find_all_channels_of_who_user_follows_post->map(function ($post) {
-        $post_id = $post->postid;
-
-        // Retrieve counts in a single query per post
-        $likesCount = PostLike::where('post_id', $post_id)->count();
-        $commentsCount = Comment::where('post_id', $post_id)->count();
-        $sharesCount = Shared_Post::where('prev_id', $post_id)->count();
-
-        return [
-            "name" => $post->name,
-            "caption" => $post->caption,
-            "created_at" => $post->created_at,
-            "post_img1" => $post->post_img1,
-            "post_img2" => $post->post_img2,
-            "post_img3" => $post->post_img3,
-            "post_img4" => $post->post_img4,
-            "video" => $post->video,
-            "first_name" => $post->first_name,
-            "last_name" => $post->last_name,
-            "channel_bio" => $post->channel_bio,
-            "id" => $post->id,
-            "postid" => $post_id,
-            "isReply" => $post->isReply,
-            "profile_picture" => $post->profile_picture,
-            "email" => base64_encode($post->email),
-            "likes" => $likesCount,
-            "comments" => $commentsCount,
-            "shares" => $sharesCount,
-        ];
-    });
-
-    // Now, let's fetch posts from random users you do not follow, but with high likes
-    $random_posts = DB::table('channel_posts')
-        ->join('users', 'channel_posts.email', '=', 'users.email')
-        ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
-        ->where('channel_posts.video', '!=', '')
-        ->whereNotIn('channel_posts.email', $find_user_choice)  // Exclude users you follow
-        ->where('users.location', $current_user_location)  // Filter by location
-        ->select(
-            'channel_posts.name',
-            'channel_posts.caption',
-            'channel_posts.created_at',
-            'channel_posts.post_img1',
-            'channel_posts.post_img2',
-            'channel_posts.post_img3',
-            'channel_posts.post_img4',
-            'channel_posts.video',
-            'channel_posts.postid',
-            'channel_posts.isReply',
-            'users.profile_picture',
-            'users.first_name',
-            'users.last_name',
-            'channels.channel_bio',
-            'channel_posts.email',
-            'channel_posts.id'
-        )
-        ->orderByDesc(DB::raw('(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = channel_posts.postid)'))  // Order by number of likes
-        ->limit(5)  // Get the top 5 posts with the most likes
-        ->get();
-
-    // Process the random posts (similar to the previous ones)
-    $store_random_posts = $random_posts->map(function ($post) {
-        $post_id = $post->postid;
-
-        // Retrieve counts in a single query per post
-        $likesCount = PostLike::where('post_id', $post_id)->count();
-        $commentsCount = Comment::where('post_id', $post_id)->count();
-        $sharesCount = Shared_Post::where('prev_id', $post_id)->count();
-
-        return [
-            "name" => $post->name,
-            "caption" => $post->caption,
-            "created_at" => $post->created_at,
-            "post_img1" => $post->post_img1,
-            "post_img2" => $post->post_img2,
-            "post_img3" => $post->post_img3,
-            "post_img4" => $post->post_img4,
-            "video" => $post->video,
-            "first_name" => $post->first_name,
-            "last_name" => $post->last_name,
-            "channel_bio" => $post->channel_bio,
-            "id" => $post->id,
-            "postid" => $post_id,
-            "isReply" => $post->isReply,
-            "profile_picture" => $post->profile_picture,
-            "email" => base64_encode($post->email),
-            "likes" => $likesCount,
-            "comments" => $commentsCount,
-            "shares" => $sharesCount,
-        ];
-    });
-
-    // Combine both arrays of posts
-    $all_posts = $store_all_post->merge($store_random_posts);
-
-    return response([
-        "reply" => $all_posts
-    ]);
-}
-
+    public function findChannelVideos($current_user) {
+      $today = Carbon::now();
+  
+      // Get the users who are matched, excluding the current user
+      $find_user_choice = user_match_choice::where('choice', '!=', $current_user)->pluck('choice');
+  
+      if ($find_user_choice->isEmpty()) {
+          return response([
+              "reply" => []
+          ]);
+      }
+  
+      // Get the current user's location
+      $current_user_location = User::where('email', $current_user)->value('location');
+  
+      // ✅ Step 1: Fetch posts from `channel_posts` table that are in the advertisement table (if they exist)
+      $advertised_posts = DB::table('channel_posts')
+          ->join('users', 'channel_posts.email', '=', 'users.email')
+          ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
+          ->leftJoin('advertisements', 'channel_posts.postid', '=', 'advertisements.post_id')
+          ->where('channel_posts.video', '!=', '')
+          ->whereIn('channel_posts.email', $find_user_choice)
+          ->where('users.location', $current_user_location)
+          ->where(function ($query) use ($today) {
+              $query->whereNull('advertisements.ad_stop_date')  // Allow null ad_stop_date in case it's not an active ad
+                    ->orWhereDate('advertisements.ad_stop_date', '>=', $today);
+          })
+          ->select(
+              'channel_posts.name',
+              'channel_posts.caption',
+              'channel_posts.created_at',
+              'channel_posts.post_img1',
+              'channel_posts.post_img2',
+              'channel_posts.post_img3',
+              'channel_posts.post_img4',
+              'channel_posts.video',
+              'channel_posts.postid',
+              'channel_posts.isReply',
+              'users.profile_picture',
+              'users.first_name',
+              'users.last_name',
+              'channels.channel_bio',
+              'channel_posts.email',
+              'channel_posts.id',
+              'advertisements.post_id as ad_post_id'  // Mark posts that exist in the advertisement table
+          )
+          ->latest()
+          ->get();
+  
+      // ✅ Step 2: Process advertised posts (set `isadvert` to true)
+      $store_ad_posts = $advertised_posts->map(function ($post) {
+          $post_id = $post->postid;
+  
+          // Check if the post is an ad (i.e., if it exists in advertisements)
+          $is_advert = !is_null($post->ad_post_id);
+  
+          return [
+              "name" => $post->name,
+              "caption" => $post->caption,
+              "created_at" => $post->created_at,
+              "post_img1" => $post->post_img1,
+              "post_img2" => $post->post_img2,
+              "post_img3" => $post->post_img3,
+              "post_img4" => $post->post_img4,
+              "video" => $post->video,
+              "first_name" => $post->first_name,
+              "last_name" => $post->last_name,
+              "channel_bio" => $post->channel_bio,
+              "id" => $post->id,
+              "postid" => $post_id,
+              "isReply" => $post->isReply,
+              "profile_picture" => $post->profile_picture,
+              "email" => base64_encode($post->email),
+              "likes" => PostLike::where('post_id', $post_id)->count(),
+              "comments" => Comment::where('post_id', $post_id)->count(),
+              "shares" => Shared_Post::where('prev_id', $post_id)->count(),
+              "isadvert" => $is_advert,  // Mark post as ad or not
+          ];
+      });
+  
+      // ✅ Step 3: Fetch normal posts (non-ads) from `channel_posts` table
+      $normal_posts = DB::table('channel_posts')
+          ->join('users', 'channel_posts.email', '=', 'users.email')
+          ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
+          ->leftJoin('advertisements', 'channel_posts.postid', '=', 'advertisements.post_id')
+          ->where('channel_posts.video', '!=', '')
+          ->whereIn('channel_posts.email', $find_user_choice)
+          ->where('users.location', $current_user_location)
+          ->whereNull('advertisements.post_id')  // Ensure the post is not in advertisements (normal post)
+          ->select(
+              'channel_posts.name',
+              'channel_posts.caption',
+              'channel_posts.created_at',
+              'channel_posts.post_img1',
+              'channel_posts.post_img2',
+              'channel_posts.post_img3',
+              'channel_posts.post_img4',
+              'channel_posts.video',
+              'channel_posts.postid',
+              'channel_posts.isReply',
+              'users.profile_picture',
+              'users.first_name',
+              'users.last_name',
+              'channels.channel_bio',
+              'channel_posts.email',
+              'channel_posts.id'
+          )
+          ->orderByDesc(DB::raw('(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = channel_posts.postid)'))  // Order by likes
+          ->get();
+  
+      // ✅ Step 4: Process normal posts (ranked by likes) and set `isadvert` as false
+      $store_normal_posts = $normal_posts->map(function ($post) {
+          $post_id = $post->postid;
+  
+          return [
+              "name" => $post->name,
+              "caption" => $post->caption,
+              "created_at" => $post->created_at,
+              "post_img1" => $post->post_img1,
+              "post_img2" => $post->post_img2,
+              "post_img3" => $post->post_img3,
+              "post_img4" => $post->post_img4,
+              "video" => $post->video,
+              "first_name" => $post->first_name,
+              "last_name" => $post->last_name,
+              "channel_bio" => $post->channel_bio,
+              "id" => $post->id,
+              "postid" => $post_id,
+              "isReply" => $post->isReply,
+              "profile_picture" => $post->profile_picture,
+              "email" => base64_encode($post->email),
+              "likes" => PostLike::where('post_id', $post_id)->count(),
+              "comments" => Comment::where('post_id', $post_id)->count(),
+              "shares" => Shared_Post::where('prev_id', $post_id)->count(),
+              "isadvert" => false,  // Mark post as not an advertisement
+          ];
+      });
+  
+      // ✅ Step 5: Combine both ad and normal posts
+      $all_posts = $store_ad_posts->merge($store_normal_posts);
+  
+      return response([
+          "reply" => $all_posts
+      ]);
+  }
+  
+  
     public function fetchAllChannelsPost($current_user){
       $find_user_choice= user_match_choice::where('user',$current_user)->get();
      $keep_all_persons_who_user_follow=array();

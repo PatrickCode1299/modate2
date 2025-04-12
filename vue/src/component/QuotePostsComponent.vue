@@ -8,7 +8,6 @@ import moment from 'moment'
 import { RouterLink, useRoute } from 'vue-router';
 import LikeShareComment from "./LikeShareComment.vue";
 import Header from "./Header.vue";
-import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
 import VideoPlayerComponent from './VideoPlayerComponent.vue';
 const latest_post=defineProps(['latest']);
@@ -208,9 +207,19 @@ function replaceHashTagWithLink(text) {
    <span v-if="Loader==='true'" class="text-bold spinner cursor-pointer fs-4"></span>
    <div v-if="all_post.shared_post != null" v-for="i in all_post.shared_post"  style=' border-radius: 5px;' class=' card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/><img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}<ul class='inline-flex'>
+                    <span style="margin-right: auto; display: flex;">
+                        <RouterLink :to='`/user/${i.email_of_user_who_shared}`'>
+                        <img v-if="i.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail"/>
+                        <img v-else loading="lazy" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.profile_picture}`" class='img-circle small-thumbnail'>
+                    </RouterLink>
+                    <span class='m-2'>
+                    {{reduceNameLength(i.name_of_user_who_shared)}}
+                    <ul class='inline-flex'>
                     <li style="font-size: 12px; color:lightslategray;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
-                    </ul></span></span><BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
+                    </ul>
+                </span>
+            </span>
+            <BlockReportUserComponent :post_owner="i.email" :post_id="i.postid" />
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
@@ -229,7 +238,7 @@ function replaceHashTagWithLink(text) {
                         }"/>
                     </div>
                 </div>
-                  <OldLikeShareComment :post_content="{
+                  <LikeShareComment :post_content="{
                     post_caption:i.quote,
                     post_owner_name:i.name_of_user_who_shared,
                     post_owner_email:i.email_of_user_who_shared,
@@ -255,7 +264,7 @@ function replaceHashTagWithLink(text) {
                     <span :id="i.id" style="position: absolute; top: 40%; visibility: hidden; font-size: 12px; right: 45%; word-wrap: break-word;  z-index: 1; display: block; width: 120px; background-color: black; border-radius: 6px; padding: 5px 0; color: white; text-align: center;">{{ i.channel_bio }} <br /><br /><i>"This user makes money from channels, launch your channel and get paid like them.."</i>   </span>
                    </div>
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
-                    <div class="card" style="margin-left:5px; margin-right:5px;">
+                    <div class="card" style="margin-left:5px;  margin-right:5px;">
                     <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
                     <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <div class="flex-img">
@@ -270,7 +279,7 @@ function replaceHashTagWithLink(text) {
                         }"/>
                     </div>
                 </div>
-                  <OldLikeShareComment :post_content="{
+                  <LikeShareComment :post_content="{
                     post_caption:i.quote,
                     post_owner_name:i.name_of_user_who_shared,
                     post_owner_email:i.email_of_user_who_shared,
@@ -637,6 +646,7 @@ border-radius: 5px;
     flex-direction: column;
     flex: 1;
     border:1px solid rgba(233, 233, 233, 0.442);
+    padding-right:20px;
  
     
 }
