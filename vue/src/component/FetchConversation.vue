@@ -7,7 +7,6 @@ import { defineProps } from 'vue';
 import moment from 'moment'
 import { RouterLink } from 'vue-router';
 import LikeShareComment from "./LikeShareComment.vue";
-import OldLikeShareComment from "./OldLikeShareComment.vue";
 import BlockReportUserComponent from './BlockReportUserComponent.vue';
 import VideoPlayerComponent from './VideoPlayerComponent.vue';
 import ImageSliderForPost from './ImageSliderForPost.vue';
@@ -238,7 +237,7 @@ function replaceHashTagWithLink(text) {
     <button @click="expandText" v-if="newest_post.isLongBtn == 'true'">Show More</button>
     <p v-if="newest_post.isLong=='false'">{{newest_post.caption}}</p>
     <button @click="reduceText" v-if="newest_post.isLongBtn == 'false'">Show Less</button>
-    <OldLikeShareComment :post_content="{
+    <LikeShareComment :post_content="{
                     post_caption:newest_post.caption,
                     post_owner_name:newest_post.name,
                     post_owner_email:newest_post.post_owner,
@@ -268,7 +267,7 @@ function replaceHashTagWithLink(text) {
                    </div>
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
                     <div class="card" style="margin-left:5px; margin-right:5px;">
-                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
+                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:10px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
                     <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <ImageSliderForPost
                         style="margin-top:0px;"
@@ -288,7 +287,7 @@ function replaceHashTagWithLink(text) {
                         }"/>
                     </div>
                 </div>
-                  <OldLikeShareComment :post_content="{
+                  <LikeShareComment :post_content="{
                     post_caption:i.quote,
                     post_owner_name:i.name_of_user_who_shared,
                     post_owner_email:i.email_of_user_who_shared,
@@ -315,7 +314,7 @@ function replaceHashTagWithLink(text) {
                    </div>
                    <RouterLink :to='`/status/${i.postid}`'><p style="word-wrap: break-word; white-space:pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(i.quote))"  class='p-2 fs-6'></p></RouterLink>
                     <div class="card" style="margin-left:5px; margin-right:5px;">
-                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:2px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
+                    <RouterLink :to='`/user/${i.email}`'><h5 class="m-2 d-flex"><img v-if="i.avatar_of_original_poster==='' || i.avatar_of_original_poster===null" class="img-circle small-thumbnail" style="width:25px; height:25px;" src="../pictures/profile.png"/><img v-else class="img-circle small-thumbnail" style="width:25px; height:25px;" :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${i.avatar_of_original_poster}`"/><span style="margin-top:10px; margin-left:5px;">{{reduceNameLength(i.name)}}</span></h5></RouterLink>
                     <RouterLink :to='`/status/${i.prev_id}`'><p class="m-2" style="word-wrap: break-word; white-space: pre-wrap;" v-html="url_to_link(checkIfFriendPostIsLong(replaceHashTagWithLink(i.caption)))"></p></RouterLink>
                     <ImageSliderForPost
                         style="margin-top:0px;"
@@ -335,7 +334,7 @@ function replaceHashTagWithLink(text) {
                         }"/>
                     </div>
                 </div>
-                  <OldLikeShareComment :post_content="{
+                  <LikeShareComment :post_content="{
                     post_caption:i.quote,
                     post_owner_name:i.name_of_user_who_shared,
                     post_owner_email:i.email_of_user_who_shared,
@@ -489,7 +488,9 @@ border-radius: 5px;
   height: 30px;
   animation: spin 2s linear infinite;
 }
-
+.img-circle{
+    margin-top:10px;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -621,6 +622,9 @@ border-radius: 5px;
   width: 30px;
   height: 30px;
   animation: spin 2s linear infinite;
+}
+.img-circle{
+    margin-top:10px;
 }
 
 @keyframes spin {
@@ -760,7 +764,9 @@ border-radius: 5px;
   height: 30px;
   animation: spin 2s linear infinite;
 }
-
+.img-circle{
+    margin-top:10px;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

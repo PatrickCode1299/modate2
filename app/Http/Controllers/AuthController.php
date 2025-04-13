@@ -21,6 +21,7 @@ use App\Models\Bookmark;
 use App\Models\Follow_Request;
 use App\Models\CommunityFollower;
 use App\Notifications\ResetPassword;
+use App\Models\Advertisement;
 use Pusher\Pusher;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
@@ -1255,6 +1256,7 @@ class AuthController extends Controller
     public function DeleteComment(Request $request){
       $post_id=$request->input('date');
       $current_user=$request->input('email');
+    
       DB::table('comments')->where(['created_at'=>$post_id, 'user_who_comment'=>$current_user])->delete();
       return response([
         "reply" => "successful"
@@ -1373,14 +1375,15 @@ class AuthController extends Controller
           "isRead"=>$isRead
         ]);
         $pusher = new Pusher(
-          env('PUSHER_APP_KEY'),
-          env('PUSHER_APP_SECRET'),
-          env('PUSHER_APP_ID'),
+          'd81e8911650d34cdc928',
+          'dd283be2f933a17310dd',
+          '1824187',
           [
-              'cluster' => env('PUSHER_APP_CLUSTER'),
+              'cluster' => 'eu',
               'useTLS' => true
           ]
       );
+
 
       $data = [$network_msg];
 
@@ -1413,11 +1416,11 @@ class AuthController extends Controller
         "isRead"=>$isRead
       ]);
       $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
+        'd81e8911650d34cdc928',
+        'dd283be2f933a17310dd',
+        '1824187',
         [
-            'cluster' => env('PUSHER_APP_CLUSTER'),
+            'cluster' => 'eu',
             'useTLS' => true
         ]
     );
@@ -1453,14 +1456,15 @@ class AuthController extends Controller
         "isRead"=>$isRead
       ]);
       $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
+        'd81e8911650d34cdc928',
+        'dd283be2f933a17310dd',
+        '1824187',
         [
-            'cluster' => env('PUSHER_APP_CLUSTER'),
+            'cluster' => 'eu',
             'useTLS' => true
         ]
     );
+
 
     $data = [$network_msg];
 
@@ -1493,14 +1497,15 @@ class AuthController extends Controller
         "isRead"=>$isRead
       ]);
       $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
+        'd81e8911650d34cdc928',
+        'dd283be2f933a17310dd',
+        '1824187',
         [
-            'cluster' => env('PUSHER_APP_CLUSTER'),
+            'cluster' => 'eu',
             'useTLS' => true
         ]
     );
+
 
     $data = [$network_msg];
 
@@ -1535,11 +1540,11 @@ class AuthController extends Controller
           "isRead"=>"false"
         ]);
         $pusher = new Pusher(
-          env('PUSHER_APP_KEY'),
-          env('PUSHER_APP_SECRET'),
-          env('PUSHER_APP_ID'),
+          'd81e8911650d34cdc928',
+          'dd283be2f933a17310dd',
+          '1824187',
           [
-              'cluster' => env('PUSHER_APP_CLUSTER'),
+              'cluster' => 'eu',
               'useTLS' => true
           ]
       );
@@ -1748,13 +1753,13 @@ class AuthController extends Controller
     }
     public function findAllChannelVideos(Request $request){
       $email=$request->input('email');
-      $find_all_photos=DB::table("channel_posts")->where("email",$email)->where("video", '!=', '')->select('video','postid')->latest()->take(10)->get();
-      $all_channel_photos=array();
-      foreach($find_all_photos as $photos){
-        array_push($all_channel_photos, $photos);
+      $find_all_videos=DB::table("channel_posts")->where("email",$email)->where("video", '!=', '')->select('video','postid')->latest()->take(10)->get();
+      $all_channel_videos=array();
+      foreach($find_all_videos as $videos){
+        array_push($all_channel_videos, $videos);
       }
       return response([
-        "reply"=>$all_channel_photos
+        "reply"=>$all_channel_videos
       ]);
     }
     public function sharePost(Request $request){
@@ -2129,4 +2134,40 @@ class AuthController extends Controller
   }
    
   }
+  public function createAdvertisement(Request $request){
+    $email=$request->input('email');
+    $max_target_age=$request->input('maximum_target_age');
+    $min_target_age=$request->input('minimum_target_age');
+    $postid=$request->input('postid');
+    $ad_duration=(int)$request->input('ad_duration');
+    $target_location=$request->input('target_location');
+    $initial_amount= $request->input('amount_paid');
+    $amount_paid=$initial_amount * 0.01;
+    $daysToAdd = $ad_duration;
+
+    $date = new DateTime();
+
+    $date->modify("+$daysToAdd days");
+
+    $formattedDate = $date->format('Y-m-d H:i:s');
+    $checkIfAdHasNotBeenCreated=Advertisement::where('post_id',$postid)->first();
+    if($checkIfAdHasNotBeenCreated){
+      return response([
+        "reply" => "error",
+      ]);
+    }else{
+    $create_advertisement=Advertisement::create([
+      "post_id" => $postid,
+      "ad_owner" => $email,
+      "ad_amount" => $amount_paid,
+      "ad_reach"  => $ad_duration,
+      "ad_stop_date" => $formattedDate
+
+    ]);
+    return response([
+      "reply"           => $create_advertisement
+    ]);
+  }
+        
+}
 }

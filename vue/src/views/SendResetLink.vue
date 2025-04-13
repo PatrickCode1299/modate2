@@ -41,7 +41,7 @@ axiosClient.post("/sendResetLink", formData)
 <main>
 <div class="container signup-holder">
 <div>
-<h2 class="fs-2 sign-up-header font-weight-bold m-2">Enter your email address to continue</h2>
+<h2 class="fs-2 sign-up-header font-weight-bold m-2">Enter your email address</h2>
 <form class="" method="POST" @submit="sendResetLink">
 <div v-if="err != null" class="d-flex justify-content-center align-items-center text-danger border-radius-5 text-bold bg-danger text-white p-2">
 {{ err }}

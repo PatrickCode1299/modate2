@@ -53,6 +53,7 @@
         </div>
       </div>
     </div>
+    <ResponseModal :status="isAdSuccessful" :visible="showModal" @close="showModal = false" />
   </div>
 </template>
 
@@ -62,17 +63,21 @@ import paystack from "vue3-paystack";
 import { nanoid } from "nanoid"; 
 import axiosClient from '../axios';
 import { min } from 'lodash';
+import ResponseModal from './ResponseModal.vue';
 // if using nanoid
 
 export default {
   components: {
     paystack,
+    ResponseModal,
   },
   props:{
     postid:String,
   },
   data() {
-    const budget = ref(1); // Default budget
+    const budget = ref(1);
+    const showModal = ref(false); // Default budget
+    const isAdSuccessful=ref("success");
     const current_rate = 1496.00;
     const current_user_email = localStorage.getItem('USER_MAIL');
     const transactionReference = ref(""); // Store the transaction reference
@@ -114,6 +119,8 @@ export default {
       firstname:first_name,
       lastname:last_name,
       transactionReference, // Binding the reference to the component's data
+      isAdSuccessful,
+      showModal
     };
   },
   methods: {
@@ -128,9 +135,16 @@ export default {
   this.formData.append("amount_paid", this.store_current_ad_info.ad_amount);
   axiosClient.post("/createAdvertisement", this.formData)
     .then(response => {
+      if(response.data.reply === 'error'){
+        this.isAdSuccessful=false;
+        this.showModal=true;
+      }
+      else
       console.log("Ad created:", response);
+      this.showModal=true;
     })
     .catch(err => {
+      this.showModal=false;
       console.error("Error creating ad:", err);
     });
 },

@@ -217,6 +217,10 @@ function checkIfFriendPostIsLong(text, key){
     }
 }
 watch(quote, ()=>{
+quote.value ==='' ? document.getElementById("repost").setAttribute("disabled","true") 
+: document.getElementById("repost").removeAttribute("disabled");
+
+
 let str = quote.value;
 let pattern = /\B@[a-z0-9_-]+/gi;
 let user_match=str.match(pattern);
@@ -273,8 +277,8 @@ function hideTagBox(postid){
 </script>
 <template>
     <div :id='`quote${post_id}`' class=" quote-editor shadow-sm">
-        <span style='color:black; cursor:pointer;' @click="hidePost('quote'+post_id)" class="fs-3 font-bold">&times;</span>
-        <button @click="sharePost" style="border-radius:50px; float: right; width: 80px;" class="btn p-2 m-2 btn-sm font-bold btn-success">Repost</button>
+        <span style='color:black; cursor:pointer;' @click="hidePost('quote'+post_id)" class="fs-2 m-4 font-bold">&times;</span>
+        <button id='repost' disabled @click="sharePost" style="border-radius:50px; float: right; width: 80px;" class="btn p-2 m-2 btn-sm font-bold btn-success">Repost</button>
         <div class="user-opinion-div" style="position:relative;">
        <img v-if="user_pic === null || user_pic === 'null'" src="../pictures/profile.png" style="width:40px; height:40px; border-radius:50px; object-fit:cover;" /> <img v-else  style="width:40px; height:40px; border-radius:50px; object-fit:cover;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${user_pic}`' />
         <textarea v-model="quote" placeholder="Add your thought.." style="resize: none;  border:none;"></textarea>

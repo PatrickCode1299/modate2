@@ -251,9 +251,6 @@ let balloon_num=ref(10);
         <div class="shadow-sm user-info-card">
             <div class="heading-edit-btn">
                 <div class="heading p-2">
-                <!--<h2 class="fs-5 p-2 user-info-title">Your information 
-                    <small style="display: block;" class="helper-text ">Update your  details ere.</small></h2>
-                -->
                 </div>
                 <div style="margin-top:100px;" class="edit-btn p-2">
                    
@@ -612,7 +609,7 @@ display:none;
     font-size: 15px;
     background-position: center center;
     background-repeat: no-repeat;
-    background-size:100% 150px;
+    background-size:100% 400px;
     background-attachment: scroll;
     text-shadow: 2px 2px 2px rgb(21, 21, 21);
     font-weight: bold;

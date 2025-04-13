@@ -830,7 +830,7 @@ background-color:rgba(0,0,0,0.8);
   100% { transform: rotate(360deg); }
 }
 .user-text-post{
-    background:rgb(246, 238, 238);
+    background:rgb(255, 255, 255);
     position:fixed;
     width:50%;
     height:50vh;

@@ -38,7 +38,7 @@
       </div>
       <div @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" v-if="activeIndex === index" class="play-pause-controls">
         <button @click="togglePlayPause(index)" class="play-btn">
-          <span id="play" style="display:none;"><i class="fas fa-play"></i></span>
+          <span id="play" style="display:none;"></span>
           <span style="display:block;" id="pause"><i class="fas fa-pause"></i></span>
         </button>
       </div>
@@ -48,23 +48,31 @@
         <div class="profile">
           <img v-if="item.profile_picture === null" style="object-fit:cover;"  src="../pictures/profile.png" alt="profile" />
           <img v-else  :src="getProfilePictureUrl(item.profile_picture)" alt="profile" />
-          <p><RouterLink :to="`/channel/${item.email}`">{{ item.name }}</RouterLink></p>
+          <p>
+          <RouterLink :to="`/channel/${item.email}`">{{ item.name }}</RouterLink><br />
+          <small class=" text-info" v-if="item.isadvert === true "><i>Sponsored</i></small>
+          </p>
+          
+          
         </div>
-        <p class="caption">{{ checkIfFriendPostIsLong(item.caption) }}</p>
+        <p class="caption" style="text-shadow:1px 2px 1px black;"> {{ checkIfFriendPostIsLong(item.caption) }}</p>
+        
         <input 
-      type="range" 
-      class="seek-slider"
-      min="0" 
-      :max="duration" 
-      step="0.1" 
-      v-model="currentTime" 
-      @input="seekVideo"
-      @change="seekVideo"
-    />
-    <div class="time-display">
-      <span>{{ formatTime(currentTime) }}</span> / 
-      <span>{{ formatTime(duration) }}</span>
-    </div>
+  type="range" 
+  class="seek-slider"
+  min="0" 
+  :max="duration[activeIndex] || 0" 
+  step="0.1" 
+  v-model="currentTime[activeIndex]" 
+  @input="seekVideo"
+  @change="seekVideo"
+/>
+<div class="time-display">
+  <span>{{ formatTime(currentTime[activeIndex] || 0) }}</span> / 
+  <span>{{ formatTime(duration[activeIndex] || 0) }}</span>
+</div>
+
+ 
         <!-- Modern Action Bar -->
         <div class="actions">
           <button @click="previousVideo(index)"  class="btn video-control-btn btn-md font-bold m-2"><i class="fa-solid fa-arrow-up"></i></button>
@@ -72,7 +80,7 @@
           <ScrollVideoLikeShareCommentComponent :post_content="{
                   post_likes_count: item.likes,
                   post_comments_count: item.comments,
-                  post_shares_count: item.shares
+                  post_shares_count: item.shares,
                 }" :post_owner="item.email" :post_id="item.postid" />
         </div>
       </div>
@@ -105,8 +113,9 @@ import { RouterLink } from 'vue-router';
 const user_mail = localStorage.getItem('USER_MAIL');
 const replies = ref([]);
 
-const currentTime = ref(0);
-const duration = ref(0);
+const duration = ref([]);     // duration per video
+const currentTime = ref([]);  // currentTime per video
+
 
 const activeIndex = ref(0);
 const exitingIndex = ref(null);
@@ -172,10 +181,9 @@ const togglePlayPause = (index) => {
   }
 };
 
-function setDuration(index){
+function setDuration(index) {
   const videoElement = document.querySelectorAll('video')[index];
-  duration.value = videoElement.duration;
-  
+  duration.value[index] = videoElement.duration;
 }
 
 function nextVideo(index) {
@@ -210,10 +218,11 @@ function previousVideo(index) {
 const handleTimeUpdate = (event, index) => {
   const videoElement = event.target;
   if (videoElement.currentTime >= videoElement.duration - 0.5) {
-    playNextVideo(index); 
+    playNextVideo(index);
   }
-  currentTime.value = videoElement.currentTime;
+  currentTime.value[index] = videoElement.currentTime;
 };
+
 
 function playNextVideo(index) {
   let end_of_array = replies.value.length - 1;
@@ -354,9 +363,10 @@ const initializeVideo = () => {
 const seekVideo = () => {
   const videoElement = document.querySelectorAll('video')[activeIndex.value];
   if (videoElement) {
-    videoElement.currentTime = currentTime.value;
+    videoElement.currentTime = currentTime.value[activeIndex.value];
   }
 };
+
 
 // Format time (MM:SS or HH:MM:SS)
 const formatTime = (seconds) => {
@@ -470,7 +480,7 @@ const handleMouseLeave = () => {
 }
 
 .play-btn {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.349);
   border: none;
   border-radius: 50%;
   width: 60px;
@@ -607,18 +617,35 @@ input[type="text"] {
   animation: spin 1s linear infinite;
 }
 
-.seek-slider{
+.seek-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(to right, #4f46e5 0%, #4f46e5 var(--seek-progress), #ddd var(--seek-progress), #ddd 100%);
+  border-radius: 5px;
   cursor: pointer;
-  background: #ddd;
-  height: 8px;
-  border-radius: 5px;
-  width:100%;
+  transition: background 0.2s ease;
 }
-.seek-slider::-webkit-slider-runnable-track {
-  background: #444;
-  height: 8px;
-  border-radius: 5px;
+.seek-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  background-color: #4f46e5;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 0 2px rgba(0,0,0,0.3);
+  margin-top: -4px;
+  cursor: pointer;
 }
+.seek-slider::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  background-color: #4f46e5;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
 
 .time-display {
   font-size: 14px;

@@ -486,7 +486,7 @@ z-index: 0;
 }
 .doc-video{
     width:100%; 
-    height:30vh;
+    height:80vh;
 }
 .user-last-activity{
     margin-top: 0px;
