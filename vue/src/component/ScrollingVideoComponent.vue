@@ -48,9 +48,15 @@
         <div class="profile">
           <img v-if="item.profile_picture === null" style="object-fit:cover;"  src="../pictures/profile.png" alt="profile" />
           <img v-else  :src="getProfilePictureUrl(item.profile_picture)" alt="profile" />
-          <p><RouterLink :to="`/channel/${item.email}`">{{ item.name }}</RouterLink></p>
+          <p>
+          <RouterLink :to="`/channel/${item.email}`">{{ item.name }}</RouterLink><br />
+          <small class=" text-info" v-if="item.isadvert === true "><i>Sponsored</i></small>
+          </p>
+          
+          
         </div>
-        <p class="caption">{{ checkIfFriendPostIsLong(item.caption) }}</p>
+        <p class="caption" style="text-shadow:1px 2px 1px black;"> {{ checkIfFriendPostIsLong(item.caption) }}</p>
+        
         <input 
   type="range" 
   class="seek-slider"
@@ -74,7 +80,7 @@
           <ScrollVideoLikeShareCommentComponent :post_content="{
                   post_likes_count: item.likes,
                   post_comments_count: item.comments,
-                  post_shares_count: item.shares
+                  post_shares_count: item.shares,
                 }" :post_owner="item.email" :post_id="item.postid" />
         </div>
       </div>
