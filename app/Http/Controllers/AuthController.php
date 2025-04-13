@@ -2150,7 +2150,12 @@ class AuthController extends Controller
     $date->modify("+$daysToAdd days");
 
     $formattedDate = $date->format('Y-m-d H:i:s');
-
+    $checkIfAdHasNotBeenCreated=Advertisement::where('post_id',$postid)->first();
+    if($checkIfAdHasNotBeenCreated){
+      return response([
+        "reply" => "error",
+      ]);
+    }else{
     $create_advertisement=Advertisement::create([
       "post_id" => $postid,
       "ad_owner" => $email,
@@ -2163,4 +2168,6 @@ class AuthController extends Controller
       "reply"           => $create_advertisement
     ]);
   }
+        
+}
 }
