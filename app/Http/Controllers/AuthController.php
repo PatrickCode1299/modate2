@@ -36,9 +36,6 @@ use App\Services\CloudinaryServices;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
-header('Access-Control-Allow-Origin','*');
-header('Access-Control-Allow-Methods','GET,POST,PUT,PATCH,DELETE,OPTIONS');
-header('Access-Control-Allow-Headers','Content-Type, Authorization');
 class AuthController extends Controller
 {
   protected $userService;
