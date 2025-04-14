@@ -1,7 +1,7 @@
 <template>
   <div class="video-container">
     <div v-if="isLoading" class="spinner"></div>
-    <video @click="playVideoWhenClick" ref="video" class="video">
+    <video @click="playVideoWhenClick" ref="video" class="video vertical-video">
       <source :src="`https://res.cloudinary.com/fishfollowers/video/upload/${media.video_info.source}#t=0.0010`">
     </video>
     <button @click="playVideoWhenClick" ref="playPauseBtn" class="play-pause">
@@ -57,7 +57,11 @@ onMounted(() => {
       video.value.currentTime = (timeSlider.value.value / 100) * video.value.duration;
     }
   });
+
+
+
 });
+
 onMounted(() => {
   // Create an IntersectionObserver to pause/play the video based on visibility
   const observer = new IntersectionObserver((entries) => {
@@ -134,12 +138,17 @@ body {
   margin: 0;
 }
 
+.vertical-video {
+  width: 100vw;
+  height: auto;
+  object-fit: cover;
+  max-height: 100vh;
+}
+
 .video-container {
   position: relative;
   width: 100%;
-  max-width: 640px;
   height: auto;
-  aspect-ratio: 16 / 9;
   background: #000;
 }
 
