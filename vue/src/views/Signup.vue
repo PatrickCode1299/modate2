@@ -123,6 +123,7 @@ bottom: 0px;
 }
 .signup-info-tag{
     margin-top:45px;
+    color:black;
 }
 }
 @media screen and (min-width:620px) {
@@ -236,7 +237,7 @@ form{
     margin-top: 20px;
 }
 .terms{
-    color: magenta;
+    color:black;
     font-weight: bold;
 }
 .footer-fixed-bottom{

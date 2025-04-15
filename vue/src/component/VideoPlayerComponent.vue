@@ -1,7 +1,7 @@
 <template>
   <div class="video-container">
     <div v-if="isLoading" class="spinner"></div>
-    <video @click="playVideoWhenClick" ref="video" class="video vertical-video">
+    <video  @contextmenu.prevent @click="playVideoWhenClick" ref="video" class="video vertical-video">
       <source :src="`https://res.cloudinary.com/fishfollowers/video/upload/${media.video_info.source}#t=0.0010`">
     </video>
     <button @click="playVideoWhenClick" ref="playPauseBtn" class="play-pause">
