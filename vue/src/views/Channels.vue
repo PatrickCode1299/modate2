@@ -542,7 +542,7 @@ function replaceHashTagWithLink(text) {
                     post_comments_count:x.comments,
                     post_shares_count:x.shares
                   }" :post_owner="x.email"    :post_id="x.postid" />
-                    <AdvertButtonComponent :channel_info="{
+                    <AdvertButtonComponent class="ad-btn" :channel_info="{
                         subscriber_count:channel_data.channel_subscribers,
                         last_seen:channel_data.owner_last_seen,
                         postid:x.postid
@@ -606,7 +606,7 @@ function replaceHashTagWithLink(text) {
                     post_comments_count:k.comments,
                     post_shares_count:k.shares
                   }" :post_owner="k.email"    :post_id="k.postid" />
-                    <AdvertButtonComponent :channel_info="{
+                    <AdvertButtonComponent class="ad-btn" :channel_info="{
                         subscriber_count:channel_data.channel_subscribers,
                         last_seen:channel_data.owner_last_seen,
                         postid:k.postid
@@ -770,6 +770,11 @@ border-radius: 5px;
   height: 30px;
   animation: spin 2s linear infinite;
 }
+.ad-btn{
+    margin-top:10px;
+    margin-left:10px;
+    margin-right:10px;
+}
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -913,6 +918,9 @@ border-radius: 5px;
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.ad-btn{
+    margin-top:10px;
+}
 }
 @media screen and (min-width:1224px) {
     .channel-container{
@@ -1054,7 +1062,9 @@ border-radius: 5px;
   height: 30px;
   animation: spin 2s linear infinite;
 }
-
+.ad-btn{
+    margin-top:10px;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
