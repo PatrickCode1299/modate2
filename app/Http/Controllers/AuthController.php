@@ -989,7 +989,8 @@ class AuthController extends Controller
     }
     public function fetchAllChannelsVideo(Request $request){
       $current_user=$request->input('email');
-     $find_channel_videos=$this->userActivityService->findChannelVideos($current_user);
+      $ip=$request->input('ip');
+     $find_channel_videos=$this->userActivityService->findChannelVideos($current_user,$ip);
      return $find_channel_videos;
     }
     public function fetchAllChannelsPost(Request $request){

@@ -15,6 +15,7 @@ use App\Models\Bookmark;
 use App\Models\Community;
 use App\Models\Follow_Request;
 use App\Services\UserServices;
+use Illuminate\Support\Facades\Http;
 use App\Models\user_match_choice;
 use Illuminate\Support\Facades\DB;
 class UserActivityServices{
@@ -168,10 +169,24 @@ class UserActivityServices{
         "reply"=>$store_all_post
       ]);
     }
-    public function findChannelVideos($current_user) {
+    public function findChannelVideos($current_user,$ip) {
+    
       $today = Carbon::now();
-  
-      // ✅ Step 1: Get matched users (excluding current user)
+      if($current_user === '' || $current_user === null){
+         // fallback
+
+    $response = Http::get("http://ip-api.com/json/{$ip}");
+    $data = $response->json();
+
+    if ($response->successful() && $data['status'] === 'success') {
+    
+      $country_code =   $data['countryCode'];
+    
+    }
+
+      }
+
+      $current_user=User::where('location',$country_code)->pluck('email')->first();
       $find_user_choice = user_match_choice::where('choice', '!=', $current_user)->pluck('choice');
   
       if ($find_user_choice->isEmpty()) {

@@ -1,5 +1,6 @@
 <script setup>
 import axiosClient from "../axios.js";
+import store from "../store/index.js";
 import { useRouter,useRoute } from "vue-router";
 import { ref, reactive } from "vue";
 import { defineAsyncComponent } from "vue";
@@ -85,7 +86,7 @@ updateUserLastActivity();
 </script>
 <template>
     {{ checkIfUserHasCompleteProfile() }}
-    <HomeTopHeader  class="shadow-md" style="background-color: white; position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
+    <HomeTopHeader v-if="store.state.user.token" class="shadow-md" style="background-color: white; position: fixed; width: 100%; z-index: 1; bottom: 0px;" />
     <Header   id="header" class="shadow-md" style="background-color:white; position: fixed; width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" />
     <div v-if="info.info_value==='true'" style="margin-top: 50px; flex-direction:column;" class=" incomplete d-flex justify-content-center align-items-center">

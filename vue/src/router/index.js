@@ -57,7 +57,7 @@ const routes=[
         path:"/home",
         name:"Home",
         component:Home,
-        meta:{requiresAuth:true},
+      //  meta:{requiresAuth:true},
         children:[
             {
                 name:"ChannelPosts",
