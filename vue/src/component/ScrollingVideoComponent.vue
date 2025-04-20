@@ -303,7 +303,7 @@ const handleKeyDown = (event) => {
     previousVideo(activeIndex.value); // Navigate to previous video
   } else if (event.key === 'ArrowDown') {
     nextVideo(activeIndex.value); // Navigate to next video
-  }
+  } 
 };
 
 const handleScroll = () => {
@@ -334,7 +334,7 @@ onMounted(async () => {
    
     const ipRes = await fetch('https://api.ipify.org?format=json');
     const { ip } = await ipRes.json();
-    console.log("User IP:", ip); 
+   
 
     
     const response = await axiosClient.post('/fetchAllChannelsVideo', {

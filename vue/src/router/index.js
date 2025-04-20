@@ -43,6 +43,7 @@ import UpdateProfile from "../views/UpdateProfile.vue";
 import AdvertiseComponent from "../views/AdvertiseComponent.vue";
 import ChannelPhoto from "../component/ChannelPhoto.vue";
 import ChannelVideo from "../component/ChannelVideo.vue";
+import Features from "../component/features.vue";
 
 
 const routes=[
@@ -51,7 +52,7 @@ const routes=[
     path:"/",
     redirects:"welcome",
     name:"welcome",
-    component:Welcome
+    component:Home
     },
     {
         path:"/home",
@@ -304,6 +305,12 @@ const routes=[
         name:"UserFollowers",
         component:UserFollowers,
         meta:{requiresAuth:true}
+    },
+    {
+        path:"/features",
+        name:"features",
+        component:Features,
+   
     },
 ]
 const router=createRouter({

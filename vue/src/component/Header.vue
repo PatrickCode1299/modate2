@@ -1,8 +1,8 @@
 <template>
     <nav style="height:auto;" class="nav navbar navbar-fixed-top">
-      <div class="container-fluid" style='padding:0px;'>
+      <div class="container-fluid" style='padding:0px; font-family:Raleway;'>
         <RouterLink v-if="!store.state.user.token"  class="navbar-brand p-2 fs-2" to="/">
-          <img src="../landing/hexarex.png" style="height:30px; margin-left:20px; width:30px;">
+          <img src="../landing/hexarex.png" class='logo' style="height:30px; margin-left:20px; width:30px;">
         </RouterLink> 
         <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled fs-5">
           <RouterLink
@@ -226,6 +226,9 @@ if(checklink.count == 0){
   </script>
   
   <style scoped>
+  body{
+    font-family: Raleway;
+  }
   @media screen and (min-width: 320px) {
     .mobile-nav {
       display:flex;
@@ -234,6 +237,9 @@ if(checklink.count == 0){
       z-index: 1;
       width: 100%;
 
+    }
+    .logo{
+      margin-top:10px;
     }
   
     .mobile-nav > .mobile-link {
@@ -375,8 +381,7 @@ if(checklink.count == 0){
   
     .magenta-rounded-bold {
       background-color: #ff0084;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
+      border-radius:20px;
       font-weight: bolder;
       padding-top: 5px;
       padding-bottom: 10px;
@@ -387,8 +392,7 @@ if(checklink.count == 0){
     }
     .purple-rounded-bold{
       background-color: #8a0478;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
+      border-radius:20px;
       font-weight: bolder;
       padding-top: 5px;
       padding-bottom: 10px;
