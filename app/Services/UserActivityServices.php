@@ -183,10 +183,10 @@ class UserActivityServices{
       $country_code =   $data['countryCode'];
     
     }
-
+    $current_user=User::where('location',$country_code)->pluck('email')->first();
       }
 
-      $current_user=User::where('location',$country_code)->pluck('email')->first();
+
       $find_user_choice = user_match_choice::where('choice', '!=', $current_user)->pluck('choice');
   
       if ($find_user_choice->isEmpty()) {
