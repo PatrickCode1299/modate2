@@ -36,9 +36,6 @@ use App\Services\CloudinaryServices;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
-header('Access-Control-Allow-Origin','*');
-header('Access-Control-Allow-Methods','GET,POST,PUT,PATCH,DELETE,OPTIONS');
-header('Access-Control-Allow-Headers','Content-Type, Authorization');
 class AuthController extends Controller
 {
   protected $userService;
@@ -992,7 +989,8 @@ class AuthController extends Controller
     }
     public function fetchAllChannelsVideo(Request $request){
       $current_user=$request->input('email');
-     $find_channel_videos=$this->userActivityService->findChannelVideos($current_user);
+      $ip=$request->input('ip');
+     $find_channel_videos=$this->userActivityService->findChannelVideos($current_user,$ip);
      return $find_channel_videos;
     }
     public function fetchAllChannelsPost(Request $request){

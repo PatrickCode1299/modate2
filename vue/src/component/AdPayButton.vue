@@ -88,8 +88,8 @@ export default {
     const store_current_ad_info = reactive({
       ad_duration: computed(() => Math.min(Math.floor(budget.value * 5), 365)),
       ad_amount: computed(() => budget.value * current_rate * 100), // Computed based on budget
-      minReach: computed(() => Math.floor(budget.value * 10)),
-      maxReach: computed(() => Math.floor(budget.value * 50)),
+      minReach: computed(() => Math.floor(budget.value * 100)),
+      maxReach: computed(() => Math.floor(budget.value * 1000)),
       day_count: computed(() => Math.min(Math.floor(budget.value * 5), 365)),
       payer_email: current_user_email,
     });

@@ -303,7 +303,7 @@ const handleKeyDown = (event) => {
     previousVideo(activeIndex.value); // Navigate to previous video
   } else if (event.key === 'ArrowDown') {
     nextVideo(activeIndex.value); // Navigate to next video
-  }
+  } 
 };
 
 const handleScroll = () => {
@@ -330,19 +330,34 @@ onBeforeUnmount(() => {
 
 
 onMounted(async () => {
-  const response = await axiosClient.post('/fetchAllChannelsVideo', { email: user_mail }).catch(e => {
-    alert("You are not connected to Internet");
+  try {
+   
+    const ipRes = await fetch('https://api.ipify.org?format=json');
+    const { ip } = await ipRes.json();
+   
+
+    
+    const response = await axiosClient.post('/fetchAllChannelsVideo', {
+      email: user_mail,
+      ip: ip
+    });
+
+    response.data.reply.forEach(data => {
+      replies.value.push(data);
+    });
+
+  } catch (e) {
+    // 4. Error handler for network issues
+    alert("You are not connected to the Internet");
     const interval = setInterval(() => {
-        if (navigator.onLine) {
-            clearInterval(interval);
-            location.reload();
-        }
+      if (navigator.onLine) {
+        clearInterval(interval);
+        location.reload();
+      }
     }, 5000);
-  });
-  response.data.reply.forEach(data => {
-    replies.value.push(data);
-  });
+  }
 });
+
 const handleNetworkChange = () => {
   if (navigator.onLine) {
     const videoElement = document.querySelector(`.video-container.active video`);

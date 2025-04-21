@@ -368,7 +368,7 @@ function formatNumber(num) {
     </div>
    </div>
    <div v-else class="d-flex justify-content-center  shadow-sm p-4 align-items-center">
-    <h1 class="fs-6 font-bold"><i class="fa-light fs-4 fa-lock"></i> Only users who follow can see their contents..</h1>
+    <h1 class="fs-6 font-bold"><i class="fa-light fs-4 fa-lock"></i>Follow this user to see their contents..</h1>
    </div>
    </div>
 </div>
@@ -382,7 +382,7 @@ function formatNumber(num) {
     height:100%;
     padding:0px;
     position: relative;
-    margin-top:60px;
+    margin-top:50px;
     
 }
 .images{
@@ -537,7 +537,7 @@ function formatNumber(num) {
     background-color: rgb(252, 252, 252);
     height: 100%;
     margin:0 auto;
-    margin-top:70px;
+    margin-top:50px;
 }
 .images{
     border-radius: 10px;
@@ -681,7 +681,7 @@ function formatNumber(num) {
     background-color: rgb(252, 252, 252);
     height: 100%;
     margin:0 auto;
-    margin-top:70px;
+    margin-top:50px;
 }
 .images{
     border-radius: 10px;

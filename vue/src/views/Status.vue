@@ -501,7 +501,7 @@ let encoded_mail=btoa(user_mail);
   <form class="comment-form"  v-if="user_mail!=null"  @submit="postComment">
     <UploadCommentProgress :progress="showComment.progress" />
   <div class="comment-box-wrapper">
-  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-5" placeholder="Post your comment" style="resize: none; border-radius: 50px; overflow:hidden; height:50px; margin-bottom:2px; border:2px solid lightblue; z-index:2; font-weight:400; margin-top: 0px;  padding-left:20px;   width: 100%;"></textarea>
+  <textarea v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  v-model="comment" class="outline-none fs-6" placeholder="Post your comment" style="resize: none; border-radius: 50px; overflow:hidden; height:40px; margin-bottom:2px; border:2px solid lightblue; z-index:2; font-weight:400; margin-top: 0px;  padding-left:20px;   width: 100%;"></textarea>
   <span     v-if="all_post_info.isReply === '' || all_post_info.isReply === null"  class="position-to-right"><button id="post-button" disabled   class="btn border-20px btn-sm fs-6 btn-success"><i class="fa fa-paper-plane"></i></button></span>
     </div>
   <div id="tag_box" class="card tag_users_box card-default shadow-md cursor-pointer p-2">

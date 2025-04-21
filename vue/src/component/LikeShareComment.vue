@@ -11,6 +11,7 @@ import { watch } from 'vue';
 import { reactive } from 'vue';
 import ImageSliderForPost from './ImageSliderForPost.vue';
 let user_post_id=defineProps(['post_id','post_content','post_owner']);
+let status=ref(true);
 let post_id=user_post_id.post_id;
 let post_content=user_post_id.post_content;
 let comment_status=user_post_id.post_content.post_is_comment_status;
@@ -217,8 +218,8 @@ function checkIfFriendPostIsLong(text, key){
     }
 }
 watch(quote, ()=>{
-quote.value ==='' ? document.getElementById("repost").setAttribute("disabled","true") 
-: document.getElementById("repost").removeAttribute("disabled");
+quote.value ==='' ? status.value=true
+: status.value=false;
 
 
 let str = quote.value;
@@ -278,7 +279,7 @@ function hideTagBox(postid){
 <template>
     <div :id='`quote${post_id}`' class=" quote-editor shadow-sm">
         <span style='color:black; cursor:pointer;' @click="hidePost('quote'+post_id)" class="fs-2 m-4 font-bold">&times;</span>
-        <button id='repost' disabled @click="sharePost" style="border-radius:50px; float: right; width: 80px;" class="btn p-2 m-2 btn-sm font-bold btn-success">Repost</button>
+        <button id='repost' :disabled='status' @click="sharePost" style="border-radius:50px; float: right; width: 80px;" class="btn p-2 m-2 btn-sm font-bold btn-success">Repost</button>
         <div class="user-opinion-div" style="position:relative;">
        <img v-if="user_pic === null || user_pic === 'null'" src="../pictures/profile.png" style="width:40px; height:40px; border-radius:50px; object-fit:cover;" /> <img v-else  style="width:40px; height:40px; border-radius:50px; object-fit:cover;" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${user_pic}`' />
         <textarea v-model="quote" placeholder="Add your thought.." style="resize: none;  border:none;"></textarea>
