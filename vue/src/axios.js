@@ -2,7 +2,7 @@ import axios from "axios";
 import store from "./store";
 
 const axiosClient=axios.create({
-   baseURL:'https://api.hexarex.com/api'
+   baseURL:'https://api.hexarex.com/api/'
   
 })
 axiosClient.interceptors.request.use(config =>{
