@@ -330,31 +330,47 @@ onBeforeUnmount(() => {
 
 
 onMounted(async () => {
+  let ip = null; // Default IP is null
+
   try {
-   
+    // Attempt to fetch the IP address using ipify
     const ipRes = await fetch('https://api.ipify.org?format=json');
-    const { ip } = await ipRes.json();
-   
-
+    if (!ipRes.ok) throw new Error('Failed to fetch IP address');
     
-    const response = await axiosClient.post('/fetchAllChannelsVideo', {
-      email: user_mail,
-      ip: ip
-    });
-
-    response.data.reply.forEach(data => {
-      replies.value.push(data);
-    });
-
+    const { ip: fetchedIp } = await ipRes.json();
+    ip = fetchedIp; // Set the fetched IP if successful
   } catch (e) {
-    // 4. Error handler for network issues
-    alert("You are not connected to the Internet");
-    const interval = setInterval(() => {
-      if (navigator.onLine) {
-        clearInterval(interval);
-        location.reload();
+    // If the IP fetch fails (e.g., in incognito mode), just keep ip as null
+    console.warn('Unable to fetch IP address. Sending null instead.');
+  } finally {
+    // Always send the API request (fallback will happen here)
+    try {
+      const response = await axiosClient.post('/fetchAllChannelsVideo', {
+        email: user_mail,
+        ip: ip // Send null if IP fetch fails
+      });
+
+      // Process the response if successful
+      if (response.data && response.data.reply) {
+        response.data.reply.forEach(data => {
+          replies.value.push(data);
+        });
+      } else {
+        console.error('No data received from the server');
       }
-    }, 5000);
+    } catch (e) {
+      // Handle network issues here
+      console.error('Error during the API request:', e.message);
+      alert("You are not connected to the Internet");
+
+      // Retry logic for reconnecting
+      const interval = setInterval(() => {
+        if (navigator.onLine) {
+          clearInterval(interval);
+          location.reload(); // Reload the page once the connection is restored
+        }
+      }, 5000);
+    }
   }
 });
 
