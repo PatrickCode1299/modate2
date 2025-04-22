@@ -467,6 +467,7 @@ function replaceHashTagWithLink(text) {
                     <p style="margin-bottom: 0px;" class="m-2 text-grey"><small>{{ channel_data.channel_category }}</small></p>
                     <h6 class="m-2 fs-6"><span >{{channel_data.channel_subscribers}}</span></h6>
                     <p class="m-2" style='word-wrap:break-word;'>{{ channel_data.channel_bio }}</p>
+                    <p class="m-2"><small><i>Free $8 monthly & $100 Yearly Reward, when you create ads up to $45 at the end of year</i></small> </p>
                 </div>
             </div>
             <div v-if="!route.params.uid" class="btn-group">
@@ -542,7 +543,7 @@ function replaceHashTagWithLink(text) {
                     post_comments_count:x.comments,
                     post_shares_count:x.shares
                   }" :post_owner="x.email"    :post_id="x.postid" />
-                    <AdvertButtonComponent class="ad-btn" :channel_info="{
+                    <AdvertButtonComponent  v-if="x.video != null" class="ad-btn" :channel_info="{
                         subscriber_count:channel_data.channel_subscribers,
                         last_seen:channel_data.owner_last_seen,
                         postid:x.postid
@@ -606,7 +607,7 @@ function replaceHashTagWithLink(text) {
                     post_comments_count:k.comments,
                     post_shares_count:k.shares
                   }" :post_owner="k.email"    :post_id="k.postid" />
-                    <AdvertButtonComponent class="ad-btn" :channel_info="{
+                    <AdvertButtonComponent  v-if="k.video != null" class="ad-btn" :channel_info="{
                         subscriber_count:channel_data.channel_subscribers,
                         last_seen:channel_data.owner_last_seen,
                         postid:k.postid

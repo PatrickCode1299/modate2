@@ -131,7 +131,8 @@
         location: "/preference",
         property: "link",
         itemicon: "fa-light fa-gear",
-      }
+      },
+      
     
     
     ];
