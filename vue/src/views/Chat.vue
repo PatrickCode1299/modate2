@@ -247,7 +247,7 @@ function hideDoc(){
 }
 watch(user_message, ()=>{
 if(user_message.value.trim().length > 0){
-    console.log(user_message.value.length);
+  
     document.getElementById("send_msg").removeAttribute("disabled");
 }else{
     document.getElementById("send_msg").setAttribute("disabled","true");
