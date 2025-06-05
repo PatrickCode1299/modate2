@@ -22,6 +22,7 @@ use App\Models\Follow_Request;
 use App\Models\CommunityFollower;
 use App\Notifications\ResetPassword;
 use App\Models\Advertisement;
+use App\Jobs\NotifyInactiveUser;
 use Pusher\Pusher;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\WelcomeNotification;
 use DateTime;
+use Carbon\Carbon;
 use App\Services\UserServices;
 use App\Services\ConverSationServices;
 use App\Services\UserActivityServices;
@@ -1332,7 +1334,25 @@ class AuthController extends Controller
       }
       
     }
+    public function isUserActive($reciever){
+      $checkIfUserIsActive=User::where('email', $reciever)->first();
+      $last_time_user_logged_in=$checkIfUserIsActive->updated_at;
+      $time = Carbon::parse($last_time_user_logged_in);
+
+      if ($time->diffInMinutes(now()) < 60) {
+       return false;
+      } else {
+         return true;
+      }
+      
+    }
     public function sendMessage(Request $request){
+      $reciever=$request->input('reciever');
+      if (!$this->isUserActive($reciever)) {
+        dispatch(new NotifyInactiveUser($reciever));
+
+
+    }
       if($request->file('doc') !=null){
         $request->validate([
           'doc' => 'mimes:jpeg,jpg,png,JPG,JPEG,PNG,gif,PDF,pdf,mp3,wav,ogg,OGG,MP3,WAV,mp4,MP4|max:500000'
@@ -1386,6 +1406,7 @@ class AuthController extends Controller
       $data = [$network_msg];
 
       $pusher->trigger('chat', 'send_message', $data);
+
         return response([
           "reply"=>$network_msg
         ]);

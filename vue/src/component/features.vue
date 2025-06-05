@@ -16,39 +16,42 @@ import { RouterLink } from 'vue-router';
       </section>
   
       <section id="features" class="py-16 px-6 bg-white">
-        <h3 class="text-3xl font-bold text-center text-gray-800 mb-12">Features</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-          <img src="https://undraw.io/api/illustrations/0e4d63a0-7a44-42e0-b43c-0c7b1bdf65a6" alt="User Matching" class="w-full h-40 object-contain mb-4" />
-          <h3 class="text-xl font-semibold mb-2">User Matching</h3>
-          <p class="text-gray-600">Find people by interests, location, or life goals with our smart algorithm.</p>
-        </div>
+  <h3 class="text-3xl font-bold text-center text-gray-800 mb-12">Features</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition text-center">
+      <i class="fas fa-user-friends text-5xl text-red-600 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">User Matching</h3>
+      <p class="text-gray-600">Find people by interests, location, or life goals with our smart algorithm.</p>
+    </div>
 
-        <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-          <img src="https://undraw.io/api/illustrations/fab0f5d1-cf5c-42ae-b0cb-4d1c3132c85c" alt="Likes, Comments & Shares" class="w-full h-40 object-contain mb-4" />
-          <h3 class="text-xl font-semibold mb-2">Likes, Comments & Shares</h3>
-          <p class="text-gray-600">Engage with content and help it reach more people with ease.</p>
-        </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition text-center">
+      <i class="fas fa-heart text-5xl text-red-600 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">Likes, Comments & Shares</h3>
+      <p class="text-gray-600">Engage with content and help it reach more people with ease.</p>
+    </div>
 
-        <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-          <img src="https://undraw.io/api/illustrations/9e2cc23a-5176-44e4-a354-d11f3bbd716e" alt="Instant Notifications" class="w-full h-40 object-contain mb-4" />
-          <h3 class="text-xl font-semibold mb-2">Instant Notifications</h3>
-          <p class="text-gray-600">Never miss a moment with fast, reliable push notifications.</p>
-        </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition text-center">
+      <i class="fas fa-bell text-5xl text-red-600 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">Instant Notifications</h3>
+      <p class="text-gray-600">Never miss a moment with fast, reliable push notifications.</p>
+    </div>
 
-        <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-          <img src="https://undraw.io/api/illustrations/19b85c38-9c3f-4518-ae60-e3544fd76a65" alt="User Advertising" class="w-full h-40 object-contain mb-4" />
-          <h3 class="text-xl font-semibold mb-2">User Advertising</h3>
-          <p class="text-gray-600">Let users create and promote their own ads to their followers.</p>
-        </div>
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition text-center">
+      <i class="fas fa-bullhorn text-5xl text-red-600 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">User Advertising</h3>
+      <p class="text-gray-600">Let users create and promote their own ads to their followers.</p>
+    </div>
 
-        <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-          <img src="https://undraw.io/api/illustrations/3a399a5e-9c86-4c41-a70a-62299456fc93" alt="Smart Discovery" class="w-full h-40 object-contain mb-4" />
-          <h3 class="text-xl font-semibold mb-2">Smart Discovery</h3>
-          <p class="text-gray-600">Get personalized feed suggestions based on user behavior and preferences.</p>
-        </div>
-        </div>
-      </section>
+    <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition text-center">
+      <i class="fas fa-search text-5xl text-red-600 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">Smart Discovery</h3>
+      <p class="text-gray-600">Get personalized feed suggestions based on user behavior and preferences.</p>
+    </div>
+
+  </div>
+</section>
+
   
       <section id="ads" class="bg-indigo-50 py-16 px-6">
         <h3 class="text-3xl font-bold text-center text-gray-800 mb-6">Monetize & Advertise</h3>

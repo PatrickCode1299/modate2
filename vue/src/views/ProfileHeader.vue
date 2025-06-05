@@ -216,6 +216,7 @@ function updateProfile() {
     background-color: rgb(253, 253, 253);
     height: 800px;
     border-radius: 10px;
+    margin-top:40px;
   }
 
   .form-label {

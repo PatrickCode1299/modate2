@@ -436,6 +436,7 @@ border-radius: 5px;
     flex-direction: column;
     flex: 1;
     border:none;
+    border-bottom:1px solid lightgrey;
 
     
     
@@ -713,7 +714,7 @@ border-radius: 5px;
     flex-direction: column;
     flex: 1;
     border:none;
-
+    border-bottom:1px solid lightgrey;
     border-radius:0px;
 }
 .card{

@@ -239,7 +239,7 @@ if(checklink.count == 0){
 
     }
     .logo{
-      margin-top:10px;
+      margin-top:2px;
     }
   
     .mobile-nav > .mobile-link {
