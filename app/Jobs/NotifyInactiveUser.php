@@ -27,15 +27,16 @@ class NotifyInactiveUser implements ShouldQueue
 public function handle()
 {
     try {
-        Mail::raw('You have a new message on Hexarex. Please log in to check it.', function ($message) {
-            $message->to($this->recipientEmail)
-                    ->subject('You’ve Been Notified from Hexarex');
-        });
+    $messageBody = 'You have a new message on Hexarex. Please log in to check it: https://hexarex.com/messages';
 
-        Log::info("Raw email sent to: " . $this->recipientEmail);
-    } catch (\Exception $e) {
-        Log::error('Failed to send raw email to inactive user: ' . $e->getMessage());
-    }
+    Mail::raw($messageBody, function ($message) {
+        $message->to($this->recipientEmail)
+                ->subject('You’ve Been Notified from Hexarex');
+    });
+} catch (\Exception $e) {
+    Log::error('Failed to send raw email to inactive user: ' . $e->getMessage());
+}
+
 }
 
 }
