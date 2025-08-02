@@ -9,7 +9,7 @@ class CheckApiKey
 {
     public function handle(Request $request, Closure $next)
     {
-        $apiKey = $request->header('x-api-key');
+        $apiKey = $request->header('x-k');
 
         // You can hardcode or store this in your .env
         $validKey = env('API_KEY');
