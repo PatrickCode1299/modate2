@@ -36,6 +36,7 @@ use App\Services\ConverSationServices;
 use App\Services\UserActivityServices;
 use App\Services\CloudinaryServices;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Log;
 
 
 class AuthController extends Controller
@@ -78,8 +79,8 @@ class AuthController extends Controller
           'user' => $user,
           'token' => $token
         ]);
-        
-        
+
+
       }
     }
     public function sendMail($email){
@@ -102,8 +103,8 @@ class AuthController extends Controller
           'required',
         ],
         'remember' => 'boolean',
-       
-      
+
+
       ]);
      $remember= $credentials['remember'] ?? false;
      unset($credentials['remember']);
@@ -121,7 +122,7 @@ class AuthController extends Controller
       'token' => $token
      ]);
      }
-     
+
     }
     public function checkIfUserHasPaid(Request $request){
      $user_mail = $request->input('data');
@@ -138,7 +139,7 @@ class AuthController extends Controller
         'profile_pic' => 'required|image|mimes:jpeg,jpg,png,JPG,JPEG,PNG,gif|max:500000'
 
       ]);
-      $owner=$request->input('owner'); 
+      $owner=$request->input('owner');
       $file=$request->file('profile_pic');
      // $image_path=$request->file('profile_pic')->store('users_pic','public');
       $this->cloudinaryService->updateProfilePicture($file,$owner);
@@ -149,11 +150,11 @@ class AuthController extends Controller
     public function updateCoverPhoto(Request $request){
       $request->validate([
          'coverPhoto' => 'required|image|mimes:jpeg,jpg,png,JPG,JPEG,PNG,gif|max:2048'
- 
-       ]); 
+
+       ]);
        $filePath=$request->file('coverPhoto');
        //$image_path=$request->file('coverPhoto')->store('cover_photo','public');
-       
+
        $upload=  Cloudinary::upload($filePath->getRealPath(), [
         'folder' => 'cover_photo', // Optional: specify a folder
     ]);
@@ -168,7 +169,7 @@ class AuthController extends Controller
        }
        User::where('email',$owner)->update([
          'coverPhoto'  =>$image_path,
-   
+
        ]);
        return response([
          'update' => "Cover Photo Updated Sucessfully"
@@ -210,23 +211,23 @@ class AuthController extends Controller
         'school'=>      $school,
         'interest'=>    $interest,
         'religion'=>    $religion,
-        
+
       ];
       $this->userService->updateUserProfile($email,$data);
         return response([
           "success" => "Updated User Profile Successfully",
         ]);
     }
-  
+
     }
 
-    
+
     public function findUserMatch(Request $request){
       $email=$request->input('data');
       $find_user_match= $this->userService->findUserMatch($email);
       return $find_user_match;
     }
-   
+
     public function setUserMatch(Request $request){
       $user=$request->input('user');
       $choice=$request->input('choice');
@@ -237,7 +238,7 @@ class AuthController extends Controller
       $user=$request->input('user');
       $find_user_details=User::where('email',$user)->first();
       $sender=$find_user_details['first_name'];
-    
+
       $choice=$request->input('choice');
       user_match_choice::where(["user"=>$user, "choice"=>$choice])->delete();
       $this->userService->notifyUser($user,$choice,"$sender unfollowed you..","match");
@@ -252,13 +253,13 @@ class AuthController extends Controller
      $create_user_post= $this->userActivityService->createUserPost($email,$user_caption,$tagged_users);
      return $create_user_post;
     }
-    
+
     public function fetchUserPost(Request $request){
       $email=$request->input('email');
      $fetch_user_post= $this->userActivityService->fetchUserPost($email);
      return $fetch_user_post;
     }
-    
+
     public function fetchNewPost(Request $request){
       $email=$request->input('email');
       $fetch_new_post=$this->userActivityService->fetchNewPost($email);
@@ -268,7 +269,7 @@ class AuthController extends Controller
       $request->validate([
         'story_post' => 'mimes:jpeg,jpg,png,mp4,JPG,JPEG,PNG,MP4,gif|max:500000'
 
-      ]); 
+      ]);
       $email=$request->input('email');
       $file=$request->file('story_post');
       ini_set('max_execution_time', 500);
@@ -311,7 +312,7 @@ class AuthController extends Controller
       return response([
         "reply"=>"Deletion Successfully Completed"
       ]);
-      
+
     }
     public function findUserFriend(Request $request){
       $email=$request->input('email');
@@ -321,7 +322,7 @@ class AuthController extends Controller
        $owner_friend=$user_match->choice;
        array_push($hold_user_mutual_friends,$owner_friend);
       }
-      
+
      $reply= Story::whereIn('user_email',$hold_user_mutual_friends)->latest()->get();
      $hold_all_friends_who_posted=array();
      foreach($reply as $user_friends){
@@ -340,7 +341,7 @@ class AuthController extends Controller
      $number_of_friends_story=count($user_friends_details_collection);
      if($number_of_friends_story > 1){
         $paginate="true";
-        
+
      }else{
         $paginate="false";
      }
@@ -376,7 +377,7 @@ class AuthController extends Controller
       foreach($no_of_shares as $shares_count){
         array_push($post_shares_collection,$shares_count);
       }
-        array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+        array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
         "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
@@ -410,7 +411,7 @@ class AuthController extends Controller
         foreach($no_of_shares as $shares_count){
           array_push($post_shares_collection,$shares_count);
         }
-          array_push($store_all_channel_post,["name"=>$new_post->name, "first_name"=>$new_post->first_name, "last_name"=>$new_post->last_name,  "caption"=>$new_post->caption,"date"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "avatar"=>$new_post->profile_picture, 
+          array_push($store_all_channel_post,["name"=>$new_post->name, "first_name"=>$new_post->first_name, "last_name"=>$new_post->last_name,  "caption"=>$new_post->caption,"date"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "avatar"=>$new_post->profile_picture,
           "email"=>base64_encode($new_post->email),"img_1"=>$new_post->post_img1,"img_2"=>$new_post->post_img2,"img_3"=>$new_post->post_img3,"img_4"=>$new_post->post_img4,"video"=>$new_post->video,"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection),"shares"=>count($post_shares_collection)
         ]);
         return response([
@@ -444,7 +445,7 @@ class AuthController extends Controller
       foreach($no_of_shares as $shares_count){
         array_push($post_shares_collection,$shares_count);
       }
-        array_push($store_all_post,["name"=>$new_post->name,  "caption"=>$new_post->caption,"date"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "avatar"=>$new_post->profile_picture, 
+        array_push($store_all_post,["name"=>$new_post->name,  "caption"=>$new_post->caption,"date"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "avatar"=>$new_post->profile_picture,
         "email"=>base64_encode($new_post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
@@ -480,7 +481,7 @@ class AuthController extends Controller
         array_push($post_shares_collection,$shares_count);
       }
       $get_prev_owner_picture=DB::table('users')->select('profile_picture')->where('email',$new_post->email_of_user_who_shared)->first();
-        array_push($store_all_post,["name"=>$new_post->name,  "caption"=>$new_post->caption,"created_at"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "profile_picture"=>$new_post->profile_picture, 
+        array_push($store_all_post,["name"=>$new_post->name,  "caption"=>$new_post->caption,"created_at"=>$new_post->created_at, "postid"=>$new_post->postid, "isReply"=>$new_post->isReply,   "profile_picture"=>$new_post->profile_picture,
         "email"=>base64_encode($new_post->email), "email_of_user_who_shared"=>base64_encode($new_post->email_of_user_who_shared),"name_of_user_who_shared"=>$new_post->name_of_user_who_shared,"prev_id"=>$new_post->prev_id,"post_img1"=>$new_post->post_img1, "post_img2"=>$new_post->post_img2, "post_img3"=>$new_post->post_img3, "post_img4"=>$new_post->post_img4, "quote"=>$new_post->quote, "video"=>$new_post->video, "avatar_of_original_poster"=>$get_prev_owner_picture->profile_picture,   "likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
@@ -488,14 +489,14 @@ class AuthController extends Controller
         "reply" => $store_all_post,
       ]);
     }
-     
 
-      
-   
+
+
+
     public function createChannel(Request $request){
-      
+
       if(is_numeric($request->input('channel_name')) || is_numeric($request->input('channel_bio'))){
-        
+
         $numeric_error="Please input a name within A-Z";
         return response([
           "number_error" => $numeric_error
@@ -518,7 +519,7 @@ class AuthController extends Controller
           "reply" => "Successfull",
         ]);
       }
-      
+
     }
     public function createCommunity(Request $request){
       if(is_numeric($request->input('community_name')) || is_numeric($request->input('community_bio'))){
@@ -543,7 +544,7 @@ class AuthController extends Controller
           "reply" => "Successfull",
         ]);
       }
-      
+
     }
     public function checkIfUserHasChannel(Request $request){
       $email=$request->input('email');
@@ -560,7 +561,7 @@ class AuthController extends Controller
           'reply'=> "false"
         ]);
       }
-      
+
     }
     public function createUserChannelPost(Request $request){
       $email=$request->input('email');
@@ -579,7 +580,7 @@ class AuthController extends Controller
           "avatar" => $avatar,
           "caption" => $caption,
           "postid"  => $post_id
-  
+
         ]);
         return response([
           "reply"=>$create_post
@@ -598,8 +599,8 @@ class AuthController extends Controller
           "caption" => $caption,
           "post_img1" => $pictureId,
           "postid"  => $post_id
-         
-  
+
+
         ]);
         return response([
           "reply"=>$create_post
@@ -609,7 +610,7 @@ class AuthController extends Controller
        // $image_path2=$request->file('image2')->store('users_posts','public');
        $publicIds = [
         'post_img1' => null,
-        'post_img2' => null, 
+        'post_img2' => null,
         ];
 
     // List of file input names
@@ -648,7 +649,7 @@ class AuthController extends Controller
           'post_img1' => null,
           'post_img2' => null,
           'post_img3' => null,
-          
+
       ];
 
       // List of file input names
@@ -675,7 +676,7 @@ class AuthController extends Controller
           "post_img3" => $publicIds['post_img3'],
           "postid"  => $post_id
 
-  
+
         ]);
         return response([
           "reply"=>$create_post
@@ -712,7 +713,7 @@ class AuthController extends Controller
       $name = $request->input('name');
       $avatar = $request->input('avatar');
       $caption = $request->input('caption');
-  
+
 
       // Create the post in the database
       $create_post = ChannelPost::create([
@@ -731,7 +732,7 @@ class AuthController extends Controller
           "reply"=>$create_post
         ]);
       }
-      
+
     }
     public function createCommunityPost(Request $request){
       $email=$request->input('email');
@@ -750,7 +751,7 @@ class AuthController extends Controller
           "avatar" => $avatar,
           "caption" => $caption,
           "postid"  => $post_id
-  
+
         ]);
         return response([
           "reply"=>$create_post
@@ -769,8 +770,8 @@ class AuthController extends Controller
           "caption" => $caption,
           "post_img1" => $pictureId,
           "postid"  => $post_id
-         
-  
+
+
         ]);
         return response([
           "reply"=>$create_post
@@ -780,7 +781,7 @@ class AuthController extends Controller
        // $image_path2=$request->file('image2')->store('users_posts','public');
        $publicIds = [
         'post_img1' => null,
-        'post_img2' => null, 
+        'post_img2' => null,
         ];
 
     // List of file input names
@@ -819,7 +820,7 @@ class AuthController extends Controller
           'post_img1' => null,
           'post_img2' => null,
           'post_img3' => null,
-          
+
       ];
 
       // List of file input names
@@ -846,7 +847,7 @@ class AuthController extends Controller
           "post_img3" => $publicIds['post_img3'],
           "postid"  => $post_id
 
-  
+
         ]);
         return response([
           "reply"=>$create_post
@@ -902,9 +903,9 @@ class AuthController extends Controller
           "reply"=>$create_post
         ]);
       }
-      
+
     }
-   
+
     public function findChannelPost(Request $request){
       $email=$request->input('email');
       $find_channel_post=$this->userActivityService->findChannelPost($email);
@@ -1066,7 +1067,7 @@ class AuthController extends Controller
       return response([
         "reply" => $number_of_post_likes
       ]);
-     
+
     }
     public function findPostCommentCounts(Request $request){
       $post_id=$request->input('post_id');
@@ -1079,7 +1080,7 @@ class AuthController extends Controller
       return response([
         "reply" => $number_of_post_likes
       ]);
-     
+
     }
     public function findAllPostUserLiked(Request $request){
       $post_id=$request->input('post_id');
@@ -1102,8 +1103,8 @@ class AuthController extends Controller
       return response([
         "reply" => "successful"
       ]);
-   
-     
+
+
     }
     public function findStatus(Request $request){
       $post_id=$request->input('post_id');
@@ -1112,8 +1113,8 @@ class AuthController extends Controller
         $show_all_post_info=array("name"=>$check_post_table->name,
         "caption"=>$check_post_table->caption, "avatar"=>$check_post_table->profile_picture,"user_email"=>base64_encode($check_post_table->email), "post_date"=>$check_post_table->created_at, "prev_id"=>$check_post_table->postid, "isReply"=>$check_post_table->isReply,   "img_1"=>null,"img_2"=>null,"img_3"=>null,"img_4"=>null,"video"=>null);
         $check_no_of_users_who_comment=DB::select("SELECT count(comment) AS total_comments FROM comments WHERE post_id='$post_id'");
-        $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='$post_id'");  
-        $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='$post_id'");    
+        $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='$post_id'");
+        $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='$post_id'");
         $check_no_of_users_who_bookmarked=DB::select("SELECT count(user_who_bookmark) AS total_bookmarks FROM bookmarks WHERE bookmarked_post_id='$post_id'");
         return response([
           "reply" => $show_all_post_info,
@@ -1121,7 +1122,7 @@ class AuthController extends Controller
           "no_of_users_who_shared"=>$check_no_of_users_who_shared,
           "no_of_users_who_liked"=>$check_no_of_users_who_liked,
           "no_of_users_who_bookmarked"=>$check_no_of_users_who_bookmarked
-        
+
         ]);
       }else{
         $check_channels_table=DB::table('channel_posts')->join('users','channel_posts.email','=','users.email')->select('channel_posts.name','channel_posts.caption','users.profile_picture','channel_posts.email','channel_posts.created_at','channel_posts.postid', 'channel_posts.post_img1','channel_posts.post_img2','channel_posts.post_img3','channel_posts.post_img4','channel_posts.video','channel_posts.isReply')->where('channel_posts.postid',$post_id)->first();
@@ -1131,8 +1132,8 @@ class AuthController extends Controller
           "img_1"=>$check_channels_table->post_img1, "img_2"=>$check_channels_table->post_img2, "img_3"=>$check_channels_table->post_img3, "img_4"=>$check_channels_table->post_img4,"video"=>$check_channels_table->video, "isReply"=>$check_channels_table->isReply
         );
         $check_no_of_users_who_comment=DB::select("SELECT count(comment) AS total_comments FROM comments WHERE post_id='$post_id'");
-        $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='$post_id'");  
-        $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='$post_id'");    
+        $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='$post_id'");
+        $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='$post_id'");
         $check_no_of_users_who_bookmarked=DB::select("SELECT count(user_who_bookmark) AS total_bookmarks FROM bookmarks WHERE bookmarked_post_id='$post_id'");
           return response([
             "reply" => $show_all_post_info,
@@ -1151,8 +1152,8 @@ class AuthController extends Controller
             "sharer_quote"=>$check_shared_posts_table->quote,"sharer_avatar"=>$get_sharer_picture->profile_picture,"postid"=>$check_shared_posts_table->postid,"prev_id"=>$check_shared_posts_table->prev_id, "isReply"=>$check_shared_posts_table->isReply
           );
           $check_no_of_users_who_comment=DB::select("SELECT count(comment) AS total_comments FROM comments WHERE post_id='$post_id'");
-        $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='$post_id'");  
-        $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='$post_id'");    
+        $check_no_of_users_who_shared=DB::select("SELECT count(quote) AS total_shares FROM shared__posts WHERE prev_id='$post_id'");
+        $check_no_of_users_who_liked=DB::select("SELECT count(user_who_liked) AS total_like FROM post_likes WHERE post_id='$post_id'");
         $check_no_of_users_who_bookmarked=DB::select("SELECT count(user_who_bookmark) AS total_bookmarks FROM bookmarks WHERE bookmarked_post_id='$post_id'");
             return response([
               "reply" => $show_all_post_info,
@@ -1166,10 +1167,10 @@ class AuthController extends Controller
             "reply"=> "error"
           ]);
         }
-      
+
       }
     }
-     
+
     }
     public function findSharedStatus(Request $request){
       $post_id=$request->input('post_id');
@@ -1200,7 +1201,7 @@ class AuthController extends Controller
       return response([
         "reply"=>$all_quote_posts,
       ]);
-      
+
       }
 
     public function postComment(Request $request){
@@ -1252,17 +1253,17 @@ class AuthController extends Controller
         "reply"=>$hold_each_comment_reply_count,
       ]);
     }
-    
+
     public function DeleteComment(Request $request){
       $post_id=$request->input('date');
       $current_user=$request->input('email');
-    
+
       DB::table('comments')->where(['created_at'=>$post_id, 'user_who_comment'=>$current_user])->delete();
       return response([
         "reply" => "successful"
       ]);
-   
-     
+
+
     }
     public function DeleteCommentReply(Request $request){
       $post_id=$request->input('date');
@@ -1271,8 +1272,8 @@ class AuthController extends Controller
       return response([
         "reply" => "successful"
       ]);
-   
-     
+
+
     }
     public function findNotifications(Request $request){
       $current_user=$request->input('email');
@@ -1285,7 +1286,7 @@ class AuthController extends Controller
       }
       Notifications::where('owner',$current_user)->update([
         'owner_has_read'  =>"true",
-  
+
       ]);
       return response([
         "reply" => $store_all_notifications
@@ -1306,7 +1307,7 @@ class AuthController extends Controller
       $sender=$request->input('sender');
       $reciever=$request->input('reciever');
       $unique_id=$request->input('unique_id');
-      
+
       $check_if_both_users_have_a_conversation=Messages::where(["sender"=>$sender, "reciever"=>$reciever])->first();
       $check_if_any_users_have_a_conversation=Messages::where(["sender"=>$reciever, "reciever"=>$sender])->first();
       if($check_if_both_users_have_a_conversation == null && $check_if_any_users_have_a_conversation == null){
@@ -1316,7 +1317,7 @@ class AuthController extends Controller
           "unique_id"=>$unique_id,
           "conversation"=>'',
           "file"=>''
-          
+
         ]);
         return response([
           "reply"=>$unique_id
@@ -1332,7 +1333,7 @@ class AuthController extends Controller
           ]);
         }
       }
-      
+
     }
     public function isUserActive($reciever){
       $checkIfUserIsActive=User::where('email', $reciever)->first();
@@ -1340,24 +1341,24 @@ class AuthController extends Controller
       $time = Carbon::parse($last_time_user_logged_in);
 
       if ($time->diffInMinutes(now()) < 60) {
-       return false;
+       return true;
       } else {
-         return true;
+         return false;
       }
-      
+
     }
     public function sendMessage(Request $request){
       $reciever=$request->input('reciever');
       if (!$this->isUserActive($reciever)) {
         dispatch(new NotifyInactiveUser($reciever));
-
+         Log::info("Dispatched NotifyInactiveUser job for: " . $reciever);
 
     }
       if($request->file('doc') !=null){
         $request->validate([
           'doc' => 'mimes:jpeg,jpg,png,JPG,JPEG,PNG,gif,PDF,pdf,mp3,wav,ogg,OGG,MP3,WAV,mp4,MP4|max:500000'
-  
-        ]); 
+
+        ]);
         $filePath=$request->file('doc');
         $file_ext=$filePath->getClientOriginalExtension();
         $video_files_array=array('mp4','MP4','webm','WEBM','mkv','MKV','3gp');
@@ -1533,7 +1534,7 @@ class AuthController extends Controller
         "reply"=>$network_msg
       ]);
     }
-        
+
       }else{
         $unique_id=$request->input('unique_id');
         $conversation=$request->input('conversation');
@@ -1575,8 +1576,8 @@ class AuthController extends Controller
           "reply"=>$network_msg
         ]);
       }
-    
-      
+
+
     }
     public function findConvo(Request $request){
       $unique_id=$request->input('unique_id');
@@ -1600,9 +1601,9 @@ class AuthController extends Controller
         array_push($all_messages,["created_at"=>$users_conversation->created_at,"sender"=>$users_conversation->sender,
         "reciever"=>$users_conversation->reciever,"unique_id"=>$users_conversation->unique_id,"conversation"=>decrypt($users_conversation->conversation),"file"=>decrypt($users_conversation->file),"file_status"=>$users_conversation->file_status,"isRead"=>$users_conversation->isRead]);
         }
-        
+
       }
-   
+
       return response([
         "reply"=>$all_messages,
         "sender"=>$sender,
@@ -1658,7 +1659,7 @@ class AuthController extends Controller
       $request->validate([
         'video' => 'required|file|mimes:mp4,mov,3gp,MP4,MOV,gif|max:512000'
 
-      ]); 
+      ]);
     //  $file=$request->file('video')->store('users_posts','public');
     ini_set('max_execution_time', 500);
     $filePath=$request->file('video');
@@ -1685,7 +1686,7 @@ class AuthController extends Controller
       $request->validate([
         'video' => 'required|file|mimes:mp4,mov,3gp,MP4,MOV,gif|max:512000'
 
-      ]); 
+      ]);
     //  $file=$request->file('video')->store('users_posts','public');
     ini_set('max_execution_time', 500);
     $filePath=$request->file('video');
@@ -1727,11 +1728,11 @@ class AuthController extends Controller
         $info="$first_name_of_user_who_replied"."\t$last_name_of_user_who_replied replied: $comment_reply";
         $this->userService->notifyUser($user_who_replied,$user_being_replied,$info,$post_id);
       }
-      
+
       return response([
         "reply"=>$reply
       ]);
-    
+
     }
     public function findCommentReplies(Request $request){
       $comment_id=$request->input('comment_id');
@@ -1752,7 +1753,7 @@ class AuthController extends Controller
           "other_reply_count"=>$user_has_reply
         ]);
        }
-       
+
       }
       return response([
         "reply"=>$hold_all_replies,
@@ -1877,10 +1878,10 @@ class AuthController extends Controller
           "tagged_users"=>$tagged_users
         ]);
       }
-      
-     
+
+
       }
-      
+
     }
 
     public function fetchAllSharedPost(Request $request){
@@ -1888,7 +1889,7 @@ class AuthController extends Controller
       $find_all_shared_post=$this->userActivityService->fetchAllSharedPostsForCurrentUser($current_user);
       return $find_all_shared_post;
     }
-    
+
     public function findUserPost(Request $request){
       $current_user=$request->input('email');
       $find_user_thoughts=User_Post::join('users','users.email','=','user__posts.email')->where('user__posts.email',$current_user)->select('user__posts.created_at',
@@ -1911,7 +1912,7 @@ class AuthController extends Controller
       foreach($no_of_shares as $shares_count){
         array_push($post_shares_collection,$shares_count);
       }
-        array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+        array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
         "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
@@ -1937,7 +1938,7 @@ class AuthController extends Controller
         "user_who_block"=>$user_getting_blocked,
         "user_getting_blocked"=>$user_who_block
       ]);
-  
+
 
       return response([
         "reply"=>$check_if_user_who_blocks_know_this_user
@@ -1979,7 +1980,7 @@ class AuthController extends Controller
             "isPending"=>""
           ]);
         }
-       
+
       }
     }
     public function check_if_private_account_is_followed(Request $request){
@@ -2031,7 +2032,7 @@ class AuthController extends Controller
       $postid=$request->input('postid');
       $disable_users_from_commenting=$this->userActivityService->disableUserComment($postid);
       return $disable_users_from_commenting;
-      
+
     }
     public function find_user_followers(Request $request){
       $email=$request->input('email');
@@ -2052,7 +2053,7 @@ class AuthController extends Controller
         foreach($publicId as $id){
          Cloudinary::destroy($id);
         }
-        
+
     }
     public function customiseProfile(Request $request){
       $option=$request->input('option');
@@ -2142,7 +2143,7 @@ class AuthController extends Controller
   // Proceed with further logic (e.g., updating the user's password in the database)
   // You can find the user by email and update their password, for example:
   $user = User::where('email', $email)->first();
-  
+
   if ($user) {
       $user->password = $hashedPassword;
       $user->save();
@@ -2151,7 +2152,7 @@ class AuthController extends Controller
   } else {
       return response()->json(['reply' => 'User not found']);
   }
-   
+
   }
   public function createAdvertisement(Request $request){
     $email=$request->input('email');
@@ -2187,6 +2188,6 @@ class AuthController extends Controller
       "reply"           => $create_advertisement
     ]);
   }
-        
+
 }
 }

@@ -21,16 +21,22 @@ class NotifyInactiveUser implements ShouldQueue
         $this->recipientEmail = $recipientEmail;
     }
 
-    public function handle()
-    {
-        try {
-            // You can add logic here to check if user is active
-            // For now, we assume they're inactive and send mail
 
-            Mail::to($this->recipientEmail)->send(new InactiveUserMail($this->recipientEmail));
-        } catch (\Exception $e) {
-            // Log error but don't crash anything
-          //  \Log::error('Failed to send mail to inactive user: ' . $e->getMessage());
-        }
-    }
+
+
+public function handle()
+{
+    try {
+    $messageBody = 'You have a new message on Hexarex. Please log in to check it: https://hexarex.com/messages';
+
+    Mail::raw($messageBody, function ($message) {
+        $message->to($this->recipientEmail)
+                ->subject('You’ve Been Notified from Hexarex');
+    });
+} catch (\Exception $e) {
+    Log::error('Failed to send raw email to inactive user: ' . $e->getMessage());
+}
+
+}
+
 }

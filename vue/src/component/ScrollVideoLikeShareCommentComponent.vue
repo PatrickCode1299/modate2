@@ -1,24 +1,18 @@
 <script setup>
 import { RouterLink } from 'vue-router';
-import { useStore } from 'vuex';
-import { useRoute } from 'vue-router';
-import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
+import NotifyAlert  from './NotifyAlert.vue';
+
+import { onMounted, watch } from 'vue';
 import { defineProps } from 'vue';
 import axiosClient from '../axios';
-import {ref} from "vue";
-import { watch } from 'vue';
+import { ref } from 'vue';
 import { reactive } from 'vue';
 let user_post_id=defineProps(['post_id','post_content','post_owner']);
 let post_id=user_post_id.post_id;
 let post_content=user_post_id.post_content;
-let comment_status=user_post_id.post_content.post_is_comment_status;
-let isSound=localStorage.getItem('ISSOUND');
 let current_user=localStorage.getItem('USER_MAIL');
-let user_pic=localStorage.getItem('PICTURE');
-let post_info=reactive({
-    post_data:user_post_id.post_content,
-});
+let shareFail=ref(false);
+
 let like_state=reactive({
     post_id:"",
     count:post_content.post_likes_count,
@@ -33,7 +27,7 @@ tagged_users_result:{}
 let all_tagged_users=reactive({
 info:[],
 value:[]
-}); 
+});
 onMounted(() =>{
     let formData=new FormData();
     formData.append("post_id",post_id);
@@ -44,7 +38,7 @@ onMounted(() =>{
        }else{
         document.getElementById(post_id).style.color="white";
        }
-     
+
     }).catch(e=>{
         console.log(e);
     });
@@ -70,10 +64,10 @@ function updateLike(){
     }).catch(e=>{
         console.log(e);
     });
-   
+
 document.getElementById(post_id).style.color="red";
 }
-let router=useRouter();
+
 
 
 async function share(){
@@ -84,14 +78,27 @@ async function share(){
   url:post_link,
 };
 
-   
+
     try {
     await navigator.share(shareData);
   } catch (err) {
+    shareFail.value=true;
     console.log(err);
   }
 
 }
+let showAlert=ref(false);
+watch(shareFail, (newVal) => {
+  if (newVal) {
+    showAlert.value = true;
+
+    setTimeout(() => {
+      showAlert.value = false;
+    }, 2500);
+
+    shareFail.value = false;
+  }
+});
 
 
 
@@ -110,6 +117,7 @@ async function share(){
               <i class="fa-light fa-share-all"></i>
               <span>{{ like_state.shareCount }}</span>
             </div>
+            <NotifyAlert info="Link Copied to Clipboard" v-if="showAlert === true" />
 </template>
 <style scoped>
 .video-feed {
@@ -273,7 +281,7 @@ async function share(){
 .liked{
     animation: bloodFlow 0.6s ease-out;
     font-size:20px;
-    
+
 }
 @keyframes bloodFlow {
   0% {
