@@ -5,9 +5,9 @@
       v-for="(item, index) in replies"
       :key="item.id"
       class="video-container"
-      :class="{ 
+      :class="{
         'active': activeIndex === index,
-        'exiting': exitingIndex === index 
+        'exiting': exitingIndex === index
       }"
       v-show="index === activeIndex || index === exitingIndex"
       @touchstart="handleTouchStart"
@@ -26,12 +26,12 @@
         @waiting="handleWaiting(index)"
         @playing="handlePlaying(index)"
         @click="togglePlayPause(index)"
-        @loadedmetadata="setDuration(index)" 
+        @loadedmetadata="setDuration(index)"
         @timeupdate="handleTimeUpdate($event, index)"
         @mousemove="handleMouseLeave"
-        
+
       ></video>
-      
+
       <!-- Loading Spinner -->
       <div v-if="loading[index]" class="loading-spinner">
         <div class="spinner"></div>
@@ -42,7 +42,7 @@
           <span style="display:block;" id="pause"><i class="fas fa-pause"></i></span>
         </button>
       </div>
-     
+
       <!-- Overlay and action buttons -->
       <div class="overlay p-2">
         <div class="profile">
@@ -52,27 +52,27 @@
           <RouterLink :to="`/channel/${item.email}`">{{ item.name }}</RouterLink><br />
           <small class=" text-info" v-if="item.isadvert === true "><i>Sponsored</i></small>
           </p>
-          
-          
+
+
         </div>
         <p class="caption" style="text-shadow:1px 2px 1px black;"> {{ checkIfFriendPostIsLong(item.caption) }}</p>
-        
-        <input 
-  type="range" 
+
+        <input
+  type="range"
   class="seek-slider"
-  min="0" 
-  :max="duration[activeIndex] || 0" 
-  step="0.1" 
-  v-model="currentTime[activeIndex]" 
+  min="0"
+  :max="duration[activeIndex] || 0"
+  step="0.1"
+  v-model="currentTime[activeIndex]"
   @input="seekVideo"
   @change="seekVideo"
 />
 <div class="time-display">
-  <span>{{ formatTime(currentTime[activeIndex] || 0) }}</span> / 
+  <span>{{ formatTime(currentTime[activeIndex] || 0) }}</span> /
   <span>{{ formatTime(duration[activeIndex] || 0) }}</span>
 </div>
 
- 
+
         <!-- Modern Action Bar -->
         <div class="actions">
           <button @click="previousVideo(index)"  class="btn video-control-btn btn-md font-bold m-2"><i class="fa-solid fa-arrow-up"></i></button>
@@ -128,7 +128,7 @@ const getVideoUrl = (path) => `https://res.cloudinary.com/fishfollowers/video/up
 const getProfilePictureUrl = (path) => `https://res.cloudinary.com/fishfollowers/image/upload/${path}`;
 
 const handleCanPlay = (event, index) => {
-  if (index === activeIndex.value) {   
+  if (index === activeIndex.value) {
     event.target.play().catch(error => {
       console.error('Play failed:', error);
     });
@@ -166,7 +166,7 @@ const updateVideoPlayState = () => {
 const togglePlayPause = (index) => {
   const videoElement = document.querySelectorAll('video')[index];
   if (videoElement.paused) {
-    //Video is Played
+
     document.getElementById("play").style.display = "none";
     document.getElementById("pause").style.display = "block";
     videoElement.play().catch(error => {
@@ -197,7 +197,8 @@ function nextVideo(index) {
   updateVideoPlayState();
   setTimeout(() => {
     exitingIndex.value = null; // Clear the exiting state after the transition
-  }, 500); // Same as the CSS transition duration
+  }, 500); // Same as the CSS transition duration'
+
 }
 
 function previousVideo(index) {
@@ -303,7 +304,7 @@ const handleKeyDown = (event) => {
     previousVideo(activeIndex.value); // Navigate to previous video
   } else if (event.key === 'ArrowDown') {
     nextVideo(activeIndex.value); // Navigate to next video
-  } 
+  }
 };
 
 const handleScroll = () => {
@@ -336,7 +337,7 @@ onMounted(async () => {
     // Attempt to fetch the IP address using ipify
     const ipRes = await fetch('https://api.ipify.org?format=json');
     if (!ipRes.ok) throw new Error('Failed to fetch IP address');
-    
+
     const { ip: fetchedIp } = await ipRes.json();
     ip = fetchedIp; // Set the fetched IP if successful
   } catch (e) {
@@ -416,11 +417,22 @@ if (videoElement) {
   videoElement.currentTime = 0;
   }
 }
+let video=ref([]);
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    const videos = document.querySelectorAll('.video-container video');
+    videos.forEach(video => {
+      if (!video.paused) video.pause();
+    });
+  }
+};
+
 onMounted(() => {
   window.addEventListener('online', handleNetworkChange);
   window.addEventListener('offline', handleNetworkChange);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
   isHovering.value = false;
-  emit('handle_header', false); 
+  emit('handle_header', false);
 });
 
 onUnmounted(() => {
@@ -436,6 +448,7 @@ onUnmounted(() => {
 
 onBeforeUnmount(() => {
   stopVideo();
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 const emit= defineEmits(['handle_header']);
 const isHovering = ref(false);
@@ -443,18 +456,19 @@ const isHovering = ref(false);
 // Function to handle hover events
 const handleMouseEnter = () => {
   isHovering.value = playing.value;
-  emit('handle_header', playing.value); 
+  emit('handle_header', playing.value);
 
 };
 
 const handleMouseLeave = () => {
 
   isHovering.value = playing.value;
-  emit('handle_header', playing.value); 
-  
+  emit('handle_header', playing.value);
+
 };
+
 </script>
-  
+
 <style scoped>
 .video-feed {
   display: flex;

@@ -7,6 +7,7 @@ use App\Http\Controllers\AgoraController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\WebRTCController;
+use App\Http\Controllers\ProxyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,8 @@ use App\Http\Controllers\WebRTCController;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+//Route::post("/pay", [ProxyController::class, 'redirectToPay']);
+//Route::post("/getprofile", [ProxyController::class, 'checkIfUserHasCompleteProfile']);
 Route::middleware('check.api.key')->group(function () {
 Route::post('/pay', [PaymentController::class, 'redirectToGateway']);
 Route::post('/register', [AuthController::class, 'Signup']);
