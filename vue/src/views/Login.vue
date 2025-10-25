@@ -36,8 +36,8 @@ document.title = "Login | Hexarex";
   <main class="min-h-screen flex flex-col">
     <Header />
 
-    <section class="flex flex-col md:flex-row flex-grow items-center justify-center p-4 bg-gradient-to-r from-pink-600 to-orange-600">
-      <div class="text-white md:text-left px-6 md:px-12 max-w-lg">
+<section class="flex flex-col md:flex-row flex-grow items-center justify-center p-4 bg-pink-100">
+      <div class="text-rose-600 md:text-left px-6 md:px-12 max-w-lg mb-10 md:mb-0 hidden md:block">
         <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">Get back to <br />real life.</h1>
         <p class="text-lg opacity-90 mb-8">
           We built <b>Hexarex</b> to help you step away from toxic apps and rediscover meaningful friendships.
@@ -82,7 +82,7 @@ document.title = "Login | Hexarex";
 
           <button
             type="submit"
-            class="w-full bg-gradient-to-r from-magenta-500 to-pink-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
+            class="w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
           >
             Log In
           </button>
