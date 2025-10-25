@@ -68,7 +68,7 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
             cover_bg="";
             cover_photo="";
             info.bgUrl='';
-            
+
         }else{
             info.coverbgVal="true";
             cover_bg=localStorage.getItem('COVER_PHOTO');
@@ -76,14 +76,14 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
             info.bgUrl='url('+cover_photo+')';
             if(response.data.coverText==null){
                info.cover_text="I am an Hexarex.com member...";
-               
+
             }else{
-                
+
                info.cover_text=localStorage.getItem('COVER_TEXT');
             }
-            
-            
-           
+
+
+
         }
         personal_info.u_first_name=localStorage.getItem('FIRSTNAME');
         personal_info.u_last_name=localStorage.getItem('LASTNAME');
@@ -91,13 +91,13 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
         personal_info.u_phone_number=localStorage.getItem('PHONE');
         personal_info.u_incomplete=localStorage.getItem('INCOMPLETE');
         user_profile_pic=localStorage.getItem('PICTURE');
-        
-        
-        
-     
+
+
+
+
 
     }
-    
+
 })).catch((error =>{
     alert('Network Error...');
     const interval = setInterval(() => {
@@ -107,8 +107,8 @@ axiosClient.post("/profile",{email:user_mail}).then((response=>{
         }
     }, 5000);
 }))
-       
-      
+
+
 const goto=useRouter();
 
 function gotoProfileHeader(){
@@ -151,7 +151,7 @@ function showReplies(){
     document.getElementById("replies").style.display="block";
     document.getElementById("active_menu").style.borderBottom="0px";
     document.getElementById("reply_menu").style.borderBottom="2px solid magenta";
-    
+
     let formData=new FormData();
     formData.append("user_email",user_mail);
     axiosClient.post("/findAllUserReply",formData).then(response=>{
@@ -159,7 +159,7 @@ function showReplies(){
     }).catch(error=>{
         console.log(error);
     });
-    
+
 }
 function hideReplies(){
     document.getElementById("thoughts").style.display="block";
@@ -245,15 +245,15 @@ let balloon_num=ref(10);
             <img v-else :src="`https://res.cloudinary.com/fishfollowers/image/upload/v1722105000/${user_profile_pic}`" class="user-profile-img" />
             <span style="text-shadow: none; text-align:center;" class="fs-4  text-black text-bold bold">{{ personal_info.u_first_name }}</span>
             <p class="fs-5" style="word-wrap: break-word; padding:0px; margin-top:0px; text-shadow:none; color:black; font-weight:400;"><small style="word-wrap: break-word;">{{ info.cover_text }}</small></p>
-        </div>  
+        </div>
     </div>
-    <div class="user-info-card">        
+    <div class="user-info-card">
         <div class="shadow-sm user-info-card">
             <div class="heading-edit-btn">
                 <div class="heading p-2">
                 </div>
                 <div style="margin-top:100px;" class="edit-btn p-2">
-                   
+
                 </div>
             </div>
             <div class="all-user-info p-2">
@@ -298,8 +298,8 @@ let balloon_num=ref(10);
                     post_likes_count:x.likes,
                     post_comments_count:x.comments,
                     post_shares_count:x.shares
-                  }" :post_owner="x.email"    :post_id="x.postid" /> 
-    
+                  }" :post_owner="x.email"    :post_id="x.postid" />
+
     </div>
     </div>
     <div id="replies" class='replies'>
@@ -348,8 +348,8 @@ let balloon_num=ref(10);
                     post_comments_count:i.comments,
                     post_shares_count:i.shares
                   }" :post_owner="i.email_of_user_who_shared" :post_id="i.postid" />
-                    
-         
+
+
     </div>
     </div>
     </div>
@@ -374,7 +374,7 @@ let balloon_num=ref(10);
     padding:0px;
     position: relative;
 
-    
+
 }
 .images{
     border-radius: 0px;
@@ -414,7 +414,7 @@ let balloon_num=ref(10);
 .user-info-card{
     margin-top: 0px;
     border-radius: 0px;
-    
+
 
 }
 .heading-edit-btn{
@@ -485,7 +485,7 @@ let balloon_num=ref(10);
     box-sizing:border-box;
     width:80%;
     overflow: hidden;
-    
+
 }
 .flex-img{
     display: flex;
@@ -495,7 +495,7 @@ let balloon_num=ref(10);
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -504,8 +504,8 @@ let balloon_num=ref(10);
     flex: 1;
     flex-basis: 40%;
     height: 100%;
-   
-    
+
+
 }
 .replies{
     display:none;
@@ -577,7 +577,7 @@ let balloon_num=ref(10);
   border-top-right-radius:80px;
   border-bottom-left-radius:80px;
   border-bottom-right-radius:80px;
-  
+
 }
 
 .balloon::after {
@@ -634,7 +634,7 @@ display:none;
 .user-info-card{
     margin-top: 50px;
     border-radius: 5px;
-    
+
 
 }
 .heading-edit-btn{
@@ -703,7 +703,7 @@ display:none;
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -712,8 +712,8 @@ display:none;
     flex: 1;
     flex-basis: 40%;
     height: 100%;
-   
-    
+
+
 }
 .replies{
     display:none;
@@ -781,7 +781,7 @@ display:none;
   height: 150px;
   background: red; /* Balloon color */
   border-radius: 50% 50% 40% 40%; /* Balloon shape */
-  
+
 }
 
 .balloon::after {
@@ -804,7 +804,7 @@ display:none;
     margin:0 auto;
     margin-top:60px;
     position: relative;
-    
+
 }
 .images{
     border-radius: 10px;
@@ -817,7 +817,7 @@ display:none;
     background-size:100% 400px;
     background-attachment: scroll;
     font-size: 15px;
-    
+
 }
 .user-profile-img{
     border-radius: 50%;
@@ -840,7 +840,7 @@ display:none;
 .user-info-card{
     margin-top: 50px;
     border-radius: 5px;
-    
+
 
 }
 .heading-edit-btn{
@@ -912,7 +912,7 @@ display:none;
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -921,8 +921,8 @@ display:none;
     flex: 1;
     flex-basis: 40%;
     height:100%;
-   
-    
+
+
 }
 .customize-button{
     position:absolute;
@@ -988,7 +988,7 @@ display:none;
   height: 150px;
   background: red; /* Balloon color */
   border-radius: 50% 50% 40% 40%; /* Balloon shape */
-  
+
 }
 
 .balloon::after {

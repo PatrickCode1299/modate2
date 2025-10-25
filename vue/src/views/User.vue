@@ -63,41 +63,41 @@ var cover_bg;
 var cover_photo;
 
 axiosClient.post("/profile",{email:user_mail}).then((response=>{
-  
+
        info.info_value=false;
-     
-       
+
+
             info.coverbgVal="true";
             cover_bg=response.data.coverPhoto;
             if(cover_bg === null){
             }else{
                 cover_photo=`https://res.cloudinary.com/fishfollowers/image/upload/${cover_bg}`;
-            
+
                 info.bgUrl='url('+cover_photo+')';
             }
-            
+
             if(response.data.coverText==null){
                info.cover_text="I am an Hexarex.com User...";
-               
+
             }else{
-                
+
                info.cover_text=response.data.coverText;
             }
-            
-            
-           
-        
+
+
+
+
         personal_info.u_first_name=response.data.first_name;
         personal_info.u_last_name=response.data.last_name;
         personal_info.u_location=response.data.location;
         personal_info.u_profile_pic=response.data.profile_picture;
         personal_info.u_isPrivate=response.data.isPrivate;
-        
-        
-     
 
-    
-    
+
+
+
+
+
 })).catch((error =>{
     alert('Network Error...');
     const interval = setInterval(() => {
@@ -140,21 +140,21 @@ function gotoChat(){
     formData.append("unique_id",$unique_id);
     axiosClient.post("/convo",formData).then(response=>{
         let $id=response.data.reply;
-        
+
        window.location.href='/chat/'+$id;
-     
+
     }).catch(e=>{
         alert("Something wrong happened");
     })
-    
-  
+
+
 }
 function showReplies(){
     document.getElementById("thoughts").style.display="none";
     document.getElementById("replies").style.display="block";
     document.getElementById("active_menu").style.borderBottom="0px";
     document.getElementById("reply_menu").style.borderBottom="2px solid magenta";
-    
+
     let formData=new FormData();
     formData.append("user_email",user_mail);
     axiosClient.post("/findAllUserReply",formData).then(response=>{
@@ -162,7 +162,7 @@ function showReplies(){
     }).catch(error=>{
         console.log(error);
     });
-    
+
 }
 function hideReplies(){
     document.getElementById("thoughts").style.display="block";
@@ -250,7 +250,7 @@ function formatNumber(num) {
      <Header class="shadow-sm" style="background-color:white; position:fixed; padding-bottom:10px;  width: 100%; z-index: 1; top: 0px;" />
     <SideNav style="display:none;" v-if="store.state.user.token != null" />
     <ProfileSkeletonLoader v-if="info.info_value" />
-    <div v-else-if="info.isBlocked === 'true'" class="isBlocked"  > 
+    <div v-else-if="info.isBlocked === 'true'" class="isBlocked"  >
         <h2  class="m-4 text-center">You are Blocked from Seeing <span style="font-weight:bold;">{{ personal_info.u_first_name}} {{ personal_info.u_last_name }}</span> Posts,  this user has prevent you from reaching them.</h2>
     </div>
    <div style="position: relative;" v-else class="container user-profile">
@@ -269,13 +269,13 @@ function formatNumber(num) {
             <span style="text-shadow: none;" class="fs-4 text-black text-bold bold">{{ personal_info.u_first_name }}</span>
             <p class="fs-5" style="word-wrap: break-word; padding:0px; margin-top:0px; text-shadow:none; color:black; font-weight:400;"><small style="word-wrap: break-word;">{{ info.cover_text }}</small></p>
         </div>
-       
+
     </div>
     <div class="user-info-card" >
         <div class=" shadow-sm user-info-card ">
             <div class="all-user-info ">
                 <div class="heading">
-                
+
                 </div>
                 <div  style="margin-top:120px;"  class="complete-profile">
                 <ul class="d-flex" style="margin-top:75px; margin-left:10px; cursor: pointer;">
@@ -295,7 +295,7 @@ function formatNumber(num) {
             <div id="thoughts" class='thoughts'>
             <div style="border:none;" class="card  card-default m-2" v-for="x in profile_post.thoughts">
             <div  style="background-color: rgba(255, 255, 255, 0.634);" class='card-header inline-flex  panel-header'>
-        <span class="d-flex" style="margin-right: auto; "><img v-if="x.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(x.name)}} 
+        <span class="d-flex" style="margin-right: auto; "><img v-if="x.profile_picture === null" loading="lazy" src="../pictures/profile.png" class="img-circle small-thumbnail" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${x.profile_picture}`' class='img-circle small-thumbnail'><span class='m-2'>{{reduceNameLength(x.name)}}
             <ul class='inline-flex' style="display:block;">
             <li class='list-unstyled' style="font-size:12px; color:gray;">{{moment(x.created_at).fromNow()}}</li>
             </ul>
@@ -311,14 +311,14 @@ function formatNumber(num) {
                     post_likes_count:x.likes,
                     post_comments_count:x.comments,
                     post_shares_count:x.shares
-                  }" :post_owner="x.email"    :post_id="x.postid" /> 
+                  }" :post_owner="x.email"    :post_id="x.postid" />
     </div>
     </div>
     <div id="replies" class='replies'>
         <PostSkeletonLoader v-if="profile_post.replies === ''" />
         <div v-else v-for="i in profile_post.replies"  style='border: none; border-radius: 5px;' class='m-2 card  post-container card-default'>
       <div style=" position: relative; background-color: rgba(255, 255, 255, 0.634);" class="card-header inline-flex p-2 panel-header">
-                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" class="img-circle small-thumbnail" loading="lazy" src="../pictures/profile.png" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}  
+                    <span style="margin-right: auto; display: flex;"><RouterLink :to='`/user/${i.email_of_user_who_shared}`'><img v-if="i.profile_picture === null" class="img-circle small-thumbnail" loading="lazy" src="../pictures/profile.png" /><img v-else loading="lazy" :src='`https://res.cloudinary.com/fishfollowers/image/upload/${i.profile_picture}`' class='img-circle small-thumbnail'></RouterLink><span class='m-2'>{{reduceNameLength(i.name_of_user_who_shared)}}
                     <ul class='inline-flex' style="display:block;">
                     <li style="font-size: 12px; color:gray; display:block;" class='list-unstyled'>{{moment(i.created_at).fromNow()}}</li>
                     </ul></span></span><BlockReportUserComponent style="cursor:pointer;" :post_owner="i.email" :post_id="i.postid" />
@@ -361,8 +361,8 @@ function formatNumber(num) {
                     post_comments_count:i.comments,
                     post_shares_count:i.shares
                   }" :post_owner="i.email_of_user_who_shared" :post_id="i.postid" />
-                  
-         
+
+
     </div>
     </div>
     </div>
@@ -383,7 +383,7 @@ function formatNumber(num) {
     padding:0px;
     position: relative;
     margin-top:50px;
-    
+
 }
 .images{
     border-radius: 0px;
@@ -424,7 +424,7 @@ function formatNumber(num) {
 .user-info-card{
     margin-top: 0px;
     border-radius: 0px;
-    
+
 
 }
 .heading-edit-btn{
@@ -498,7 +498,7 @@ function formatNumber(num) {
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -507,8 +507,8 @@ function formatNumber(num) {
     flex: 1;
     flex-basis: 40%;
     height: 400px;
-   
-    
+
+
 }
 .isBlocked{
     margin-top:200px;
@@ -573,7 +573,7 @@ function formatNumber(num) {
 .user-info-card{
     margin-top: 50px;
     border-radius: 5px;
-    
+
 
 }
 .heading-edit-btn{
@@ -642,7 +642,7 @@ function formatNumber(num) {
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -651,8 +651,8 @@ function formatNumber(num) {
     flex: 1;
     flex-basis: 40%;
     height: 400px;
-   
-    
+
+
 }
 .isBlocked{
     margin-top:200px;
@@ -694,7 +694,7 @@ function formatNumber(num) {
     background-size:100% 400px;
     background-attachment: scroll;
     font-size: 15px;
-    
+
 }
 .user-profile-img{
     border-radius: 50%;
@@ -715,7 +715,7 @@ function formatNumber(num) {
 .user-info-card{
     margin-top: 50px;
     border-radius: 5px;
-    
+
 
 }
 .heading-edit-btn{
@@ -784,7 +784,7 @@ function formatNumber(num) {
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -793,8 +793,8 @@ function formatNumber(num) {
     flex: 1;
     flex-basis: 40%;
     height: 400px;
-   
-    
+
+
 }
 .isBlocked{
     margin-top:200px;

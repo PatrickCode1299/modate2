@@ -40,7 +40,7 @@ onMounted(() =>{
        }
 
     }).catch(e=>{
-        console.log(e);
+
     });
 });
 function updateLike(){
@@ -54,7 +54,7 @@ function updateLike(){
             like_state.count -=1;
             document.getElementById(post_id).style.color="white";
         }).catch(err=>{
-            console.log(err)
+
         });
       }else{
         like_state.count +=1;
@@ -62,7 +62,7 @@ function updateLike(){
         document.getElementById(post_id).style.color="red";
       }
     }).catch(e=>{
-        console.log(e);
+
     });
 
 document.getElementById(post_id).style.color="red";
@@ -83,7 +83,7 @@ async function share(){
     await navigator.share(shareData);
   } catch (err) {
     shareFail.value=true;
-    console.log(err);
+    ;
   }
 
 }
