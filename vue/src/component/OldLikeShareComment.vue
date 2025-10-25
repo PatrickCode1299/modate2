@@ -35,7 +35,7 @@ tagged_users_result:{}
 let all_tagged_users=reactive({
 info:[],
 value:[]
-}); 
+});
 onMounted(() =>{
     let formData=new FormData();
     formData.append("post_id",post_id);
@@ -46,7 +46,7 @@ onMounted(() =>{
        }else{
         document.getElementById(post_id).style.color="black";
        }
-     
+
     }).catch(e=>{
         console.log(e);
     });
@@ -77,7 +77,7 @@ function updateLike(){
     }).catch(e=>{
         console.log(e);
     });
-   
+
 document.getElementById(post_id).style.color="red";
 }
 let router=useRouter();
@@ -94,7 +94,7 @@ function sharePost(e){
    let post_owner=post_content.post_owner_name;
    let postid=Math.random(10,100000) * 1000;
    let prev_id=post_id;
-   let post_owner_email=atob(post_content.post_owner_email);  
+   let post_owner_email=atob(post_content.post_owner_email);
    let current_user_first_name=localStorage.getItem('FIRSTNAME');
    let current_user_last_name=localStorage.getItem('LASTNAME');
    let current_user_email=localStorage.getItem('USER_MAIL');
@@ -129,7 +129,7 @@ function sharePost(e){
    let post_owner=post_content.post_owner_name;
    let postid=Math.random(10,100000) * 1000;
    let prev_id=post_id;
-   let post_owner_email=atob(post_content.post_owner_email);  
+   let post_owner_email=atob(post_content.post_owner_email);
    let current_user_first_name=localStorage.getItem('FIRSTNAME');
    let current_user_last_name=localStorage.getItem('LASTNAME');
    let current_user_email=localStorage.getItem('USER_MAIL');
@@ -162,7 +162,7 @@ function sharePost(e){
         console.log(error);
     });
     }
-   
+
 
 }
 function quotePost(id){
@@ -171,7 +171,7 @@ function quotePost(id){
 }
 function hidePost(boxid){
     let quote_editor=document.getElementById(boxid);
-    quote_editor.style.display='none'; 
+    quote_editor.style.display='none';
 }
 async function share(){
   let post_link='https://hexarex.com/status/'+post_id;
@@ -181,7 +181,7 @@ async function share(){
   url:post_link,
 };
 
-   
+
     try {
     await navigator.share(shareData);
   } catch (err) {
@@ -230,7 +230,7 @@ return;
 else{
     user_match.forEach(x => {
     taglist.tagged_users=x;
-    
+
 });
 document.getElementById("quote_tag_box"+post_id).style.display="block";
 let formData=new FormData();
@@ -255,21 +255,21 @@ function setTaggedUser(email,first_name,last_name){
    for(let i=0; i<all_tagged_users.info.length; i++){
     if(all_tagged_users.info[i]==email){
         all_tagged_users.info.splice(i,1);
-        
+
     }
    }
    for(let i=0; i<all_tagged_users.value.length; i++){
     if(all_tagged_users.value[i]==user_full_name){
         all_tagged_users.value.splice(i,1);
-       
+
     }
    }
    }
    let current_caption=quote.value;
    quote.value=current_caption+'\t'+all_tagged_users.value.join(" ");
-  
-    
-    
+
+
+
 }
 function hideTagBox(postid){
     let tag_box=document.getElementById("quote_tag_box"+postid);
@@ -317,17 +317,17 @@ function hideTagBox(postid){
                         <li :id="post_id" @click="updateLike" class="m-2 list-unstyled"><i class="fa-regular fa-heart"></i><span v-if="like_state.count < 2">{{ like_state.count }} Like</span><span v-else>{{ like_state.count }} Likes</span></li>
                         <li v-if="comment_status === '' || comment_status===null"  class="m-2 list-unstyled"><RouterLink :post_data="post_id" :to='`/status/${post_id}`'><i style="margin-right: 2px;" class="fa-regular fa-comment"></i>{{ like_state.commentCount }}</RouterLink></li>
                         <li @click="share" class="m-2 list-unstyled"><i class="fa-regular fa-share-from-square"></i></li>
-                        <li @click="quotePost('quote'+post_id)" class="m-2 list-unstyled"><i class="far  fa-edit"></i>{{ like_state.quoteCount }}</li>
+                        <li v-if="current_user !=null " @click="quotePost('quote'+post_id)" class="m-2 list-unstyled"><i class="far  fa-edit"></i>{{ like_state.quoteCount }}</li>
                         <li @click="bookMark(post_id)" :id="'bookmark'+post_id" class="m-2 list-unstyled"><i class="fa-regular fa-newspaper"></i></li>
-                        
+
 </ul>
 <audio v-if="isSound != 'true'" style="display: none;"  id="like">
     <source type="audio/wav" src="../notifications/like bell.wav" />
-    
+
 </audio>
 <audio v-if="isSound != 'true'" style="display: none;"  id="unlike">
     <source type="audio/wav" src="../notifications/unlike bell.wav" />
-    
+
 </audio>
 </template>
 <style scoped>
@@ -352,14 +352,14 @@ function hideTagBox(postid){
     flex-direction: row;
     flex-wrap: wrap;
     border-radius: 20px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
     object-fit: cover;
     width: 100px;
     height: 100px;
-    
+
 }
 .flex-img{
     display: flex;
@@ -369,7 +369,7 @@ function hideTagBox(postid){
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -378,8 +378,8 @@ function hideTagBox(postid){
     flex: 1;
     flex-basis: 40%;
     height: 400px;
-   
-    
+
+
 }
 .quote-editor{
     display: none;
@@ -450,14 +450,14 @@ function hideTagBox(postid){
     flex-direction: row;
     flex-wrap: wrap;
     border-radius: 20px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
     object-fit: cover;
     width: 100px;
     height: 100px;
-    
+
 }
 .flex-img{
     display: flex;
@@ -467,7 +467,7 @@ function hideTagBox(postid){
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -476,8 +476,8 @@ function hideTagBox(postid){
     flex: 1;
     flex-basis: 40%;
     height: 400px;
-   
-    
+
+
 }
 .quote-editor{
     display: none;
@@ -548,14 +548,14 @@ function hideTagBox(postid){
     flex-direction: row;
     flex-wrap: wrap;
     border-radius: 20px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
     object-fit: cover;
     width: 100px;
     height: 100px;
-    
+
 }
 .flex-img{
     display: flex;
@@ -565,7 +565,7 @@ function hideTagBox(postid){
     justify-content: center;
     align-items: center;
     padding: 0px;
-    
+
 }
 .flex-img > img{
     margin-left: 2px;
@@ -574,8 +574,8 @@ function hideTagBox(postid){
     flex: 1;
     flex-basis: 40%;
     height: 400px;
-   
-    
+
+
 }
 .quote-editor{
     display: none;
@@ -588,7 +588,7 @@ function hideTagBox(postid){
     z-index: 1;
     top:8%;
     margin:0px auto;
-    
+
 
 }
 .quote-editor > textarea{
