@@ -1,9 +1,9 @@
 <template>
-    <nav style="height:auto;" class="nav navbar navbar-fixed-top">
+    <nav style="height:auto; z-index:1;" class="nav navbar navbar-fixed-top">
       <div class="container-fluid" style='padding:0px; font-family:Raleway;'>
         <RouterLink v-if="!store.state.user.token"  class="navbar-brand p-2 fs-2" to="/">
           <img src="../landing/hexarex.png" class='logo' style="height:30px; margin-left:20px; width:30px;">
-        </RouterLink> 
+        </RouterLink>
         <ul v-if="store.state.user.token" class="d-none-mobile list-unstyled fs-5">
           <RouterLink
             :to="link.location"
@@ -12,7 +12,7 @@
             v-for="(link, index) in links"
             :key="index"
           >
-            <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:white; border-radius: 20px; background-color: red; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' : 
+            <small v-if="link.linkname === 'Messages'" class="fs-6" style="color:white; border-radius: 20px; background-color: red; font-weight:bold;">{{ notify_msg_count.count > 10 ? '10+' :
             notify_msg_count.count < 1 ? '': notify_msg_count.count }}</small>
             <small v-if="link.linkname === 'Notifications'" class="fs-6" style="color:white; border-radius: 20px; background-color: red; font-weight:bold;">{{ notify_count.count > 10 ? '10+' : notify_count.count < 1 ? '' : notify_count.count }}</small>
             <i :class="link.itemicon"></i>
@@ -59,7 +59,7 @@
       </div>
     </nav>
   </template>
-  
+
   <script setup>
   import { RouterLink } from 'vue-router';
   import axiosClient from "../axios.js";
@@ -67,20 +67,20 @@
   import { useRoute } from 'vue-router';
   import { useRouter } from 'vue-router';
   import { onMounted, ref, reactive, watch } from 'vue';
-  
+
   const router = useRouter();
   const route = useRoute();
   const store = useStore();
   let user_mail;
-  
+
   let current_route;
-  
+
   onMounted(() => {
     current_route = route;
   });
-  
+
   let links = ref([]);
-  
+
   if (store.state.user.token !== null) {
     links.value = [
       {
@@ -140,7 +140,7 @@
         itemicon: "fa-light fa-bell",
         badge: 6
       },
-      
+
     ];
   } else {
     links.value = [
@@ -171,7 +171,7 @@
       }
     ];
   }
-  
+
   let checklink=reactive({
     status:false,
     count:0
@@ -183,7 +183,7 @@ checklink.count++;
 if(checklink.count > 1){
     checklink.count=0;
 }
-} 
+}
 watch(checklink, ()=>{
 let side_container=document.getElementById("sidecontainer");
 side_container.style.display="flex";
@@ -192,31 +192,31 @@ side_container.style.display="flex";
 watch(checklink, ()=>{
 if(checklink.count == 0){
     let side_container=document.getElementById("sidecontainer");
-   side_container.style.display="none";  
+   side_container.style.display="none";
 }
 
 
 });
-  
+
   let notify_count = reactive({
     count: ""
   });
-  
+
   let notify_msg_count = reactive({
     count: ""
   });
-  
+
   onMounted(() => {
     user_mail = localStorage.getItem('USER_MAIL');
     let formData = new FormData();
     formData.append("owner", user_mail);
-  
+
     axiosClient.post("/findNotifyCount", formData).then(response => {
       notify_count.count = response.data.reply;
     }).catch(e => {
       console.log('error');
     });
-  
+
     axiosClient.post("/findMsgCount", formData).then(response => {
       notify_msg_count.count = response.data.reply;
     }).catch(e => {
@@ -224,7 +224,7 @@ if(checklink.count == 0){
     });
   });
   </script>
-  
+
   <style scoped>
   body{
     font-family: Raleway;
@@ -241,25 +241,25 @@ if(checklink.count == 0){
     .logo{
       margin-top:2px;
     }
-  
+
     .mobile-nav > .mobile-link {
       margin-right: 25px;
       font-size: 24px;
       font-weight: bold;
     }
-  
+
     .link {
       color: magenta;
       display: none;
-      
+
     }
-  
+
     .navbar-brand {
       color: rgb(0, 0, 0);
       font-family: tahoma;
       font-weight: bold;
     }
-  
+
     .icon-bar {
       margin-left: auto;
       font-size: 45px;
@@ -272,7 +272,7 @@ if(checklink.count == 0){
       position:absolute;
       top:0px;
     }
-  
+
     .side-container {
       display: none;
       position: fixed;
@@ -289,61 +289,61 @@ if(checklink.count == 0){
       align-items: flex-start;
       margin-top: 0px;
     }
-  
+
     .side-container > .side-link {
       flex-basis: 5%;
       flex-grow: 1;
       flex-shrink: -1;
     }
-  
+
     .side-link {
       font-weight: bold;
     }
-  
+
     .d-none-mobile {
       display: flex;
     }
   }
-  
+
   @media screen and (min-width: 620px) {
     .mobile-nav {
       display: none;
     }
-  
+
     .link {
       color: rgb(0, 0, 0);
       display: block;
       margin-right: 20px;
       font-weight: bold;
     }
-  
+
     .navbar-brand {
       color: rgb(0, 0, 0);
       font-family: tahoma;
       font-weight: bold;
     }
-  
+
     .icon-bar {
       display: none;
     }
-  
+
     .side-container {
       display: none;
     }
-  
+
     .d-none-mobile {
       display: flex;
       flex-direction: row;
       margin: 0px auto;
       font-family: Raleway;
     }
-  
+
     .d-none-mobile > a {
       margin-left: 20px;
       font-size: 25px;
       font-family: Raleway;
     }
-  
+
     .d-none-mobile-login {
       display: flex;
       flex-direction: row;
@@ -351,34 +351,34 @@ if(checklink.count == 0){
       margin-left: auto;
     }
   }
-  
+
   @media screen and (min-width: 1224px) {
     .mobile-nav {
       display: none;
     }
-  
+
     .link {
       color: rgb(0, 0, 0);
       display: block;
       margin-right: 20px;
       font-weight: bold;
-      
+
     }
-  
+
     .navbar-brand {
       color: rgb(255, 0, 119);
       font-family: tahoma;
       font-weight: bold;
     }
-  
+
     .icon-bar {
       display: none;
     }
-  
+
     .side-container {
       display: none;
     }
-  
+
     .magenta-rounded-bold {
       background-color: #ff0084;
       border-radius:20px;
@@ -407,20 +407,20 @@ if(checklink.count == 0){
       margin: 0px auto;
       font-family:Raleway;
     }
-  
+
     .d-none-mobile > a {
       margin-left: 20px;
       font-family: Raleway;
       font-size: 25px;
     }
-  
+
     .d-none-mobile-login {
       display: flex;
       flex-direction: row;
       justify-content: flex-end;
       margin-left: auto;
     }
-  
+
     .magenta {
       font-weight: bold;
       border-bottom: 2px solid magenta;

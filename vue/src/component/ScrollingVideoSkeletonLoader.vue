@@ -59,11 +59,13 @@ const skeletonCount = ref(3);
   position: relative;
   width: 100%;
   height: 100vh;
+  top:60px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #2c2c2c;
   overflow: hidden;
+  z-index:-1;
 }
 
 .skeleton-video {
