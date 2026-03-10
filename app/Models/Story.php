@@ -15,6 +15,9 @@ class Story extends Model
         'background',
         'user_video',
         'date_posted'
-       
+
     ];
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

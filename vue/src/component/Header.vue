@@ -18,7 +18,7 @@
             <i :class="link.itemicon"></i>
           </RouterLink>
         </ul>
-        <ul v-else class="d-none-mobile-login list-unstyled p-2 fs-5">
+        <ul v-else class="d-none-mobile-login list-unstyled  fs-5">
           <RouterLink
             :to="link.location"
             @click="link.function ? link.function() : null"
@@ -350,6 +350,35 @@ if(checklink.count == 0){
       justify-content: flex-end;
       margin-left: auto;
     }
+
+    .magenta-rounded-bold {
+      background-color: #ff0084;
+      border-radius:20px;
+      font-weight: bolder;
+      padding-top: 5px;
+      padding-bottom: 10px;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 5px;
+      color: white;
+    }
+    .magenta-rounded-bold:hover{
+      opacity:0.8;
+    }
+    .purple-rounded-bold{
+      background-color: #8a0478;
+      border-radius:20px;
+      font-weight: bolder;
+      padding-top: 5px;
+      padding-bottom: 10px;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 5px;
+      color: white;
+    }
+    .purple-rounded-bold:hover{
+      opacity:0.8;
+    }
   }
 
   @media screen and (min-width: 1224px) {
@@ -362,6 +391,7 @@ if(checklink.count == 0){
       display: block;
       margin-right: 20px;
       font-weight: bold;
+      margin-top:5px;
 
     }
 

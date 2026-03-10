@@ -15,6 +15,11 @@ class Channel extends Model
         'channel_avatar',
         'channel_cover',
         'channel_category'
-       
+
     ];
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
+
 }

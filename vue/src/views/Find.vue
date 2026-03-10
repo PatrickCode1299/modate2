@@ -71,8 +71,8 @@ function findNextMatch(email){
     var user_match_age=currentYear-user_match_birthdate;
         setNextChoice.next_user_age=user_match_age+"\tYrs";
     }
-    
-       
+
+
 
 
 
@@ -109,7 +109,7 @@ axiosClient.post('/Search',formData).then(response=>{
 catch(e=>{
         console.log(e);
 });
-   
+
 
 });
 
@@ -126,11 +126,11 @@ catch(e=>{
     <div v-if="server_response.server_info==='true'" class="match-error d-flex justify-content-center align-item-center font-weight-bold">
         <h2 class="fs-3">We would show you users as they appear.</h2>
     </div>
-    <div v-else class="story-and-post p-2">
+    <div v-else  v-if="setNextChoice.next_first_name != null" class="story-and-post p-2">
     <div class="user-match" style="margin-top:100px;">
         <RouterLink :to='`/user/${setNextChoice.next_user_email}`'><img v-if="setNextChoice.next_profile_pic === null || setNextChoice.next_profile_pic === 'null'" class="user-match-img rounded" src="../pictures/profile.png"><img v-else class="user-match-img rounded" :src="`https://res.cloudinary.com/fishfollowers/image/upload/${setNextChoice.next_profile_pic}`" /></RouterLink>
     </div>
-    <div class="user-match-info">
+    <div  class="user-match-info">
     <h5 class="fs-3"><span class="m-2">{{ setNextChoice.next_first_name }}</span><span class="m-2">{{ setNextChoice.next_last_name}}</span></h5>
     <h6 class="fs-6">Around You</h6>
     <div class="d-flex next-cancel">
@@ -138,6 +138,9 @@ catch(e=>{
     <button :id="setNextChoice.next_user_email" class="btn btn-success btn-sm font-bold" @click="setUserMatch(setNextChoice.next_user_email)">Follow</button>
     </div>
     </div>
+    </div>
+     <div v-else class="match-error d-flex justify-content-center align-item-center font-weight-bold">
+        <h2 class="fs-3">We would show you users as they appear.</h2>
     </div>
 </template>
 <style scoped>
@@ -185,7 +188,7 @@ catch(e=>{
     align-items: center;
     cursor: pointer;
     width: 100%;
-    
+
 }
 .user-match{
     flex: 1;
@@ -310,7 +313,7 @@ catch(e=>{
     font-weight: bold;
 }
 .search-bar{
-    margin-top:200px; 
+    margin-top:200px;
     margin-bottom:20px;
 }
 .story-and-post{
@@ -321,7 +324,7 @@ catch(e=>{
     cursor: pointer;
     width: 50%;
     margin:0px auto;
-    
+
 }
 .user-match{
     flex: 1;
@@ -440,7 +443,7 @@ catch(e=>{
     font-weight: bold;
 }
 .search-bar{
-    margin-top:200px; 
+    margin-top:200px;
     margin-bottom:20px;
 }
 .story-and-post{
@@ -451,7 +454,7 @@ catch(e=>{
     cursor: pointer;
     width: 50%;
     margin:0px auto;
-    
+
 }
 .user-match{
     flex: 1;
