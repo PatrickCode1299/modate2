@@ -131,6 +131,7 @@ let formData=new FormData();
 formData.append("email",user_mail);
 axiosClient.post("/findUserPost",formData).then(response=>{
 profile_post.thoughts=response.data.reply;
+
 }).catch(error=>{
 console.log(error);
 });
@@ -279,6 +280,9 @@ let balloon_num=ref(10);
             <!--<li @click="gotoChannels" class="list-unstyled">Highlights</li>-->
         </ul>
         <PostSkeletonLoader v-if="profile_post.thoughts === ''" />
+         <div v-if="profile_post.thoughts=== '' || profile_post.thoughts.length == 0" class="text-black d-flex justify-content-center m-5" >
+                <h2>You have no post yet, go to home and click on the comment icon below to create one.</h2>
+        </div>
         <div v-else  class="all-activity-info-div">
             <div id="thoughts" class='thoughts'>
             <div :id="'post'+x.postid" style="border:none;" class="card p-2 card-default m-2" v-for="x in profile_post.thoughts">

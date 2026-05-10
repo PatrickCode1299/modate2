@@ -49,7 +49,7 @@ class UserActivityServices{
             "postid"=>$post_id
           ]);
         }
-        
+
         return response([
           "reply"=>"Post added successfully",
           "tagged_users"=>$tagged_users
@@ -98,7 +98,7 @@ class UserActivityServices{
       array_push($post_shares_collection,$shares_count);
     }
     $find_avatar_of_original_poster=DB::table('users')->where('email',$email_of_original_poster)->select('profile_picture')->first();
-    array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>base64_encode($post->email_of_user_who_shared),"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+    array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>base64_encode($post->email_of_user_who_shared),"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
     "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection), "avatar_of_original_poster"=>$find_avatar_of_original_poster->profile_picture
   ]);
     }
@@ -161,7 +161,7 @@ class UserActivityServices{
       foreach($no_of_shares as $shares_count){
         array_push($post_shares_collection,$shares_count);
       }
-        array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+        array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
         "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
@@ -173,19 +173,18 @@ class UserActivityServices{
 
       $today = Carbon::now();
       $country_code = null;
-  
-     
+
+
       if ($current_user === '' || $current_user === null) {
-          // Fallback logic to get user location using IP
+
           $response = Http::get("http://ip-api.com/json/{$ip}");
           $data = $response->json();
-  
-          // If API call is successful and location data is available
+
           if ($response->successful() && $data['status'] === 'success') {
               $country_code = $data['countryCode'];
           }
-  
-          // If no location found, fallback to fetching a random video with highest likes
+
+
           if (!$country_code) {
               $top_liked_post = DB::table('channel_posts')
                   ->join('users', 'channel_posts.email', '=', 'users.email')
@@ -194,7 +193,7 @@ class UserActivityServices{
                   ->orderByDesc(DB::raw('(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = channel_posts.postid)'))
                   ->limit(50)
                   ->get();
-              
+
               if ($top_liked_post) {
                   // Return the top liked post as a fallback
                   return response([
@@ -202,27 +201,27 @@ class UserActivityServices{
                   ]);
               }
           }
-  
-          // Proceed to find current user if no fallback is used
+
+
           if ($country_code) {
               $current_user = User::where('location', $country_code)->pluck('email')->first();
           }
       }
-  
-      // If current_user is provided (either from IP or already parsed)
+
+
       if ($current_user) {
           $find_user_choice = user_match_choice::where('choice', '!=', $current_user)->pluck('choice');
-  
+
           if ($find_user_choice->isEmpty()) {
               return response(["reply" => []]);
           }
-  
-          // ✅ Step 2: Get current user data
+
+
           $current_user_data = User::where('email', $current_user)->first(['location', 'interest']);
           $current_user_location = $current_user_data->location;
           $current_user_interest = $current_user_data->interest;
-  
-          // ✅ Step 3: Fetch Advertisement Posts
+
+
           $advertised_posts = DB::table('channel_posts')
               ->join('users', 'channel_posts.email', '=', 'users.email')
               ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
@@ -255,11 +254,11 @@ class UserActivityServices{
               )
               ->latest()
               ->get();
-  
+
           $store_ad_posts = $advertised_posts->map(function ($post) {
               $post_id = $post->postid;
               $is_advert = !is_null($post->ad_post_id);
-  
+
               return [
                   "name" => $post->name,
                   "caption" => $post->caption,
@@ -284,8 +283,7 @@ class UserActivityServices{
                   "isrecommendation" => false,
               ];
           });
-  
-          // ✅ Step 4: Fetch Normal Posts
+
           $normal_posts = DB::table('channel_posts')
               ->join('users', 'channel_posts.email', '=', 'users.email')
               ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
@@ -314,10 +312,10 @@ class UserActivityServices{
               )
               ->orderByDesc(DB::raw('(SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = channel_posts.postid)'))
               ->get();
-  
+
           $store_normal_posts = $normal_posts->map(function ($post) {
               $post_id = $post->postid;
-  
+
               return [
                   "name" => $post->name,
                   "caption" => $post->caption,
@@ -342,8 +340,8 @@ class UserActivityServices{
                   "isrecommendation" => false,
               ];
           });
-  
-          // ✅ Step 5: Fetch Interest-Based Recommendation Posts
+
+
           $interest_posts = DB::table('channel_posts')
               ->join('users', 'channel_posts.email', '=', 'users.email')
               ->join('channels', 'channel_posts.email', '=', 'channels.channel_owner')
@@ -373,10 +371,10 @@ class UserActivityServices{
               ->inRandomOrder()
               ->limit(5)
               ->get();
-  
+
           $store_interest_posts = $interest_posts->map(function ($post) {
               $post_id = $post->postid;
-  
+
               return [
                   "name" => $post->name,
                   "caption" => $post->caption,
@@ -401,23 +399,23 @@ class UserActivityServices{
                   "isrecommendation" => true,
               ];
           });
-  
+
           // ✅ Step 6: Combine All & Remove Duplicates by postid
           $all_posts = $store_ad_posts
               ->merge($store_normal_posts)
               ->merge($store_interest_posts)
               ->unique('postid')
               ->values();
-  
+
           return response([
               "reply" => $all_posts
           ]);
       }
   }
-  
-  
-  
-  
+
+
+
+
     public function fetchAllChannelsPost($current_user){
       $find_user_choice= user_match_choice::where('user',$current_user)->get();
      $keep_all_persons_who_user_follow=array();
@@ -444,7 +442,7 @@ class UserActivityServices{
     foreach($no_of_shares as $shares_count){
       array_push($post_shares_collection,$shares_count);
     }
-      array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name,"channel_bio"=>$post->channel_bio,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+      array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name,"channel_bio"=>$post->channel_bio,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
       "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
     ]);
     }
@@ -487,7 +485,7 @@ class UserActivityServices{
     foreach($no_of_shares as $shares_count){
       array_push($post_shares_collection,$shares_count);
     }
-      array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name,"channel_bio"=>$post->channel_bio,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+      array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name,"channel_bio"=>$post->channel_bio,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
       "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
     ]);
     }
@@ -515,28 +513,28 @@ class UserActivityServices{
       foreach($reply as $story_post){
         array_push($hold_all_replies,["file"=>$story_post->user_image,"text"=>$story_post->user_text,"color"=>$story_post->background,"isVideoFile"=>$story_post->user_video]);
       }
-      
+
       return response([
         "reply"=>$hold_all_replies,
-        
+
       ]);
     }
     public function findRelatedPost($key){
         $tag="#".$key;
         $query = "
-          (SELECT user__posts.id, user__posts.name, user__posts.caption, user__posts.created_at, user__posts.postid, user__posts.isReply, user__posts.email, NULL AS post_img1, NULL AS post_img2, NULL AS post_img3, NULL AS post_img4, NULL AS video, users.profile_picture 
-         FROM user__posts 
-         JOIN users ON user__posts.email = users.email 
+          (SELECT user__posts.id, user__posts.name, user__posts.caption, user__posts.created_at, user__posts.postid, user__posts.isReply, user__posts.email, NULL AS post_img1, NULL AS post_img2, NULL AS post_img3, NULL AS post_img4, NULL AS video, users.profile_picture
+         FROM user__posts
+         JOIN users ON user__posts.email = users.email
          WHERE user__posts.caption REGEXP ?)
-        
+
         UNION
-        
-        (SELECT channel_posts.id, channel_posts.name, channel_posts.caption, channel_posts.created_at, channel_posts.postid, channel_posts.isReply, channel_posts.email, channel_posts.post_img1, channel_posts.post_img2, channel_posts.post_img3, channel_posts.post_img4,channel_posts.video, users.profile_picture 
-         FROM channel_posts 
-         JOIN users ON channel_posts.email = users.email 
+
+        (SELECT channel_posts.id, channel_posts.name, channel_posts.caption, channel_posts.created_at, channel_posts.postid, channel_posts.isReply, channel_posts.email, channel_posts.post_img1, channel_posts.post_img2, channel_posts.post_img3, channel_posts.post_img4,channel_posts.video, users.profile_picture
+         FROM channel_posts
+         JOIN users ON channel_posts.email = users.email
          WHERE channel_posts.caption REGEXP ?)
-        
-        
+
+
         ORDER BY id DESC
         LIMIT 30;
         ";
@@ -559,7 +557,7 @@ class UserActivityServices{
         foreach($no_of_shares as $shares_count){
           array_push($post_shares_collection,$shares_count);
         }
-          array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+          array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"id"=>$post->id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
           "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
         ]);
         }
@@ -589,7 +587,7 @@ class UserActivityServices{
               array_push($post_shares_collection,$shares_count);
             }
             $find_avatar_of_original_poster=DB::table('users')->where('email',$email_of_original_poster)->select('profile_picture')->first();
-            array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>$post->email_of_user_who_shared,"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+            array_push($store_all_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>$post->email_of_user_who_shared,"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
             "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection),"avatar_of_original_poster"=>$find_avatar_of_original_poster->profile_picture
           ]);
             }
@@ -672,7 +670,7 @@ class UserActivityServices{
       foreach($no_of_shares as $shares_count){
         array_push($post_shares_collection,$shares_count);
       }
-        array_push($store_all_bookmarked_posts,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+        array_push($store_all_bookmarked_posts,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
         "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
       ]);
       }
@@ -694,7 +692,7 @@ class UserActivityServices{
      foreach($no_of_shares as $shares_count){
        array_push($post_shares_collection,$shares_count);
      }
-       array_push($store_all_bookmarked_channels_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+       array_push($store_all_bookmarked_channels_post,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"first_name"=>$post->first_name,"last_name"=>$post->last_name, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
        "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
      ]);
      }
@@ -716,7 +714,7 @@ class UserActivityServices{
     foreach($no_of_shares as $shares_count){
       array_push($post_shares_collection,$shares_count);
     }
-    array_push($store_all_bookmarked_shared_posts,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>base64_encode($post->email_of_user_who_shared),"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture, 
+    array_push($store_all_bookmarked_shared_posts,["name"=>$post->name,  "caption"=>$post->caption,"created_at"=>$post->created_at,"post_img1"=>$post->post_img1,"post_img2"=>$post->post_img2,"post_img3"=>$post->post_img3, "post_img4"=>$post->post_img4,"video"=>$post->video,"name_of_user_who_shared"=>$post->name_of_user_who_shared,"email_of_user_who_shared"=>base64_encode($post->email_of_user_who_shared),"quote"=>$post->quote,"prev_id"=>$post->prev_id, "postid"=>$post->postid, "isReply"=>$post->isReply,   "profile_picture"=>$post->profile_picture,
     "email"=>base64_encode($post->email),"likes"=>count($post_like_collection),"comments"=>count($post_comments_collection), "shares"=>count($post_shares_collection)
   ]);
     }

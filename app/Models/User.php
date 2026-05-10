@@ -42,6 +42,8 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'phone_number',
+         'email',
         'remember_token',
     ];
 
@@ -53,4 +55,18 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    public function channel() {
+    return $this->hasOne(Channel::class);
+    }
+    public function user_post(){
+        return $this->hasMany(User_Post::class);
+    }
+    public function story(){
+    return $this->hasMany(Story::class);
+    }
+    public function comment(){
+        return $this->hasMany(Comment::class);
+    }
 }

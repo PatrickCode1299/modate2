@@ -34,7 +34,7 @@ document.title = "Signup | Hexarex";
     <Header />
 
     <section
-      class="flex flex-col-reverse md:flex-row flex-grow items-center justify-center p-4 bg-gradient-to-r from-pink-600 to-orange-600"
+      class="flex flex-col-reverse md:flex-row flex-grow items-center justify-center p-4 bg-gradient-to-r bg-pink-100"
     >
       <!-- Left: Signup Form -->
       <div
@@ -114,22 +114,24 @@ document.title = "Signup | Hexarex";
       </div>
 
       <!-- Right: Intro Text -->
-      <div
-        class="text-white  md:text-left px-6 md:px-12 max-w-lg mb-10 md:mb-0"
-      >
-        <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
-          Start your<br />journey today.
-        </h1>
-        <p class="text-lg opacity-90 mb-8">
-          Join <b>Hexarex</b> — the platform built to connect, grow, and thrive
-          with real people who share your energy.
-        </p>
-        <ul class="space-y-2 text-sm opacity-90">
-          <li>✔ 100% free to start</li>
-          <li>✔ Community-driven experience</li>
-          <li>✔ Discover your best self</li>
-        </ul>
-      </div>
+      <!-- Right: Intro Text -->
+<div
+  class="text-rose-600 md:text-left px-6 md:px-12 max-w-lg mb-10 md:mb-0 hidden md:block"
+>
+  <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
+    Start your<br />journey today.
+  </h1>
+  <p class="text-lg opacity-90 mb-8">
+    Join <b>Hexarex</b> — the platform built to connect, grow, and thrive
+    with real people who share your energy.
+  </p>
+  <ul class="space-y-2 text-sm opacity-90">
+    <li>✔ 100% free to start</li>
+    <li>✔ Community-driven experience</li>
+    <li>✔ Discover your best self</li>
+  </ul>
+</div>
+
     </section>
 
     <Footer />

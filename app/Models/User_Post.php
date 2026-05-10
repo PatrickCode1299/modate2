@@ -15,7 +15,10 @@ class User_Post extends Model
         'email',
         'postid',
         'isReply'
-        
-       
+
+
     ];
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

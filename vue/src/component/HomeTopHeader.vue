@@ -118,7 +118,7 @@
         linkname: "ChannelPosts",
         location: "/home/channelposts",
         property: "link",
-        itemicon: "fa-light fa-tv"
+        itemicon: "fa-light fa-circle-play"
       },
       {
         linkname: "Status",

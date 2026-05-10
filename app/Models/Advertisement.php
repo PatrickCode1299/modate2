@@ -13,7 +13,10 @@ class Advertisement extends Model
         'ad_amount',
         'ad_reach',
         'ad_owner',
-        'ad_stop_date'
-       
+        'ad_stop_date',
+        'min_age',
+        'max_age',
+        'target_location'
+
     ];
 }
